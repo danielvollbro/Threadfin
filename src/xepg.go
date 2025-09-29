@@ -689,10 +689,12 @@ func createXEPGDatabase() (err error) {
 					if channelID, ok := chmap["id"].(string); ok {
 						newChannel.XmltvFile = file
 						newChannel.XMapping = channelID
-						// NEW CHANNELS: Start as INACTIVE by default to prevent unwanted activation
-						// This ensures users must explicitly choose which channels they want
-						newChannel.XActive = false
-						showInfo(fmt.Sprintf("XEPG:New channel created (inactive): %s (%s)", newChannel.Name, newChannel.XGroupTitle))
+						newChannel.XActive = true
+						if newChannel.Live {
+							showInfo(fmt.Sprintf("XEPG:New live channel created (active): %s (%s)", newChannel.Name, newChannel.XGroupTitle))
+						} else {
+							showInfo(fmt.Sprintf("XEPG:New channel created (active): %s (%s)", newChannel.Name, newChannel.XGroupTitle))
+						}
 
 						// Falls in der XMLTV Datei ein Logo existiert, wird dieses verwendet. Falls nicht, dann das Logo aus der M3U Datei
 						/*if icon, ok := chmap["icon"].(string); ok {
@@ -714,9 +716,8 @@ func createXEPGDatabase() (err error) {
 			if newChannel.Live && len(programData.Program) <= 3 {
 				newChannel.XmltvFile = "Threadfin Dummy"
 				newChannel.XMapping = "PPV"
-				// NEW CHANNELS: Start as INACTIVE by default to prevent unwanted activation
-				newChannel.XActive = false
-				showInfo(fmt.Sprintf("XEPG:New live channel created (inactive): %s (%s)", newChannel.Name, newChannel.XGroupTitle))
+				newChannel.XActive = true
+				showInfo(fmt.Sprintf("XEPG:New live channel created (active): %s (%s)", newChannel.Name, newChannel.XGroupTitle))
 			}
 
 			if len(m3uChannel.UUIDKey) > 0 {
@@ -837,7 +838,6 @@ func mapping() (err error) {
 						if channelID, ok := chmap["id"].(string); ok {
 							xepgChannel.XmltvFile = file
 							xepgChannel.XMapping = channelID
-							xepgChannel.XActive = true
 
 							// Falls in der XMLTV Datei ein Logo existiert, wird dieses verwendet. Falls nicht, dann das Logo aus der M3U Datei
 							/*if icon, ok := chmap["icon"].(string); ok {
@@ -923,12 +923,10 @@ func mapping() (err error) {
 			}
 			if len(xepgChannel.XmltvFile) == 0 {
 				xepgChannel.XmltvFile = "-"
-				xepgChannel.XActive = true
 			}
 
 			if len(xepgChannel.XMapping) == 0 {
 				xepgChannel.XMapping = "-"
-				xepgChannel.XActive = true
 			}
 
 			Data.XEPG.Channels[xepg] = xepgChannel
