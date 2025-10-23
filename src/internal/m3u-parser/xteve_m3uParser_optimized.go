@@ -12,12 +12,10 @@ import (
 
 // Precompiled regex patterns for better performance
 var (
-	parameterRegex    = regexp.MustCompile(`[a-z-A-Z&=]*(".*?")`)
-	channelNameRegex  = regexp.MustCompile(`,([^\n]*|,[^\r]*)`)
-	crlfReplacer      = strings.NewReplacer("\r\n", "\n")
-	quoteReplacer     = strings.NewReplacer(`"`, "")
-	commaReplacer     = strings.NewReplacer(`,`, "")
-	oldM3UReplacer    = strings.NewReplacer(":-1", "", "'", `"`)
+	parameterRegex   = regexp.MustCompile(`[a-z-A-Z&=]*(".*?")`)
+	channelNameRegex = regexp.MustCompile(`,([^\n]*|,[^\r]*)`)
+	quoteReplacer    = strings.NewReplacer(`"`, "")
+	commaReplacer    = strings.NewReplacer(`,`, "")
 )
 
 // MakeInterfaceFromM3UOptimized : Optimized version for large M3U files
