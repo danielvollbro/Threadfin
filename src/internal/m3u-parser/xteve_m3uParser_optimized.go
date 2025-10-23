@@ -22,12 +22,12 @@ var (
 func MakeInterfaceFromM3UOptimized(byteStream []byte) (allChannels []interface{}, err error) {
 	// Use bytes.Contains for faster validation
 	if bytes.Contains(byteStream, []byte("#EXT-X-TARGETDURATION")) || bytes.Contains(byteStream, []byte("#EXT-X-MEDIA-SEQUENCE")) {
-		err = errors.New("Invalid M3U file, an extended M3U file is required.")
+		err = errors.New("invalid M3U file, an extended M3U file is required")
 		return
 	}
 
 	if !bytes.Contains(byteStream, []byte("#EXTM3U")) {
-		err = errors.New("Invalid M3U file, an extended M3U file is required.")
+		err = errors.New("invalid M3U file, an extended M3U file is required")
 		return
 	}
 
