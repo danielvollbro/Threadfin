@@ -118,7 +118,11 @@ func buildXEPG(background bool) {
 						config.Data.Cache.Images.Image.Remove()
 						cli.ShowInfo("Image Caching:Done")
 
-						createXMLTVFile()
+						err = createXMLTVFile()
+						if err != nil {
+							cli.ShowError(err, 000)
+							return
+						}
 						createM3UFile()
 
 						config.SystemMutex.Lock()
@@ -143,10 +147,25 @@ func buildXEPG(background bool) {
 		case false:
 
 			createXEPGMapping()
-			createXEPGDatabase()
-			mapping()
+			err = createXEPGDatabase()
+			if err != nil {
+				cli.ShowError(err, 000)
+				return
+			}
+
+			err = mapping()
+			if err != nil {
+				cli.ShowError(err, 000)
+				return
+			}
+
 			cleanupXEPG()
-			createXMLTVFile()
+			err = createXMLTVFile()
+			if err != nil {
+				cli.ShowError(err, 000)
+				return
+			}
+
 			createM3UFile()
 
 			// Exit maintenance before long file generation to keep UI responsive
@@ -168,7 +187,11 @@ func buildXEPG(background bool) {
 						config.Data.Cache.Images.Image.Remove()
 						cli.ShowInfo("Image Caching:Done")
 
-						createXMLTVFile()
+						err = createXMLTVFile()
+						if err != nil {
+							cli.ShowError(err, 000)
+							return
+						}
 						createM3UFile()
 
 						config.SystemMutex.Lock()
@@ -213,8 +236,18 @@ func updateXEPG(background bool) {
 
 		case false:
 
-			createXEPGDatabase()
-			mapping()
+			err := createXEPGDatabase()
+			if err != nil {
+				cli.ShowError(err, 000)
+				return
+			}
+
+			err = mapping()
+			if err != nil {
+				cli.ShowError(err, 000)
+				return
+			}
+
 			cleanupXEPG()
 
 			// Exit maintenance before long file generation to keep UI responsive
@@ -222,7 +255,11 @@ func updateXEPG(background bool) {
 
 			go func() {
 
-				createXMLTVFile()
+				err = createXMLTVFile()
+				if err != nil {
+					cli.ShowError(err, 000)
+					return
+				}
 				createM3UFile()
 				cli.ShowInfo("XEPG: Ready to use")
 
