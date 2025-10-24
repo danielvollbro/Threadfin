@@ -3,6 +3,7 @@ package src
 import (
 	"fmt"
 	"strings"
+	"threadfin/src/internal/config"
 )
 
 // ShowSystemInfo : Systeminformationen anzeigen
@@ -20,19 +21,19 @@ func ShowSystemInfo() {
 	fmt.Println("OK")
 	println()
 
-	fmt.Println(fmt.Sprintf("Version:             %s %s.%s", System.Name, System.Version, System.Build))
-	fmt.Println(fmt.Sprintf("Branch:              %s", System.Branch))
-	fmt.Println(fmt.Sprintf("GitHub:              %s/%s | Git update = %t", System.GitHub.User, System.GitHub.Repo, System.GitHub.Update))
-	fmt.Println(fmt.Sprintf("Folder (config):     %s", System.Folder.Config))
+	fmt.Println(fmt.Sprintf("Version:             %s %s.%s", config.System.Name, config.System.Version, config.System.Build))
+	fmt.Println(fmt.Sprintf("Branch:              %s", config.System.Branch))
+	fmt.Println(fmt.Sprintf("GitHub:              %s/%s | Git update = %t", config.System.GitHub.User, config.System.GitHub.Repo, config.System.GitHub.Update))
+	fmt.Println(fmt.Sprintf("Folder (config):     %s", config.System.Folder.Config))
 
-	fmt.Println(fmt.Sprintf("Streams:             %d / %d", len(Data.Streams.Active), len(Data.Streams.All)))
-	fmt.Println(fmt.Sprintf("Filter:              %d", len(Data.Filter)))
-	fmt.Println(fmt.Sprintf("XEPG Chanels:        %d", int(Data.XEPG.XEPGCount)))
+	fmt.Println(fmt.Sprintf("Streams:             %d / %d", len(config.Data.Streams.Active), len(config.Data.Streams.All)))
+	fmt.Println(fmt.Sprintf("Filter:              %d", len(config.Data.Filter)))
+	fmt.Println(fmt.Sprintf("XEPG Chanels:        %d", int(config.Data.XEPG.XEPGCount)))
 
 	println()
 	fmt.Println(fmt.Sprintf("IPv4 Addresses:"))
 
-	for i, ipv4 := range System.IPAddressesV4 {
+	for i, ipv4 := range config.System.IPAddressesV4 {
 
 		switch count := i; {
 
@@ -50,7 +51,7 @@ func ShowSystemInfo() {
 	println()
 	fmt.Println(fmt.Sprintf("IPv6 Addresses:"))
 
-	for i, ipv4 := range System.IPAddressesV6 {
+	for i, ipv4 := range config.System.IPAddressesV6 {
 
 		switch count := i; {
 
@@ -68,33 +69,33 @@ func ShowSystemInfo() {
 	println("---")
 
 	fmt.Println("Settings [General]")
-	fmt.Println(fmt.Sprintf("Threadfin Update:        %t", Settings.ThreadfinAutoUpdate))
-	fmt.Println(fmt.Sprintf("UUID:                %s", Settings.UUID))
-	fmt.Println(fmt.Sprintf("Tuner (Plex / Emby): %d", Settings.Tuner))
-	fmt.Println(fmt.Sprintf("EPG Source:          %s", Settings.EpgSource))
+	fmt.Println(fmt.Sprintf("Threadfin Update:        %t", config.Settings.ThreadfinAutoUpdate))
+	fmt.Println(fmt.Sprintf("UUID:                %s", config.Settings.UUID))
+	fmt.Println(fmt.Sprintf("Tuner (Plex / Emby): %d", config.Settings.Tuner))
+	fmt.Println(fmt.Sprintf("EPG Source:          %s", config.Settings.EpgSource))
 
 	println("---")
 
 	fmt.Println("Settings [Files]")
-	fmt.Println(fmt.Sprintf("Schedule:            %s", strings.Join(Settings.Update, ",")))
-	fmt.Println(fmt.Sprintf("Files Update:        %t", Settings.FilesUpdate))
-	fmt.Println(fmt.Sprintf("Folder (tmp):        %s", Settings.TempPath))
-	fmt.Println(fmt.Sprintf("Image Chaching:      %t", Settings.CacheImages))
-	fmt.Println(fmt.Sprintf("Replace EPG Image:   %t", Settings.XepgReplaceMissingImages))
+	fmt.Println(fmt.Sprintf("Schedule:            %s", strings.Join(config.Settings.Update, ",")))
+	fmt.Println(fmt.Sprintf("Files Update:        %t", config.Settings.FilesUpdate))
+	fmt.Println(fmt.Sprintf("Folder (tmp):        %s", config.Settings.TempPath))
+	fmt.Println(fmt.Sprintf("Image Chaching:      %t", config.Settings.CacheImages))
+	fmt.Println(fmt.Sprintf("Replace EPG Image:   %t", config.Settings.XepgReplaceMissingImages))
 
 	println("---")
 
 	fmt.Println("Settings [Streaming]")
-	fmt.Println(fmt.Sprintf("Buffer:              %s", Settings.Buffer))
-	fmt.Println(fmt.Sprintf("UDPxy:               %s", Settings.UDPxy))
-	fmt.Println(fmt.Sprintf("Buffer Size:         %d KB", Settings.BufferSize))
-	fmt.Println(fmt.Sprintf("Timeout:             %d ms", int(Settings.BufferTimeout)))
-	fmt.Println(fmt.Sprintf("User Agent:          %s", Settings.UserAgent))
+	fmt.Println(fmt.Sprintf("Buffer:              %s", config.Settings.Buffer))
+	fmt.Println(fmt.Sprintf("UDPxy:               %s", config.Settings.UDPxy))
+	fmt.Println(fmt.Sprintf("Buffer Size:         %d KB", config.Settings.BufferSize))
+	fmt.Println(fmt.Sprintf("Timeout:             %d ms", int(config.Settings.BufferTimeout)))
+	fmt.Println(fmt.Sprintf("User Agent:          %s", config.Settings.UserAgent))
 
 	println("---")
 
 	fmt.Println("Settings [Backup]")
-	fmt.Println(fmt.Sprintf("Folder (backup):     %s", Settings.BackupPath))
-	fmt.Println(fmt.Sprintf("Backup Keep:         %d", Settings.BackupKeep))
+	fmt.Println(fmt.Sprintf("Folder (backup):     %s", config.Settings.BackupPath))
+	fmt.Println(fmt.Sprintf("Backup Keep:         %d", config.Settings.BackupKeep))
 
 }

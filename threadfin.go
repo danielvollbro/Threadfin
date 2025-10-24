@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"threadfin/src"
+	"threadfin/src/internal/config"
 )
 
 // GitHubStruct : GitHub Account. Über diesen Account werden die Updates veröffentlicht
@@ -72,7 +73,7 @@ func main() {
 	// Build-Nummer von der Versionsnummer trennen
 	var build = strings.Split(Version, ".")
 
-	var system = &src.System
+	var system = &config.System
 	system.APIVersion = APIVersion
 	system.Branch = strings.ToTitle(GitHub.Branch)
 	system.Build = build[len(build)-1:][0]

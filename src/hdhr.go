@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"threadfin/src/internal/config"
+	"threadfin/src/internal/structs"
 )
 
 func makeInteraceFromHDHR(content []byte, playlistName, id string) (channels []interface{}, err error) {
@@ -38,22 +40,22 @@ func makeInteraceFromHDHR(content []byte, playlistName, id string) (channels []i
 
 func getCapability() (xmlContent []byte, err error) {
 
-	var capability Capability
+	var capability structs.Capability
 	var buffer bytes.Buffer
 
 	capability.Xmlns = "urn:schemas-upnp-org:device-1-0"
-	capability.URLBase = System.ServerProtocol.WEB + "://" + System.Domain
+	capability.URLBase = config.System.ServerProtocol.WEB + "://" + config.System.Domain
 
 	capability.SpecVersion.Major = 1
 	capability.SpecVersion.Minor = 0
 
 	capability.Device.DeviceType = "urn:schemas-upnp-org:device:MediaServer:1"
-	capability.Device.FriendlyName = System.Name
+	capability.Device.FriendlyName = config.System.Name
 	capability.Device.Manufacturer = "Silicondust"
 	capability.Device.ModelName = "HDTC-2US"
 	capability.Device.ModelNumber = "HDTC-2US"
 	capability.Device.SerialNumber = ""
-	capability.Device.UDN = "uuid:" + System.DeviceID
+	capability.Device.UDN = "uuid:" + config.System.DeviceID
 
 	output, err := xml.MarshalIndent(capability, " ", "  ")
 	if err != nil {
@@ -69,19 +71,19 @@ func getCapability() (xmlContent []byte, err error) {
 
 func getDiscover() (jsonContent []byte, err error) {
 
-	var discover Discover
+	var discover structs.Discover
 
-	discover.BaseURL = System.ServerProtocol.WEB + "://" + System.Domain
-	discover.DeviceAuth = System.AppName
-	discover.DeviceID = System.DeviceID
-	discover.FirmwareName = "bin_" + System.Version
-	discover.FirmwareVersion = System.Version
-	discover.FriendlyName = System.Name
+	discover.BaseURL = config.System.ServerProtocol.WEB + "://" + config.System.Domain
+	discover.DeviceAuth = config.System.AppName
+	discover.DeviceID = config.System.DeviceID
+	discover.FirmwareName = "bin_" + config.System.Version
+	discover.FirmwareVersion = config.System.Version
+	discover.FriendlyName = config.System.Name
 
-	discover.LineupURL = fmt.Sprintf("%s://%s/lineup.json", System.ServerProtocol.DVR, System.Domain)
+	discover.LineupURL = fmt.Sprintf("%s://%s/lineup.json", config.System.ServerProtocol.DVR, config.System.Domain)
 	discover.Manufacturer = "Golang"
-	discover.ModelNumber = System.Version
-	discover.TunerCount = Settings.Tuner
+	discover.ModelNumber = config.System.Version
+	discover.TunerCount = config.Settings.Tuner
 
 	jsonContent, err = json.MarshalIndent(discover, "", "  ")
 
@@ -90,9 +92,9 @@ func getDiscover() (jsonContent []byte, err error) {
 
 func getLineupStatus() (jsonContent []byte, err error) {
 
-	var lineupStatus LineupStatus
+	var lineupStatus structs.LineupStatus
 
-	lineupStatus.ScanInProgress = System.ScanInProgress
+	lineupStatus.ScanInProgress = config.System.ScanInProgress
 	lineupStatus.ScanPossible = 0
 	lineupStatus.Source = "Cable"
 	lineupStatus.SourceList = []string{"Cable"}
@@ -104,21 +106,21 @@ func getLineupStatus() (jsonContent []byte, err error) {
 
 func getLineup() (jsonContent []byte, err error) {
 
-	var lineup Lineup
+	var lineup structs.Lineup
 
-	switch Settings.EpgSource {
+	switch config.Settings.EpgSource {
 
 	case "PMS":
-		for i, dsa := range Data.Streams.Active {
+		for i, dsa := range config.Data.Streams.Active {
 
-			var m3uChannel M3UChannelStructXEPG
+			var m3uChannel structs.M3UChannelStructXEPG
 
 			err = json.Unmarshal([]byte(mapToJSON(dsa)), &m3uChannel)
 			if err != nil {
 				return
 			}
 
-			var stream LineupStream
+			var stream structs.LineupStream
 			stream.GuideName = m3uChannel.Name
 			switch len(m3uChannel.UUIDValue) {
 
@@ -146,16 +148,16 @@ func getLineup() (jsonContent []byte, err error) {
 		}
 
 	case "XEPG":
-		for _, dxc := range Data.XEPG.Channels {
+		for _, dxc := range config.Data.XEPG.Channels {
 
-			var xepgChannel XEPGChannelStruct
+			var xepgChannel structs.XEPGChannelStruct
 			err = json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
 			if err != nil {
 				return
 			}
 
 			if xepgChannel.XActive == true && !xepgChannel.XHideChannel {
-				var stream LineupStream
+				var stream structs.LineupStream
 				stream.GuideName = xepgChannel.XName
 				stream.GuideNumber = xepgChannel.XChannelID
 				//stream.URL = fmt.Sprintf("%s://%s/stream/%s-%s", System.ServerProtocol.DVR, System.Domain, xepgChannel.FileM3UID, base64.StdEncoding.EncodeToString([]byte(xepgChannel.URL)))
@@ -174,27 +176,27 @@ func getLineup() (jsonContent []byte, err error) {
 
 	jsonContent, err = json.MarshalIndent(lineup, "", "  ")
 
-	Data.Cache.PMS = nil
+	config.Data.Cache.PMS = nil
 
-	saveMapToJSONFile(System.File.URLS, Data.Cache.StreamingURLS)
+	saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
 
 	return
 }
 
 func getGuideNumberPMS(channelName string) (pmsID string, err error) {
 
-	if len(Data.Cache.PMS) == 0 {
+	if len(config.Data.Cache.PMS) == 0 {
 
-		Data.Cache.PMS = make(map[string]string)
+		config.Data.Cache.PMS = make(map[string]string)
 
-		pms, err := loadJSONFileToMap(System.File.PMS)
+		pms, err := loadJSONFileToMap(config.System.File.PMS)
 
 		if err != nil {
 			return "", err
 		}
 
 		for key, value := range pms {
-			Data.Cache.PMS[key] = value.(string)
+			config.Data.Cache.PMS[key] = value.(string)
 		}
 
 	}
@@ -208,7 +210,7 @@ func getGuideNumberPMS(channelName string) (pmsID string, err error) {
 		var ids []string
 		id = fmt.Sprintf("id-%d", i)
 
-		for _, v := range Data.Cache.PMS {
+		for _, v := range config.Data.Cache.PMS {
 			ids = append(ids, v)
 		}
 
@@ -220,15 +222,15 @@ func getGuideNumberPMS(channelName string) (pmsID string, err error) {
 		return
 	}
 
-	if value, ok := Data.Cache.PMS[channelName]; ok {
+	if value, ok := config.Data.Cache.PMS[channelName]; ok {
 
 		pmsID = value
 
 	} else {
 
 		pmsID = getNewID(channelName)
-		Data.Cache.PMS[channelName] = pmsID
-		saveMapToJSONFile(System.File.PMS, Data.Cache.PMS)
+		config.Data.Cache.PMS[channelName] = pmsID
+		saveMapToJSONFile(config.System.File.PMS, config.Data.Cache.PMS)
 
 	}
 

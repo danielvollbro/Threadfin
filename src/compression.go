@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"threadfin/src/internal/config"
 )
 
 func zipFiles(sourceFiles []string, target string) error {
@@ -30,7 +31,7 @@ func zipFiles(sourceFiles []string, target string) error {
 
 		var baseDir string
 		if info.IsDir() {
-			baseDir = filepath.Base(System.Folder.Data)
+			baseDir = filepath.Base(config.System.Folder.Data)
 		}
 
 		filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
@@ -45,7 +46,7 @@ func zipFiles(sourceFiles []string, target string) error {
 			}
 
 			if baseDir != "" {
-				header.Name = filepath.Join(strings.TrimPrefix(path, System.Folder.Config))
+				header.Name = filepath.Join(strings.TrimPrefix(path, config.System.Folder.Config))
 			}
 
 			if info.IsDir() {

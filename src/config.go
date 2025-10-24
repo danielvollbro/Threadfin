@@ -5,45 +5,10 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"sync"
+	"threadfin/src/internal/config"
 
-	"github.com/avfs/avfs"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-)
-
-// System : Beinhaltet alle Systeminformationen
-var System SystemStruct
-
-// WebScreenLog : Logs werden im RAM gespeichert und für das Webinterface bereitgestellt
-var WebScreenLog WebScreenLogStruct
-
-// Settings : Inhalt der settings.json
-var Settings SettingsStruct
-
-// Data : Alle Daten werden hier abgelegt. (Lineup, XMLTV)
-var Data DataStruct
-
-// SystemFiles : Alle Systemdateien
-var SystemFiles = []string{"authentication.json", "pms.json", "settings.json", "xepg.json", "urls.json"}
-
-// BufferInformation : Informationen über den Buffer (aktive Streams, maximale Streams)
-var BufferInformation sync.Map
-
-// bufferVFS : Filesystem to use for the Buffer
-var bufferVFS avfs.VFS
-
-// BufferClients : Anzahl der Clients die einen Stream über den Buffer abspielen
-var BufferClients sync.Map
-
-// Lock : Lock Map
-var Lock = sync.RWMutex{}
-
-var (
-	xepgMutex   sync.Mutex
-	infoMutex   sync.Mutex
-	logMutex    sync.Mutex
-	systemMutex sync.Mutex
 )
 
 // Init : Systeminitialisierung
@@ -52,49 +17,49 @@ func Init() (err error) {
 	var debug string
 
 	// System Einstellungen
-	System.AppName = strings.ToLower(System.Name)
-	System.ARCH = runtime.GOARCH
-	System.OS = runtime.GOOS
-	System.ServerProtocol.API = "http"
-	System.ServerProtocol.DVR = "http"
-	System.ServerProtocol.M3U = "http"
-	System.ServerProtocol.WEB = "http"
-	System.ServerProtocol.XML = "http"
-	System.PlexChannelLimit = 480
-	System.UnfilteredChannelLimit = 480
-	System.Compatibility = "0.1.0"
+	config.System.AppName = strings.ToLower(config.System.Name)
+	config.System.ARCH = runtime.GOARCH
+	config.System.OS = runtime.GOOS
+	config.System.ServerProtocol.API = "http"
+	config.System.ServerProtocol.DVR = "http"
+	config.System.ServerProtocol.M3U = "http"
+	config.System.ServerProtocol.WEB = "http"
+	config.System.ServerProtocol.XML = "http"
+	config.System.PlexChannelLimit = 480
+	config.System.UnfilteredChannelLimit = 480
+	config.System.Compatibility = "0.1.0"
 
 	// FFmpeg Default Einstellungen
-	System.FFmpeg.DefaultOptions = "-hide_banner -loglevel error -analyzeduration 1000000 -probesize 1000000 -i [URL] -map 0:v -map 0:a:0 -c:v copy -c:a aac -b:a 192k -ac 2 -c:s copy -f mpegts -fflags +genpts -movflags +faststart -copyts pipe:1"
-	System.VLC.DefaultOptions = "-I dummy [URL] --sout #std{mux=ts,access=file,dst=-}"
+	config.System.FFmpeg.DefaultOptions = "-hide_banner -loglevel error -analyzeduration 1000000 -probesize 1000000 -i [URL] -map 0:v -map 0:a:0 -c:v copy -c:a aac -b:a 192k -ac 2 -c:s copy -f mpegts -fflags +genpts -movflags +faststart -copyts pipe:1"
+	config.System.VLC.DefaultOptions = "-I dummy [URL] --sout #std{mux=ts,access=file,dst=-}"
 
 	// Default Logeinträge, wird später von denen aus der settings.json überschrieben. Muss gemacht werden, damit die ersten Einträge auch im Log (webUI aangezeigt werden)
-	Settings.LogEntriesRAM = 500
+	config.Settings.LogEntriesRAM = 500
 
 	// Variablen für den Update Prozess
 	//System.Update.Git = "https://github.com/Threadfin/Threadfin/blob"
-	System.Update.Git = fmt.Sprintf("https://github.com/%s/%s", System.GitHub.User, System.GitHub.Repo)
-	System.Update.Github = fmt.Sprintf("https://api.github.com/repos/%s/%s", System.GitHub.User, System.GitHub.Repo)
-	System.Update.Name = "Threadfin"
+	config.System.Update.Git = fmt.Sprintf("https://github.com/%s/%s", config.System.GitHub.User, config.System.GitHub.Repo)
+	config.System.Update.Github = fmt.Sprintf("https://api.github.com/repos/%s/%s", config.System.GitHub.User, config.System.GitHub.Repo)
+	config.System.Update.Name = "Threadfin"
 
 	// Ordnerpfade festlegen
-	var tempFolder = os.TempDir() + string(os.PathSeparator) + System.AppName + string(os.PathSeparator)
+	var tempFolder = os.TempDir() + string(os.PathSeparator) + config.System.AppName + string(os.PathSeparator)
 	tempFolder = getPlatformPath(strings.Replace(tempFolder, "//", "/", -1))
 
-	if len(System.Folder.Config) == 0 {
-		System.Folder.Config = GetUserHomeDirectory() + string(os.PathSeparator) + "." + System.AppName + string(os.PathSeparator)
+	if len(config.System.Folder.Config) == 0 {
+		config.System.Folder.Config = GetUserHomeDirectory() + string(os.PathSeparator) + "." + config.System.AppName + string(os.PathSeparator)
 	} else {
-		System.Folder.Config = strings.TrimRight(System.Folder.Config, string(os.PathSeparator)) + string(os.PathSeparator)
+		config.System.Folder.Config = strings.TrimRight(config.System.Folder.Config, string(os.PathSeparator)) + string(os.PathSeparator)
 	}
 
-	System.Folder.Config = getPlatformPath(System.Folder.Config)
+	config.System.Folder.Config = getPlatformPath(config.System.Folder.Config)
 
-	System.Folder.Backup = System.Folder.Config + "backup" + string(os.PathSeparator)
-	System.Folder.Data = System.Folder.Config + "data" + string(os.PathSeparator)
-	System.Folder.Cache = System.Folder.Config + "cache" + string(os.PathSeparator)
-	System.Folder.ImagesCache = System.Folder.Cache + "images" + string(os.PathSeparator)
-	System.Folder.ImagesUpload = System.Folder.Data + "images" + string(os.PathSeparator)
-	System.Folder.Temp = tempFolder
+	config.System.Folder.Backup = config.System.Folder.Config + "backup" + string(os.PathSeparator)
+	config.System.Folder.Data = config.System.Folder.Config + "data" + string(os.PathSeparator)
+	config.System.Folder.Cache = config.System.Folder.Config + "cache" + string(os.PathSeparator)
+	config.System.Folder.ImagesCache = config.System.Folder.Cache + "images" + string(os.PathSeparator)
+	config.System.Folder.ImagesUpload = config.System.Folder.Data + "images" + string(os.PathSeparator)
+	config.System.Folder.Temp = tempFolder
 
 	// Dev Info
 	showDevInfo()
@@ -106,15 +71,15 @@ func Init() (err error) {
 		return
 	}
 
-	if len(System.Flag.Restore) > 0 {
+	if len(config.System.Flag.Restore) > 0 {
 		// Einstellungen werden über CLI wiederhergestellt. Weitere Initialisierung ist nicht notwendig.
 		return
 	}
 
-	System.File.XML = getPlatformFile(fmt.Sprintf("%s%s.xml", System.Folder.Data, System.AppName))
-	System.File.M3U = getPlatformFile(fmt.Sprintf("%s%s.m3u", System.Folder.Data, System.AppName))
+	config.System.File.XML = getPlatformFile(fmt.Sprintf("%s%s.xml", config.System.Folder.Data, config.System.AppName))
+	config.System.File.M3U = getPlatformFile(fmt.Sprintf("%s%s.m3u", config.System.Folder.Data, config.System.AppName))
 
-	System.Compressed.GZxml = getPlatformFile(fmt.Sprintf("%s%s.xml.gz", System.Folder.Data, System.AppName))
+	config.System.Compressed.GZxml = getPlatformFile(fmt.Sprintf("%s%s.xml.gz", config.System.Folder.Data, config.System.AppName))
 
 	err = activatedSystemAuthentication()
 	if err != nil {
@@ -127,7 +92,7 @@ func Init() (err error) {
 	}
 
 	// Menü für das Webinterface
-	System.WEB.Menu = []string{"playlist", "xmltv", "filter", "mapping", "users", "settings", "log", "logout"}
+	config.System.WEB.Menu = []string{"playlist", "xmltv", "filter", "mapping", "users", "settings", "log", "logout"}
 
 	fmt.Println("For help run: " + getPlatformFile(os.Args[0]) + " -h")
 	fmt.Println()
@@ -137,16 +102,16 @@ func Init() (err error) {
 		showWarning(2110)
 	}
 
-	if System.Flag.Debug > 0 {
-		debug = fmt.Sprintf("Debug Level:%d", System.Flag.Debug)
+	if config.System.Flag.Debug > 0 {
+		debug = fmt.Sprintf("Debug Level:%d", config.System.Flag.Debug)
 		showDebug(debug, 1)
 	}
 
-	showInfo(fmt.Sprintf("Version:%s Build: %s", System.Version, System.Build))
-	showInfo(fmt.Sprintf("Database Version:%s", System.DBVersion))
-	showInfo(fmt.Sprintf("System IP Addresses:IPv4: %d | IPv6: %d", len(System.IPAddressesV4), len(System.IPAddressesV6)))
-	showInfo("Hostname:" + System.Hostname)
-	showInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(System.Folder.Config)))
+	showInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
+	showInfo(fmt.Sprintf("Database Version:%s", config.System.DBVersion))
+	showInfo(fmt.Sprintf("System IP Addresses:IPv4: %d | IPv6: %d", len(config.System.IPAddressesV4), len(config.System.IPAddressesV6)))
+	showInfo("Hostname:" + config.System.Hostname)
+	showInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
 
 	// Systemdateien erstellen (Falls nicht vorhanden)
 	err = createSystemFiles()
@@ -161,7 +126,7 @@ func Init() (err error) {
 	}
 
 	// Einstellungen laden (settings.json)
-	showInfo(fmt.Sprintf("Load Settings:%s", System.File.Settings))
+	showInfo(fmt.Sprintf("Load Settings:%s", config.System.File.Settings))
 
 	_, err = loadSettings()
 	if err != nil {
@@ -170,50 +135,50 @@ func Init() (err error) {
 	}
 
 	// Berechtigung aller Ordner überprüfen
-	err = checkFilePermission(System.Folder.Config)
+	err = checkFilePermission(config.System.Folder.Config)
 	if err == nil {
-		err = checkFilePermission(System.Folder.Temp)
+		err = checkFilePermission(config.System.Folder.Temp)
 	}
 
 	// Separaten tmp Ordner für jede Instanz
 	//System.Folder.Temp = System.Folder.Temp + Settings.UUID + string(os.PathSeparator)
-	showInfo(fmt.Sprintf("Temporary Folder:%s", getPlatformPath(System.Folder.Temp)))
+	showInfo(fmt.Sprintf("Temporary Folder:%s", getPlatformPath(config.System.Folder.Temp)))
 
-	err = checkFolder(System.Folder.Temp)
+	err = checkFolder(config.System.Folder.Temp)
 	if err != nil {
 		return
 	}
 
-	err = removeChildItems(getPlatformPath(System.Folder.Temp))
+	err = removeChildItems(getPlatformPath(config.System.Folder.Temp))
 	if err != nil {
 		return
 	}
 
 	// Branch festlegen
-	System.Branch = cases.Title(language.English).String(Settings.Branch)
+	config.System.Branch = cases.Title(language.English).String(config.Settings.Branch)
 
-	if System.Dev {
-		System.Branch = cases.Title(language.English).String("development")
+	if config.System.Dev {
+		config.System.Branch = cases.Title(language.English).String("development")
 	}
 
-	if len(System.Branch) == 0 {
-		System.Branch = cases.Title(language.English).String("main")
+	if len(config.System.Branch) == 0 {
+		config.System.Branch = cases.Title(language.English).String("main")
 	}
 
-	showInfo(fmt.Sprintf("GitHub:https://github.com/%s", System.GitHub.User))
-	showInfo(fmt.Sprintf("Git Branch:%s [%s]", System.Branch, System.GitHub.User))
+	showInfo(fmt.Sprintf("GitHub:https://github.com/%s", config.System.GitHub.User))
+	showInfo(fmt.Sprintf("Git Branch:%s [%s]", config.System.Branch, config.System.GitHub.User))
 
 	// Set base URI
-	if Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(getBaseUrl(Settings.HttpThreadfinDomain, Settings.Port))
+	if config.Settings.HttpThreadfinDomain != "" {
+		setGlobalDomain(getBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
-		setGlobalDomain(fmt.Sprintf("%s:%s", System.IPAddress, Settings.Port))
+		setGlobalDomain(fmt.Sprintf("%s:%s", config.System.IPAddress, config.Settings.Port))
 	}
 
-	System.URLBase = fmt.Sprintf("%s://%s:%s", System.ServerProtocol.WEB, System.IPAddress, Settings.Port)
+	config.System.URLBase = fmt.Sprintf("%s://%s:%s", config.System.ServerProtocol.WEB, config.System.IPAddress, config.Settings.Port)
 
 	// HTML Dateien erstellen, mit dev == true werden die lokalen HTML Dateien verwendet
-	if System.Dev == true {
+	if config.System.Dev == true {
 
 		HTMLInit("webUI", "src", "html"+string(os.PathSeparator), "src"+string(os.PathSeparator)+"webUI.go")
 		err = BuildGoFile()
@@ -224,7 +189,7 @@ func Init() (err error) {
 	}
 
 	// DLNA Server starten
-	if Settings.SSDP {
+	if config.Settings.SSDP {
 		err = SSDP()
 		if err != nil {
 			return
@@ -242,19 +207,19 @@ func StartSystem(updateProviderFiles bool) (err error) {
 
 	setDeviceID()
 
-	if System.ScanInProgress == 1 {
+	if config.System.ScanInProgress == 1 {
 		return
 	}
 
 	// Systeminformationen in der Konsole ausgeben
-	showInfo(fmt.Sprintf("UUID:%s", Settings.UUID))
-	showInfo(fmt.Sprintf("Tuner (Plex / Emby):%d", Settings.Tuner))
-	showInfo(fmt.Sprintf("EPG Source:%s", Settings.EpgSource))
-	showInfo(fmt.Sprintf("Plex Channel Limit:%d", System.PlexChannelLimit))
-	showInfo(fmt.Sprintf("Unfiltered Chan. Limit:%d", System.UnfilteredChannelLimit))
+	showInfo(fmt.Sprintf("UUID:%s", config.Settings.UUID))
+	showInfo(fmt.Sprintf("Tuner (Plex / Emby):%d", config.Settings.Tuner))
+	showInfo(fmt.Sprintf("EPG Source:%s", config.Settings.EpgSource))
+	showInfo(fmt.Sprintf("Plex Channel Limit:%d", config.System.PlexChannelLimit))
+	showInfo(fmt.Sprintf("Unfiltered Chan. Limit:%d", config.System.UnfilteredChannelLimit))
 
 	// Providerdaten aktualisieren
-	if len(Settings.Files.M3U) > 0 && Settings.FilesUpdate == true || updateProviderFiles == true {
+	if len(config.Settings.Files.M3U) > 0 && config.Settings.FilesUpdate == true || updateProviderFiles == true {
 
 		err = ThreadfinAutoBackup()
 		if err != nil {
@@ -264,7 +229,7 @@ func StartSystem(updateProviderFiles bool) (err error) {
 		getProviderData("m3u", "")
 		getProviderData("hdhr", "")
 
-		if Settings.EpgSource == "XEPG" {
+		if config.Settings.EpgSource == "XEPG" {
 			getProviderData("xmltv", "")
 		}
 

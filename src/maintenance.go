@@ -3,6 +3,7 @@ package src
 import (
 	"fmt"
 	"math/rand"
+	"threadfin/src/internal/config"
 	"time"
 )
 
@@ -10,7 +11,7 @@ import (
 func InitMaintenance() (err error) {
 
 	rand.Seed(time.Now().Unix())
-	System.TimeForAutoUpdate = fmt.Sprintf("0%d%d", randomTime(0, 2), randomTime(10, 59))
+	config.System.TimeForAutoUpdate = fmt.Sprintf("0%d%d", randomTime(0, 2), randomTime(10, 59))
 
 	go maintenance()
 
@@ -24,10 +25,10 @@ func maintenance() {
 		var t = time.Now()
 
 		// Aktualisierung der Playlist und XMLTV Dateien
-		systemMutex.Lock()
-		if System.ScanInProgress == 0 {
-			systemMutex.Unlock()
-			for _, schedule := range Settings.Update {
+		config.SystemMutex.Lock()
+		if config.System.ScanInProgress == 0 {
+			config.SystemMutex.Unlock()
+			for _, schedule := range config.Settings.Update {
 
 				if schedule == t.Format("1504") {
 
@@ -43,7 +44,7 @@ func maintenance() {
 					getProviderData("m3u", "")
 					getProviderData("hdhr", "")
 
-					if Settings.EpgSource == "XEPG" {
+					if config.Settings.EpgSource == "XEPG" {
 						getProviderData("xmltv", "")
 					}
 
@@ -53,12 +54,12 @@ func maintenance() {
 						ShowError(err, 000)
 					}
 
-					systemMutex.Lock()
-					if !Settings.CacheImages && System.ImageCachingInProgress == 0 {
-						systemMutex.Unlock()
-						removeChildItems(System.Folder.ImagesCache)
+					config.SystemMutex.Lock()
+					if !config.Settings.CacheImages && config.System.ImageCachingInProgress == 0 {
+						config.SystemMutex.Unlock()
+						removeChildItems(config.System.Folder.ImagesCache)
 					} else {
-						systemMutex.Unlock()
+						config.SystemMutex.Unlock()
 					}
 
 					// XEPG Dateien erstellen
@@ -69,23 +70,21 @@ func maintenance() {
 			}
 
 			// Update Threadfin (Binary)
-			systemMutex.Lock()
-			if System.TimeForAutoUpdate == t.Format("1504") {
-				systemMutex.Unlock()
+			config.SystemMutex.Lock()
+			if config.System.TimeForAutoUpdate == t.Format("1504") {
+				config.SystemMutex.Unlock()
 				BinaryUpdate()
 			} else {
-				systemMutex.Unlock()
+				config.SystemMutex.Unlock()
 			}
 
 		} else {
-			systemMutex.Unlock()
+			config.SystemMutex.Unlock()
 		}
 
 		time.Sleep(60 * time.Second)
 
 	}
-
-	return
 }
 
 func randomTime(min, max int) int {

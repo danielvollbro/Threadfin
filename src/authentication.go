@@ -7,11 +7,12 @@ import (
 	"strings"
 
 	"threadfin/src/internal/authentication"
+	"threadfin/src/internal/config"
 )
 
 func activatedSystemAuthentication() (err error) {
 
-	err = authentication.Init(System.Folder.Config, 60)
+	err = authentication.Init(config.System.Folder.Config, 60)
 	if err != nil {
 		return
 	}
@@ -63,7 +64,7 @@ func createFirstUserForAuthentication(username, password string) (token string, 
 
 func tokenAuthentication(token string) (newToken string, err error) {
 
-	if System.ConfigurationWizard == true {
+	if config.System.ConfigurationWizard == true {
 		return
 	}
 
@@ -109,7 +110,7 @@ func urlAuth(r *http.Request, requestType string) (err error) {
 
 	case "m3u":
 		level = "authentication.m3u"
-		if Settings.AuthenticationM3U == true {
+		if config.Settings.AuthenticationM3U == true {
 			token, err = authentication.UserAuthentication(username, password)
 			if err != nil {
 				return
@@ -119,7 +120,7 @@ func urlAuth(r *http.Request, requestType string) (err error) {
 
 	case "xml":
 		level = "authentication.xml"
-		if Settings.AuthenticationXML == true {
+		if config.Settings.AuthenticationXML == true {
 			token, err = authentication.UserAuthentication(username, password)
 			if err != nil {
 				return

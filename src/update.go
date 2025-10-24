@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 
+	"threadfin/src/internal/config"
+	"threadfin/src/internal/structs"
 	up2date "threadfin/src/internal/up2date/client"
 
 	"github.com/hashicorp/go-version"
@@ -18,12 +20,12 @@ import (
 // BinaryUpdate : Binary Update Prozess. Git Branch master und beta wird von GitHub geladen.
 func BinaryUpdate() (err error) {
 
-	if !System.GitHub.Update {
+	if !config.System.GitHub.Update {
 		showWarning(2099)
 		return
 	}
 
-	if !Settings.ThreadfinAutoUpdate {
+	if !config.Settings.ThreadfinAutoUpdate {
 		showWarning(2098)
 		return
 	}
@@ -31,21 +33,21 @@ func BinaryUpdate() (err error) {
 	var debug string
 
 	var updater = &up2date.Updater
-	updater.Name = System.Update.Name
-	updater.Branch = System.Branch
+	updater.Name = config.System.Update.Name
+	updater.Branch = config.System.Branch
 
 	up2date.Init()
 
-	log.Println("BRANCH: ", System.Branch)
-	switch System.Branch {
+	log.Println("BRANCH: ", config.System.Branch)
+	switch config.System.Branch {
 
 	// Update von GitHub
 	case "Main", "Beta":
-		var releaseInfo = fmt.Sprintf("%s/releases", System.Update.Github)
+		var releaseInfo = fmt.Sprintf("%s/releases", config.System.Update.Github)
 		var latest string
 		var body []byte
 
-		var git []*GithubReleaseInfo
+		var git []*structs.GithubReleaseInfo
 
 		resp, err := http.Get(releaseInfo)
 		if err != nil {
@@ -61,7 +63,7 @@ func BinaryUpdate() (err error) {
 		}
 
 		// Get latest prerelease tag name
-		if System.Branch == "Beta" {
+		if config.System.Branch == "Beta" {
 			for _, release := range git {
 				if release.Prerelease {
 					latest = release.TagName
@@ -72,7 +74,7 @@ func BinaryUpdate() (err error) {
 		}
 
 		// Latest main tag name
-		if System.Branch == "Main" {
+		if config.System.Branch == "Main" {
 			for _, release := range git {
 				if !release.Prerelease {
 					updater.Response.Version = release.TagName
@@ -83,7 +85,7 @@ func BinaryUpdate() (err error) {
 			}
 		}
 
-		var File = fmt.Sprintf("%s/releases/download/%s/%s_%s_%s", System.Update.Git, latest, "Threadfin", System.OS, System.ARCH)
+		var File = fmt.Sprintf("%s/releases/download/%s/%s_%s_%s", config.System.Update.Git, latest, "Threadfin", config.System.OS, config.System.ARCH)
 
 		updater.Response.Status = true
 		updater.Response.UpdateBIN = File
@@ -93,10 +95,10 @@ func BinaryUpdate() (err error) {
 	// Update vom eigenen Server
 	default:
 
-		updater.URL = Settings.UpdateURL
+		updater.URL = config.Settings.UpdateURL
 
 		if len(updater.URL) == 0 {
-			showInfo(fmt.Sprintf("Update URL:No server URL specified, update will not be performed. Branch: %s", System.Branch))
+			showInfo(fmt.Sprintf("Update URL:No server URL specified, update will not be performed. Branch: %s", config.System.Branch))
 			return
 		}
 
@@ -123,18 +125,18 @@ func BinaryUpdate() (err error) {
 
 	}
 
-	var currentVersion = System.Version + "." + System.Build
+	var currentVersion = config.System.Version + "." + config.System.Build
 	current_version, _ := version.NewVersion(currentVersion)
 	response_version, _ := version.NewVersion(updater.Response.Version)
 	// Versionsnummer überprüfen
 	if response_version.GreaterThan(current_version) && updater.Response.Status {
-		if Settings.ThreadfinAutoUpdate {
+		if config.Settings.ThreadfinAutoUpdate {
 			// Update durchführen
 			var fileType, url string
 
 			showInfo(fmt.Sprintf("Update Available:Version: %s", updater.Response.Version))
 
-			switch System.Branch {
+			switch config.System.Branch {
 
 			// Update von GitHub
 			case "master", "beta":
@@ -142,7 +144,7 @@ func BinaryUpdate() (err error) {
 
 			// Update vom eigenen Server
 			default:
-				showInfo(fmt.Sprintf("Update Server:%s", Settings.UpdateURL))
+				showInfo(fmt.Sprintf("Update Server:%s", config.Settings.UpdateURL))
 
 			}
 
@@ -182,22 +184,22 @@ func BinaryUpdate() (err error) {
 func conditionalUpdateChanges() (err error) {
 
 checkVersion:
-	settingsMap, err := loadJSONFileToMap(System.File.Settings)
+	settingsMap, err := loadJSONFileToMap(config.System.File.Settings)
 	if err != nil || len(settingsMap) == 0 {
 		return
 	}
 
 	if settingsVersion, ok := settingsMap["version"].(string); ok {
 
-		if settingsVersion > System.DBVersion {
+		if settingsVersion > config.System.DBVersion {
 			showInfo("Settings DB Version:" + settingsVersion)
-			showInfo("System DB Version:" + System.DBVersion)
+			showInfo("System DB Version:" + config.System.DBVersion)
 			err = errors.New(getErrMsg(1031))
 			return
 		}
 
 		// Letzte Kompatible Version (1.4.4)
-		if settingsVersion < System.Compatibility {
+		if settingsVersion < config.System.Compatibility {
 			err = errors.New(getErrMsg(1013))
 			return
 		}
@@ -218,7 +220,7 @@ checkVersion:
 
 				settingsMap["version"] = "2.0.0"
 
-				err = saveMapToJSONFile(System.File.Settings, settingsMap)
+				err = saveMapToJSONFile(config.System.File.Settings, settingsMap)
 				if err != nil {
 					return
 				}
@@ -246,7 +248,7 @@ checkVersion:
 
 				settingsMap["version"] = "2.1.0"
 
-				err = saveMapToJSONFile(System.File.Settings, settingsMap)
+				err = saveMapToJSONFile(config.System.File.Settings, settingsMap)
 				if err != nil {
 					return
 				}
@@ -283,7 +285,7 @@ func convertToNewFilter(oldFilter []interface{}) (newFilterMap map[int]interface
 
 		for i := 0; i < s.Len(); i++ {
 
-			var newFilter FilterStruct
+			var newFilter structs.FilterStruct
 			newFilter.Active = true
 			newFilter.Name = fmt.Sprintf("Custom filter %d", i+1)
 			newFilter.Filter = s.Index(i).Interface().(string)
@@ -301,7 +303,7 @@ func convertToNewFilter(oldFilter []interface{}) (newFilterMap map[int]interface
 
 func setValueForUUID() (err error) {
 
-	xepg, err := loadJSONFileToMap(System.File.XEPG)
+	xepg, err := loadJSONFileToMap(config.System.File.XEPG)
 
 	for _, c := range xepg {
 
@@ -321,7 +323,7 @@ func setValueForUUID() (err error) {
 
 	}
 
-	err = saveMapToJSONFile(System.File.XEPG, xepg)
+	err = saveMapToJSONFile(config.System.File.XEPG, xepg)
 
 	return
 }

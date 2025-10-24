@@ -1,4 +1,4 @@
-package src
+package structs
 
 // RequestStruct : Anfragen über die Websocket Schnittstelle
 type RequestStruct struct {
@@ -49,7 +49,7 @@ type RequestStruct struct {
 		SchemeXML                *string   `json:"scheme.xml,omitempty"`
 		StoreBufferInRAM         *bool     `json:"storeBufferInRAM,omitempty"`
 		ForceHttps               *bool     `json:"forceHttps,omitempty"`
-        ExcludeStreamsHttps      *bool     `json:"excludeStreamsHttps,omitempty"`
+		ExcludeStreamsHttps      *bool     `json:"excludeStreamsHttps,omitempty"`
 		HttpsPort                *int      `json:"httpsPort,omitempty"`
 		HttpsThreadfinDomain     *string   `json:"httpsThreadfinDomain,omitempty"`
 		HttpThreadfinDomain      *string   `json:"httpThreadfinDomain,omitempty"`

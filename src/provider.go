@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"threadfin/src/internal/config"
 	m3u "threadfin/src/internal/m3u-parser"
 )
 
@@ -31,7 +32,7 @@ func getProviderData(fileType, fileID string) (err error) {
 		}
 
 		// Default keys für die Providerdaten
-		var keys = []string{"name", "description", "type", "file." + System.AppName, "file.source", "tuner", "http_proxy.ip", "http_proxy.port", "last.update", "compatibility", "counter.error", "counter.download", "provider.availability"}
+		var keys = []string{"name", "description", "type", "file." + config.System.AppName, "file.source", "tuner", "http_proxy.ip", "http_proxy.port", "last.update", "compatibility", "counter.error", "counter.download", "provider.availability"}
 
 		for _, key := range keys {
 
@@ -48,7 +49,7 @@ func getProviderData(fileType, fileID string) (err error) {
 				case "type":
 					data[key] = fileType
 
-				case "file." + System.AppName:
+				case "file." + config.System.AppName:
 					data[key] = id + fileExtension
 
 				case "file.source":
@@ -142,7 +143,7 @@ func getProviderData(fileType, fileID string) (err error) {
 			return
 		}
 
-		var filePath = System.Folder.Data + data["file."+System.AppName].(string)
+		var filePath = config.System.Folder.Data + data["file."+config.System.AppName].(string)
 
 		err = writeByteToFile(filePath, body)
 
@@ -158,15 +159,15 @@ func getProviderData(fileType, fileID string) (err error) {
 	switch fileType {
 
 	case "m3u":
-		dataMap = Settings.Files.M3U
+		dataMap = config.Settings.Files.M3U
 		fileExtension = ".m3u"
 
 	case "hdhr":
-		dataMap = Settings.Files.HDHR
+		dataMap = config.Settings.Files.HDHR
 		fileExtension = ".json"
 
 	case "xmltv":
-		dataMap = Settings.Files.XMLTV
+		dataMap = config.Settings.Files.XMLTV
 		fileExtension = ".xml"
 
 	}
@@ -251,7 +252,7 @@ func getProviderData(fileType, fileID string) (err error) {
 			if newProvider == false {
 
 				// Prüfen ob ältere Datei vorhanden ist
-				var file = System.Folder.Data + dataID + fileExtension
+				var file = config.System.Folder.Data + dataID + fileExtension
 
 				err = checkFile(file)
 				if err == nil {
@@ -300,18 +301,18 @@ func getProviderData(fileType, fileID string) (err error) {
 		switch fileType {
 
 		case "m3u":
-			Settings.Files.M3U = dataMap
+			config.Settings.Files.M3U = dataMap
 
 		case "hdhr":
-			Settings.Files.HDHR = dataMap
+			config.Settings.Files.HDHR = dataMap
 
 		case "xmltv":
-			Settings.Files.XMLTV = dataMap
-			delete(Data.Cache.XMLTV, System.Folder.Data+dataID+fileExtension)
+			config.Settings.Files.XMLTV = dataMap
+			delete(config.Data.Cache.XMLTV, config.System.Folder.Data+dataID+fileExtension)
 
 		}
 
-		saveSettings(Settings)
+		saveSettings(config.Settings)
 
 	Done:
 	}
@@ -327,8 +328,8 @@ func downloadFileFromServer(providerURL string, proxyUrl string) (filename strin
 
 	// Derive a timeout: prefer configured buffer timeout if provided, else default to 30s
 	requestTimeout := 30 * time.Second
-	if Settings.BufferTimeout > 0 {
-		requestTimeout = time.Duration(Settings.BufferTimeout*1000) * time.Millisecond
+	if config.Settings.BufferTimeout > 0 {
+		requestTimeout = time.Duration(config.Settings.BufferTimeout*1000) * time.Millisecond
 	}
 
 	httpClient := &http.Client{Timeout: requestTimeout}
@@ -352,7 +353,7 @@ func downloadFileFromServer(providerURL string, proxyUrl string) (filename strin
 		return
 	}
 
-	req.Header.Set("User-Agent", Settings.UserAgent)
+	req.Header.Set("User-Agent", config.Settings.UserAgent)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -360,7 +361,7 @@ func downloadFileFromServer(providerURL string, proxyUrl string) (filename strin
 	}
 	defer resp.Body.Close()
 
-	resp.Header.Set("User-Agent", Settings.UserAgent)
+	resp.Header.Set("User-Agent", config.Settings.UserAgent)
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("%d: %s %s", resp.StatusCode, providerURL, http.StatusText(resp.StatusCode))
