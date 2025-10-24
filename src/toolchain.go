@@ -176,12 +176,6 @@ func getFilenameFromPath(path string) (file string) {
 	return filepath.Base(path)
 }
 
-// Nicht mehr verwendete Systemdaten löschen
-func removeOldSystemData() {
-	// Temporären Ordner löschen
-	os.RemoveAll(config.System.Folder.Temp)
-}
-
 // Sucht eine Datei im OS
 func searchFileInOS(file string) (path string) {
 
@@ -243,14 +237,6 @@ func mapToJSON(tmpMap interface{}) string {
 func jsonToMap(content string) map[string]interface{} {
 
 	var tmpMap = make(map[string]interface{})
-	json.Unmarshal([]byte(content), &tmpMap)
-
-	return (tmpMap)
-}
-
-func jsonToMapInt64(content string) map[int64]interface{} {
-
-	var tmpMap = make(map[int64]interface{})
 	json.Unmarshal([]byte(content), &tmpMap)
 
 	return (tmpMap)
@@ -428,17 +414,6 @@ func indexOfString(element string, data []string) int {
 }
 
 func indexOfFloat64(element float64, data []float64) int {
-
-	for k, v := range data {
-		if element == v {
-			return (k)
-		}
-	}
-
-	return -1
-}
-
-func indexOfInt(element int, data []int) int {
 
 	for k, v := range data {
 		if element == v {

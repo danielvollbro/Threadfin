@@ -44,8 +44,6 @@ func checkXMLCompatibility(id string, body []byte) (err error) {
 	return
 }
 
-var buildXEPGCount int
-
 // XEPG Daten erstellen
 func buildXEPG(background bool) {
 	config.XepgMutex.Lock()
@@ -1887,63 +1885,6 @@ func removeDuplicateChannels() {
 	}
 }
 
-// Helper function to clean channel names for duplicate detection
-func cleanChannelNameForDuplicateDetection(name string) string {
-	// Remove backup indicators like (1), (2), etc.
-	re := regexp.MustCompile(`\s*\([0-9]+\)\s*$`)
-	cleaned := re.ReplaceAllString(name, "")
-
-	// Remove extra whitespace
-	cleaned = strings.TrimSpace(cleaned)
-
-	return cleaned
-}
-
-// Helper function to determine if a channel should be removed as name duplicate
-func shouldRemoveAsNameDuplicate(currentID, existingID string) bool {
-	currentChannel := getChannelByID(currentID)
-	existingChannel := getChannelByID(existingID)
-
-	if currentChannel == nil || existingChannel == nil {
-		return false
-	}
-
-	// Don't remove if they're in different groups
-	if currentChannel.XGroupTitle != existingChannel.XGroupTitle {
-		return false
-	}
-
-	// Prefer active channels
-	if currentChannel.XActive && !existingChannel.XActive {
-		return false // Keep current, remove existing (handled elsewhere)
-	}
-	if !currentChannel.XActive && existingChannel.XActive {
-		return true // Remove current, keep existing
-	}
-
-	// Prefer channels with XMLTV mapping
-	currentHasMapping := currentChannel.XmltvFile != "" && currentChannel.XmltvFile != "-"
-	existingHasMapping := existingChannel.XmltvFile != "" && existingChannel.XmltvFile != "-"
-
-	if currentHasMapping && !existingHasMapping {
-		return false // Keep current
-	}
-	if !currentHasMapping && existingHasMapping {
-		return true // Remove current
-	}
-
-	// If everything else is equal, keep the one with lower channel number
-	currentChno, err1 := strconv.ParseFloat(currentChannel.TvgChno, 64)
-	existingChno, err2 := strconv.ParseFloat(existingChannel.TvgChno, 64)
-
-	if err1 == nil && err2 == nil {
-		return currentChno > existingChno // Remove current if it has higher channel number
-	}
-
-	// Default: remove current (keep existing)
-	return true
-}
-
 // Helper function to get channel by ID
 func getChannelByID(id string) *structs.XEPGChannelStruct {
 	if dxc, exists := config.Data.XEPG.Channels[id]; exists {
@@ -1999,37 +1940,4 @@ func handleDuplicate(currentID, existingID, duplicateType string) string {
 			duplicateType, currentID, currentChannel.XName, existingID, existingChannel.XName))
 		return currentID
 	}
-}
-
-// Streaming URL für die Channels App generieren
-func getStreamByChannelID(channelID string) (playlistID, streamURL string, err error) {
-
-	err = errors.New("Channel not found")
-
-	for _, dxc := range config.Data.XEPG.Channels {
-
-		var xepgChannel structs.XEPGChannelStruct
-		err := json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
-
-		fmt.Println(xepgChannel.XChannelID)
-
-		if err == nil {
-
-			if xepgChannel.TvgName == "" {
-				xepgChannel.TvgName = xepgChannel.Name
-			}
-
-			if channelID == xepgChannel.XChannelID {
-
-				playlistID = xepgChannel.FileM3UID
-				streamURL = xepgChannel.URL
-
-				return playlistID, streamURL, nil
-			}
-
-		}
-
-	}
-
-	return
 }

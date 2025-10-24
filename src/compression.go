@@ -149,23 +149,6 @@ func extractGZIP(gzipBody []byte, fileSource string) (body []byte, err error) {
 	return
 }
 
-func compressGZIP(data *[]byte, file string) (err error) {
-
-	if len(file) != 0 {
-
-		f, err := os.Create(file)
-		if err != nil {
-			return err
-		}
-
-		w := gzip.NewWriter(f)
-		w.Write(*data)
-		w.Close()
-	}
-
-	return
-}
-
 func compressGZIPFile(sourcePath, targetPath string) (err error) {
 	in, err := os.Open(sourcePath)
 	if err != nil {
