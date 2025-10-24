@@ -5,6 +5,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 
 	"golang.org/x/text/cases"
@@ -67,7 +68,7 @@ func Init() (err error) {
 	// System Ordner erstellen
 	err = createSystemFolders()
 	if err != nil {
-		ShowError(err, 1070)
+		cli.ShowError(err, 1070)
 		return
 	}
 
@@ -88,7 +89,7 @@ func Init() (err error) {
 
 	err = resolveHostIP()
 	if err != nil {
-		ShowError(err, 1002)
+		cli.ShowError(err, 1002)
 	}
 
 	// Menü für das Webinterface
@@ -99,24 +100,24 @@ func Init() (err error) {
 
 	// Überprüfen ob Threadfin als root läuft
 	if os.Geteuid() == 0 {
-		showWarning(2110)
+		cli.ShowWarning(2110)
 	}
 
 	if config.System.Flag.Debug > 0 {
 		debug = fmt.Sprintf("Debug Level:%d", config.System.Flag.Debug)
-		showDebug(debug, 1)
+		cli.ShowDebug(debug, 1)
 	}
 
-	showInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
-	showInfo(fmt.Sprintf("Database Version:%s", config.System.DBVersion))
-	showInfo(fmt.Sprintf("System IP Addresses:IPv4: %d | IPv6: %d", len(config.System.IPAddressesV4), len(config.System.IPAddressesV6)))
-	showInfo("Hostname:" + config.System.Hostname)
-	showInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
+	cli.ShowInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
+	cli.ShowInfo(fmt.Sprintf("Database Version:%s", config.System.DBVersion))
+	cli.ShowInfo(fmt.Sprintf("System IP Addresses:IPv4: %d | IPv6: %d", len(config.System.IPAddressesV4), len(config.System.IPAddressesV6)))
+	cli.ShowInfo("Hostname:" + config.System.Hostname)
+	cli.ShowInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
 
 	// Systemdateien erstellen (Falls nicht vorhanden)
 	err = createSystemFiles()
 	if err != nil {
-		ShowError(err, 1071)
+		cli.ShowError(err, 1071)
 		return
 	}
 
@@ -126,11 +127,11 @@ func Init() (err error) {
 	}
 
 	// Einstellungen laden (settings.json)
-	showInfo(fmt.Sprintf("Load Settings:%s", config.System.File.Settings))
+	cli.ShowInfo(fmt.Sprintf("Load Settings:%s", config.System.File.Settings))
 
 	_, err = loadSettings()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 
@@ -142,7 +143,7 @@ func Init() (err error) {
 
 	// Separaten tmp Ordner für jede Instanz
 	//System.Folder.Temp = System.Folder.Temp + Settings.UUID + string(os.PathSeparator)
-	showInfo(fmt.Sprintf("Temporary Folder:%s", getPlatformPath(config.System.Folder.Temp)))
+	cli.ShowInfo(fmt.Sprintf("Temporary Folder:%s", getPlatformPath(config.System.Folder.Temp)))
 
 	err = checkFolder(config.System.Folder.Temp)
 	if err != nil {
@@ -165,8 +166,8 @@ func Init() (err error) {
 		config.System.Branch = cases.Title(language.English).String("main")
 	}
 
-	showInfo(fmt.Sprintf("GitHub:https://github.com/%s", config.System.GitHub.User))
-	showInfo(fmt.Sprintf("Git Branch:%s [%s]", config.System.Branch, config.System.GitHub.User))
+	cli.ShowInfo(fmt.Sprintf("GitHub:https://github.com/%s", config.System.GitHub.User))
+	cli.ShowInfo(fmt.Sprintf("Git Branch:%s [%s]", config.System.Branch, config.System.GitHub.User))
 
 	// Set base URI
 	if config.Settings.HttpThreadfinDomain != "" {
@@ -212,18 +213,18 @@ func StartSystem(updateProviderFiles bool) (err error) {
 	}
 
 	// Systeminformationen in der Konsole ausgeben
-	showInfo(fmt.Sprintf("UUID:%s", config.Settings.UUID))
-	showInfo(fmt.Sprintf("Tuner (Plex / Emby):%d", config.Settings.Tuner))
-	showInfo(fmt.Sprintf("EPG Source:%s", config.Settings.EpgSource))
-	showInfo(fmt.Sprintf("Plex Channel Limit:%d", config.System.PlexChannelLimit))
-	showInfo(fmt.Sprintf("Unfiltered Chan. Limit:%d", config.System.UnfilteredChannelLimit))
+	cli.ShowInfo(fmt.Sprintf("UUID:%s", config.Settings.UUID))
+	cli.ShowInfo(fmt.Sprintf("Tuner (Plex / Emby):%d", config.Settings.Tuner))
+	cli.ShowInfo(fmt.Sprintf("EPG Source:%s", config.Settings.EpgSource))
+	cli.ShowInfo(fmt.Sprintf("Plex Channel Limit:%d", config.System.PlexChannelLimit))
+	cli.ShowInfo(fmt.Sprintf("Unfiltered Chan. Limit:%d", config.System.UnfilteredChannelLimit))
 
 	// Providerdaten aktualisieren
 	if len(config.Settings.Files.M3U) > 0 && config.Settings.FilesUpdate == true || updateProviderFiles == true {
 
 		err = ThreadfinAutoBackup()
 		if err != nil {
-			ShowError(err, 1090)
+			cli.ShowError(err, 1090)
 		}
 
 		getProviderData("m3u", "")
@@ -237,7 +238,7 @@ func StartSystem(updateProviderFiles bool) (err error) {
 
 	err = buildDatabaseDVR()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 

@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 )
 
@@ -133,7 +134,7 @@ func Run() {
 
 		err := Init()
 		if err != nil {
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 			os.Exit(0)
 		}
 
@@ -176,13 +177,13 @@ func Run() {
 
 		err := Init()
 		if err != nil {
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 			os.Exit(0)
 		}
 
 		err = ThreadfinRestoreFromCLI(*restore)
 		if err != nil {
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 		}
 
 		os.Exit(0)
@@ -190,30 +191,30 @@ func Run() {
 
 	err := Init()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		os.Exit(0)
 	}
 
 	err = BinaryUpdate()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 	}
 
 	err = StartSystem(false)
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		os.Exit(0)
 	}
 
 	err = InitMaintenance()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		os.Exit(0)
 	}
 
 	err = StartWebserver()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		os.Exit(0)
 	}
 

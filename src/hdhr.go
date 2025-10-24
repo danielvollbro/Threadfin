@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/structs"
 )
@@ -59,7 +60,7 @@ func getCapability() (xmlContent []byte, err error) {
 
 	output, err := xml.MarshalIndent(capability, " ", "  ")
 	if err != nil {
-		ShowError(err, 1003)
+		cli.ShowError(err, 1003)
 	}
 
 	buffer.Write([]byte(xml.Header))
@@ -128,7 +129,7 @@ func getLineup() (jsonContent []byte, err error) {
 				stream.GuideNumber = fmt.Sprintf("%d", i+1000)
 				guideNumber, err := getGuideNumberPMS(stream.GuideName)
 				if err != nil {
-					ShowError(err, 0)
+					cli.ShowError(err, 0)
 				}
 
 				stream.GuideNumber = guideNumber
@@ -142,7 +143,7 @@ func getLineup() (jsonContent []byte, err error) {
 			if err == nil {
 				lineup = append(lineup, stream)
 			} else {
-				ShowError(err, 1202)
+				cli.ShowError(err, 1202)
 			}
 
 		}
@@ -165,7 +166,7 @@ func getLineup() (jsonContent []byte, err error) {
 				if err == nil {
 					lineup = append(lineup, stream)
 				} else {
-					ShowError(err, 1202)
+					cli.ShowError(err, 1202)
 				}
 
 			}

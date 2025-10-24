@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 )
 
@@ -134,7 +135,7 @@ func extractGZIP(gzipBody []byte, fileSource string) (body []byte, err error) {
 		return
 	}
 
-	showInfo("Extract gzip:" + fileSource)
+	cli.ShowInfo("Extract gzip:" + fileSource)
 
 	var resB bytes.Buffer
 	_, err = resB.ReadFrom(r)

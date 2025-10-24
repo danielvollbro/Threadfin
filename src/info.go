@@ -3,6 +3,7 @@ package src
 import (
 	"fmt"
 	"strings"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 )
 
@@ -12,7 +13,7 @@ func ShowSystemInfo() {
 	fmt.Print("Creating the information takes a moment...")
 	err := buildDatabaseDVR()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 

@@ -3,6 +3,7 @@ package src
 import (
 	"fmt"
 	"math/rand"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"time"
 )
@@ -32,12 +33,12 @@ func maintenance() {
 
 				if schedule == t.Format("1504") {
 
-					showInfo("Update:" + schedule)
+					cli.ShowInfo("Update:" + schedule)
 
 					// Backup erstellen
 					err := ThreadfinAutoBackup()
 					if err != nil {
-						ShowError(err, 000)
+						cli.ShowError(err, 000)
 					}
 
 					// Playlist und XMLTV Dateien aktualisieren
@@ -51,7 +52,7 @@ func maintenance() {
 					// Datenbank für DVR erstellen
 					err = buildDatabaseDVR()
 					if err != nil {
-						ShowError(err, 000)
+						cli.ShowError(err, 000)
 					}
 
 					config.SystemMutex.Lock()

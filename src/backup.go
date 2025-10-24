@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"time"
 )
@@ -23,11 +24,11 @@ func ThreadfinAutoBackup() (err error) {
 		config.System.Folder.Backup = config.Settings.BackupPath
 	}
 
-	showInfo("Backup Path:" + config.System.Folder.Backup)
+	cli.ShowInfo("Backup Path:" + config.System.Folder.Backup)
 
 	err = checkFolder(config.System.Folder.Backup)
 	if err != nil {
-		ShowError(err, 1070)
+		cli.ShowError(err, 1070)
 		return
 	}
 
@@ -57,7 +58,7 @@ func ThreadfinAutoBackup() (err error) {
 
 			os.RemoveAll(config.System.Folder.Backup + oldBackupFiles[i])
 			debug = fmt.Sprintf("Delete backup file:%s", oldBackupFiles[i])
-			showDebug(debug, 1)
+			cli.ShowDebug(debug, 1)
 
 		}
 
@@ -87,9 +88,9 @@ func ThreadfinAutoBackup() (err error) {
 		if err == nil {
 
 			debug = fmt.Sprintf("Create backup file:%s", target)
-			showDebug(debug, 1)
+			cli.ShowDebug(debug, 1)
 
-			showInfo("Backup file:" + target)
+			cli.ShowInfo("Backup file:" + target)
 
 		}
 
@@ -118,7 +119,7 @@ func ThreadfinBackup() (archiv string, err error) {
 
 	err = zipFiles(sourceFiles, target)
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 
@@ -145,13 +146,13 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	// Neue Config laden um den Port und die Version zu überprüfen
 	newConfig, err := loadJSONFileToMap(tmpRestore + "settings.json")
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 
 	backupVersion = newConfig["version"].(string)
 	if backupVersion < config.System.Compatibility {
-		err = errors.New(getErrMsg(1013))
+		err = errors.New(cli.GetErrMsg(1013))
 		return
 	}
 
@@ -164,7 +165,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	// Neue Config laden um den Port und die Version zu überprüfen
 	newConfig, err = loadJSONFileToMap(config.System.Folder.Config + "settings.json")
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 
@@ -174,20 +175,20 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	if newPort == oldPort {
 
 		if err != nil {
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 		}
 
 		loadSettings()
 
 		err := Init()
 		if err != nil {
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 			return "", err
 		}
 
 		err = StartSystem(true)
 		if err != nil {
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 			return "", err
 		}
 
@@ -232,9 +233,9 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 	var confirm string
 
 	println()
-	showInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
-	showInfo(fmt.Sprintf("Backup File:%s", archive))
-	showInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
+	cli.ShowInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
+	cli.ShowInfo(fmt.Sprintf("Backup File:%s", archive))
+	cli.ShowInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
 	println()
 
 	fmt.Print("All data will be replaced with those from the backup. Should the files be restored? [yes|no]:")
@@ -267,7 +268,7 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 			return
 		}
 
-		showHighlight(fmt.Sprintf("Restor:Backup was successfully restored. %s can now be started normally", config.System.Name))
+		cli.ShowHighlight(fmt.Sprintf("Restor:Backup was successfully restored. %s can now be started normally", config.System.Name))
 
 	}
 	return

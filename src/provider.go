@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	m3u "threadfin/src/internal/m3u-parser"
 )
@@ -95,12 +96,12 @@ func getProviderData(fileType, fileID string) (err error) {
 		// Datei extrahieren
 		body, err = extractGZIP(body, fileSource)
 		if err != nil {
-			ShowError(err, 000)
+			cli.ShowError(err, 000)
 			return
 		}
 
 		// Daten überprüfen
-		showInfo("Check File:" + fileSource)
+		cli.ShowInfo("Check File:" + fileSource)
 
 		switch fileType {
 
@@ -208,7 +209,7 @@ func getProviderData(fileType, fileID string) (err error) {
 		case "hdhr":
 
 			// Laden vom HDHomeRun Tuner
-			showInfo("Tuner:" + fileSource)
+			cli.ShowInfo("Tuner:" + fileSource)
 			var tunerURL = "http://" + fileSource + "/lineup.json"
 			serverFileName, body, err = downloadFileFromServer(tunerURL, httpProxyUrl)
 
@@ -217,13 +218,13 @@ func getProviderData(fileType, fileID string) (err error) {
 			if strings.Contains(fileSource, "http://") || strings.Contains(fileSource, "https://") {
 
 				// Laden vom Remote Server
-				showInfo("Download:" + fileSource)
+				cli.ShowInfo("Download:" + fileSource)
 				serverFileName, body, err = downloadFileFromServer(fileSource, httpProxyUrl)
 
 			} else {
 
 				// Laden einer lokalen Datei
-				showInfo("Open:" + fileSource)
+				cli.ShowInfo("Open:" + fileSource)
 
 				err = checkFile(fileSource)
 				if err == nil {
@@ -239,14 +240,14 @@ func getProviderData(fileType, fileID string) (err error) {
 
 			err = saveDateFromProvider(fileSource, serverFileName, dataID, body)
 			if err == nil {
-				showInfo("Save File:" + fileSource + " [ID: " + dataID + "]")
+				cli.ShowInfo("Save File:" + fileSource + " [ID: " + dataID + "]")
 			}
 
 		}
 
 		if err != nil {
 
-			ShowError(err, 000)
+			cli.ShowError(err, 000)
 			var downloadErr = err
 
 			if newProvider == false {
@@ -258,7 +259,7 @@ func getProviderData(fileType, fileID string) (err error) {
 				if err == nil {
 
 					if len(fileID) == 0 {
-						showWarning(1011)
+						cli.ShowWarning(1011)
 					}
 
 					err = downloadErr
@@ -377,7 +378,7 @@ func downloadFileFromServer(providerURL string, proxyUrl string) (filename strin
 		var f = strings.Replace(value[1], `"`, "", -1)
 		f = strings.Replace(f, `;`, "", -1)
 		filename = f
-		showInfo("Header filename:" + filename)
+		cli.ShowInfo("Header filename:" + filename)
 	} else {
 		var cleanFilename = strings.SplitN(getFilenameFromPath(providerURL), "?", 2)
 		filename = cleanFilename[0]

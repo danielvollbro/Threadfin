@@ -155,7 +155,7 @@ ffmpegOut, _ := run.StderrPipe()
 
 		ffmpegOut, err = run.StdoutPipe()
 		if err != nil {
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 			return
 		}
 
@@ -179,7 +179,7 @@ ffmpegOut, _ := run.StderrPipe()
 
 		if err != nil && err != io.EOF {
 
-			ShowError(err, 0)
+			cli.ShowError(err, 0)
 			addErrorToStream(err)
 			return
 
@@ -203,7 +203,7 @@ ffmpegOut, _ := run.StderrPipe()
 
 				if _, err := bufferFile.Write(buffer[:]); err != nil {
 
-					ShowError(err, 0)
+					cli.ShowError(err, 0)
 					addErrorToStream(err)
 					run.Process.Kill()
 					return
@@ -213,7 +213,7 @@ ffmpegOut, _ := run.StderrPipe()
 				buffer = make([]byte, 1024*Settings.BufferSize*2)
 
 				debug = fmt.Sprintf("Buffer Status:Done (%s)", tmpFile)
-				showDebug(debug, 2)
+				cli.ShowDebug(debug, 2)
 
 				bufferFile.Close()
 
@@ -232,7 +232,7 @@ ffmpegOut, _ := run.StderrPipe()
 
 					err = os.RemoveAll(stream.Folder)
 					if err != nil {
-						ShowError(err, 4005)
+						cli.ShowError(err, 4005)
 					}
 
 					return
