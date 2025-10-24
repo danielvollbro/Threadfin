@@ -892,7 +892,11 @@ func mapping() (err error) {
 						for _, filter := range config.Settings.Filter {
 							filter_json, _ := json.Marshal(filter)
 							f := structs.FilterStruct{}
-							json.Unmarshal(filter_json, &f)
+							err = json.Unmarshal(filter_json, &f)
+							if err != nil {
+								log.Println("XEPG:mapping:Error unmarshalling filter:", err)
+								return
+							}
 							filters = append(filters, f)
 						}
 						for _, filter := range filters {
@@ -915,7 +919,11 @@ func mapping() (err error) {
 				for _, filter := range config.Settings.Filter {
 					filter_json, _ := json.Marshal(filter)
 					f := structs.FilterStruct{}
-					json.Unmarshal(filter_json, &f)
+					err = json.Unmarshal(filter_json, &f)
+					if err != nil {
+						log.Println("XEPG:mapping:Error unmarshalling filter:", err)
+						return
+					}
 					filters = append(filters, f)
 				}
 				for _, filter := range filters {
@@ -1174,7 +1182,11 @@ func getProgramData(xepgChannel structs.XEPGChannelStruct) (xepgXML structs.XMLT
 			for _, filter := range config.Settings.Filter {
 				filter_json, _ := json.Marshal(filter)
 				f := structs.FilterStruct{}
-				json.Unmarshal(filter_json, &f)
+				err = json.Unmarshal(filter_json, &f)
+				if err != nil {
+					log.Println("XEPG:getProgramData:Error unmarshalling filter:", err)
+					return
+				}
 				filters = append(filters, f)
 			}
 

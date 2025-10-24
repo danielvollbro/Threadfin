@@ -1043,7 +1043,10 @@ func API(w http.ResponseWriter, r *http.Request) {
 		responseAPIError(err)
 	}
 
-	w.Write([]byte(mapToJSON(response)))
+	_, err = w.Write([]byte(mapToJSON(response)))
+	if err != nil {
+		cli.ShowError(err, 000)
+	}
 }
 
 // Download : Datei Download
@@ -1059,8 +1062,15 @@ func Download(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	os.RemoveAll(config.System.Folder.Temp + getFilenameFromPath(path))
-	w.Write([]byte(content))
+	err = os.RemoveAll(config.System.Folder.Temp + getFilenameFromPath(path))
+	if err != nil {
+		cli.ShowError(err, 000)
+	}
+
+	_, err = w.Write([]byte(content))
+	if err != nil {
+		cli.ShowError(err, 000)
+	}
 }
 
 func setDefaultResponseData(response structs.ResponseStruct, data bool) (defaults structs.ResponseStruct) {
@@ -1165,7 +1175,11 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(mapToJSON(response)))
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
+		return
 	}
 
 	for _, c := range xepg {

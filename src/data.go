@@ -251,7 +251,10 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 		if createXEPGFiles {
 
 			go func() {
-				createXMLTVFile()
+				err = createXMLTVFile()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
 				createM3UFile()
 			}()
 
@@ -535,7 +538,10 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 	if config.System.ScanInProgress == 0 {
 
 		config.System.ScanInProgress = 1
-		createXMLTVFile()
+		err = createXMLTVFile()
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
 		createM3UFile()
 		config.System.ScanInProgress = 0
 		cli.ShowInfo("XEPG: Ready to use")
@@ -560,7 +566,10 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 			}
 
 			config.System.ScanInProgress = 1
-			createXMLTVFile()
+			err = createXMLTVFile()
+			if err != nil {
+				cli.ShowError(err, 0)
+			}
 			createM3UFile()
 			config.System.ScanInProgress = 0
 			cli.ShowInfo("XEPG: Ready to use")

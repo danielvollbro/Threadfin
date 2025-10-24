@@ -20,7 +20,7 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 		stream = make(map[string]string)
 		var exceptForParameter = `[a-z-A-Z&=]*(".*?")`
 		var exceptForChannelName = `,([^\n]*|,[^\r]*)`
-		var lines = strings.Split(strings.Replace(channel, "\r\n", "\n", -1), "\n")
+		var lines = strings.Split(strings.ReplaceAll(channel, "\r\n", "\n"), "\n")
 
 		// Remove lines starting with # and empty lines
 		for i := len(lines) - 1; i >= 0; i-- {
@@ -39,7 +39,7 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 			var streamParameter = p.FindAllString(lines[0], -1)
 			for _, p := range streamParameter {
 				lines[0] = strings.Replace(lines[0], p, "", 1)
-				p = strings.Replace(p, `"`, "", -1)
+				p = strings.ReplaceAll(p, `"`, "")
 				var parameter = strings.SplitN(p, "=", 2)
 				if len(parameter) == 2 {
 					// Save TVG Key in lowercase
@@ -114,8 +114,8 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 	}
 
 	if strings.Contains(content, "#EXTM3U") {
-		content = strings.Replace(content, ":-1", "", -1)
-		content = strings.Replace(content, "'", "\"", -1)
+		content = strings.ReplaceAll(content, ":-1", "")
+		content = strings.ReplaceAll(content, "'", "\"")
 		var channels = strings.Split(content, "#EXTINF")
 
 		channels = append(channels[:0], channels[1:]...)
