@@ -214,7 +214,11 @@ func buildXEPG(background bool) {
 
 	} else {
 
-		getLineup()
+		_, err = getLineup()
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
+
 		config.System.ScanInProgress = 0
 
 	}
@@ -392,7 +396,11 @@ func createXEPGDatabase() (err error) {
 
 	// Clear streaming URL cache
 	config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
-	saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	err = saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	if err != nil {
+		cli.ShowError(err, 000)
+		return err
+	}
 
 	config.Data.Cache.Streams.Active = make([]string, 0, config.System.UnfilteredChannelLimit)
 	config.Settings = structs.SettingsStruct{}
@@ -812,6 +820,7 @@ func createXEPGDatabase() (err error) {
 
 	err = saveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
 	if err != nil {
+		cli.ShowError(err, 000)
 		return
 	}
 
@@ -1007,6 +1016,7 @@ func mapping() (err error) {
 
 	err = saveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
 	if err != nil {
+		cli.ShowError(err, 000)
 		return
 	}
 
@@ -1834,7 +1844,10 @@ func createM3UFile() {
 		cli.ShowError(err, 000)
 	}
 
-	saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	err = saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	if err != nil {
+		cli.ShowError(err, 000)
+	}
 }
 
 // XEPG Datenbank bereinigen
