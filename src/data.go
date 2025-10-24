@@ -60,10 +60,6 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 				}
 
-				if len(newUpdateTimes) == 0 {
-					//newUpdateTimes = append(newUpdateTimes, "0000")
-				}
-
 				value = newUpdateTimes
 
 			case "cache.images":
@@ -425,8 +421,6 @@ func deleteLocalProviderFiles(dataID, fileType string) {
 
 // Filtereinstellungen speichern (WebUI)
 func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
-	var filterMap = make(map[int64]interface{})
-	var newData = make(map[int64]interface{})
 	var defaultFilter structs.FilterStruct
 	var newFilter = false
 
@@ -434,8 +428,8 @@ func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct,
 	defaultFilter.CaseSensitive = false
 	defaultFilter.LiveEvent = false
 
-	filterMap = config.Settings.Filter
-	newData = request.Filter
+	var filterMap = config.Settings.Filter
+	var newData = request.Filter
 	var createNewID = func() (id int64) {
 
 	newID:
@@ -668,8 +662,6 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 			var data = make(map[string]interface{})
 			var indicator, dataID string
 
-			filesMap = make(map[string]interface{})
-
 			data["type"] = key
 			data["new"] = true
 
@@ -824,7 +816,7 @@ func buildDatabaseDVR() (err error) {
 		for n, i := range playlistFile {
 
 			var channels []interface{}
-			var groupTitle, tvgID, uuid int = 0, 0, 0
+			var groupTitle, tvgID, uuid = 0, 0, 0
 			var keys = []string{"group-title", "tvg-id", "uuid"}
 			var compatibility = make(map[string]int)
 

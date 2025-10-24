@@ -9,12 +9,12 @@ import (
 )
 
 type M3UStream struct {
-	GroupTitle string `json:"group-title,required"`
-	Name       string `json:"name,required"`
-	TvgID      string `json:"tvg-id,required"`
-	TvgLogo    string `json:"tvg-logo,required"`
-	TvgName    string `json:"tvg-name,required"`
-	URL        string `json:"url,required"`
+	GroupTitle string `json:"group-title"`
+	Name       string `json:"name"`
+	TvgID      string `json:"tvg-id"`
+	TvgLogo    string `json:"tvg-logo"`
+	TvgName    string `json:"tvg-name"`
+	URL        string `json:"url"`
 	UUIDKey    string `json:"_uuid.key,omitempty"`
 	UUIDValue  string `json:"_uuid.value,omitempty"`
 }
@@ -58,26 +58,26 @@ func checkStream(streamInterface []interface{}) (err error) {
 			err = json.Unmarshal(jsonString, &m3uStream)
 			if err == nil {
 
-				log.Print(fmt.Sprintf("Stream:        %d", i))
-				log.Print(fmt.Sprintf("Name*:         %s", m3uStream.Name))
-				log.Print(fmt.Sprintf("URL*:          %s", m3uStream.URL))
-				log.Print(fmt.Sprintf("tvg-name:      %s", m3uStream.TvgName))
-				log.Print(fmt.Sprintf("tvg-id**:      %s", m3uStream.TvgID))
-				log.Print(fmt.Sprintf("tvg-logo:      %s", m3uStream.TvgLogo))
-				log.Print(fmt.Sprintf("group-title**: %s", m3uStream.GroupTitle))
+				log.Printf("Stream:        %d\n", i)
+				log.Printf("Name*:         %s\n", m3uStream.Name)
+				log.Printf("URL*:          %s\n", m3uStream.URL)
+				log.Printf("tvg-name:      %s\n", m3uStream.TvgName)
+				log.Printf("tvg-id**:      %s\n", m3uStream.TvgID)
+				log.Printf("tvg-logo:      %s\n", m3uStream.TvgLogo)
+				log.Printf("group-title**: %s\n", m3uStream.GroupTitle)
 
 				if len(m3uStream.UUIDKey) > 0 {
-					log.Print(fmt.Sprintf("UUID key***:   %s", m3uStream.UUIDKey))
-					log.Print(fmt.Sprintf("UUID value:    %s", m3uStream.UUIDValue))
+					log.Printf("UUID key***:   %s\n", m3uStream.UUIDKey)
+					log.Printf("UUID value:    %s\n", m3uStream.UUIDValue)
 				} else {
-					log.Print(fmt.Sprintf("UUID key:    false"))
+					log.Println("UUID key:    false")
 				}
 
 			}
 
 		}
 
-		log.Println(fmt.Sprintf("- - - - - (*: Required) | (**: Nice to have) | (***: Love it) - - - - -"))
+		log.Println("- - - - - (*: Required) | (**: Nice to have) | (***: Love it) - - - - -")
 	}
 
 	return

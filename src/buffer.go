@@ -570,7 +570,7 @@ func getBufTmpFiles(stream *structs.ThisStream) (tmpFiles []string) {
 
 			for _, file := range files {
 
-				var fileID = strings.Replace(file.Name(), ".ts", "", -1)
+				var fileID = strings.ReplaceAll(file.Name(), ".ts", "")
 				var f, err = strconv.ParseFloat(fileID, 64)
 
 				if err == nil {
@@ -754,7 +754,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		case "ffmpeg":
 
 			if config.Settings.FFmpegForceHttp {
-				url = strings.Replace(url, "https://", "http://", -1)
+				url = strings.ReplaceAll(url, "https://", "http://")
 				cli.ShowInfo("Forcing URL to HTTP for FFMPEG: " + url)
 			}
 
@@ -833,7 +833,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 
 			switch bufferType {
 			case "FFMPEG":
-				a = strings.Replace(a, "[URL]", url, -1)
+				a = strings.ReplaceAll(a, "[URL]", url)
 				if i == 0 {
 					if len(config.Settings.UserAgent) != 0 {
 						args = []string{"-user_agent", config.Settings.UserAgent}

@@ -266,7 +266,7 @@ func getProviderData(fileType, fileID string) (err error) {
 				}
 
 				// Fehler Counter um 1 erhöhen
-				var data = make(map[string]interface{})
+				data = make(map[string]interface{})
 				if value, ok := dataMap[dataID].(map[string]interface{}); ok {
 
 					data = value
@@ -284,7 +284,6 @@ func getProviderData(fileType, fileID string) (err error) {
 		// Berechnen der Fehlerquote
 		if !newProvider {
 			if value, ok := dataMap[dataID].(map[string]interface{}); ok {
-				var data = make(map[string]interface{})
 				data = value
 
 				if data["counter.error"].(float64) == 0 {

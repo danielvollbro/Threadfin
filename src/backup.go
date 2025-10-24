@@ -240,7 +240,11 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 
 	fmt.Print("All data will be replaced with those from the backup. Should the files be restored? [yes|no]:")
 
-	fmt.Scanln(&confirm)
+	_, err = fmt.Scanln(&confirm)
+	if err != nil {
+		cli.ShowError(err, 500)
+		return
+	}
 
 	switch strings.ToLower(confirm) {
 

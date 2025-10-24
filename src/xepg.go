@@ -297,8 +297,6 @@ func createXEPGMapping() {
 		}
 
 		config.Data.XMLTV.Mapping = tmpMap
-		tmpMap = make(map[string]interface{})
-
 	} else {
 
 		if !config.System.ConfigurationWizard {
@@ -308,7 +306,7 @@ func createXEPGMapping() {
 	}
 
 	// Auswahl für den Dummy erstellen
-	var dummy = make(map[string]interface{})
+	var dummy = make(map[string]any)
 	var times = []string{"30", "60", "90", "120", "180", "240", "360", "PPV"}
 
 	for _, i := range times {
@@ -617,7 +615,7 @@ func createXEPGDatabase() (err error) {
 
 		case false:
 			// Neuer Kanal
-			var firstFreeNumber float64 = config.Settings.MappingFirstChannel
+			var firstFreeNumber = config.Settings.MappingFirstChannel
 			// Check channel start number from Group Filter
 			filters := []structs.FilterStruct{}
 			for _, filter := range config.Settings.Filter {
@@ -988,10 +986,10 @@ func createXMLTVFile() (err error) {
 		return err
 	}
 
-	if _, err = writer.WriteString(fmt.Sprintf("  <generator>%s</generator>\n", xepgXML.Generator)); err != nil {
+	if _, err = fmt.Fprintf(writer, "  <generator>%s</generator>\n", xepgXML.Generator); err != nil {
 		return err
 	}
-	if _, err = writer.WriteString(fmt.Sprintf("  <source>%s</source>\n", xepgXML.Source)); err != nil {
+	if _, err = fmt.Fprintf(writer, "  <source>%s</source>\n", xepgXML.Source); err != nil {
 		return err
 	}
 
@@ -1222,7 +1220,6 @@ func createLiveProgram(xepgChannel structs.XEPGChannelStruct, channelId string) 
 	// Time examples: '11:59 PM', '6:30 AM', '11:59PM', '1PM'
 	re := regexp.MustCompile(`((\d{1,2}[./]\d{1,2})[-\s])*(\d{1,2}(:\d{2})*\s*(AM|PM)?(?:\s*(ET|CT|MT|PT|EST|CST|MST|PST))?)`)
 	matches := re.FindStringSubmatch(name)
-	layout := "2006.1.2 3:04 PM"
 	if len(matches) > 0 {
 		timePart := matches[len(matches)-2]
 		if timePart == "" {
@@ -1281,6 +1278,7 @@ func createLiveProgram(xepgChannel structs.XEPGChannelStruct, channelId string) 
 		}
 
 		// Determine layout based on time format
+		var layout string
 		if strings.Contains(timeString, ":") {
 			if strings.Contains(timeString, "AM") || strings.Contains(timeString, "PM") {
 				layout = "2006.1.2 3:04 PM"
@@ -1392,7 +1390,7 @@ func createDummyProgram(xepgChannel structs.XEPGChannelStruct) (dummyXMLTV struc
 
 	cli.ShowInfo("Create Dummy Guide:" + "Time offset" + offset + " - " + xepgChannel.XName)
 
-	var dummyLength int = 30 // Default to 30 minutes if parsing fails
+	var dummyLength = 30 // Default to 30 minutes if parsing fails
 	var err error
 	var dl = strings.Split(xepgChannel.XMapping, "_")
 	if dl[0] != "" {

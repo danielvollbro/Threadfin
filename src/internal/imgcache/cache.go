@@ -72,7 +72,7 @@ func New(path, cacheURL string, caching bool) (c *Cache, err error) {
 			} else if c.caching && http_domain != "" {
 				u, err := url.Parse(cacheURL)
 				if err == nil {
-					var baseUrl = ""
+					var baseUrl string
 					if strings.Contains(http_domain, ":") {
 						baseUrl = http_domain
 					} else {

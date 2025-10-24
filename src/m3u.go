@@ -42,8 +42,6 @@ func parsePlaylist(filename, fileType string) (channels []interface{}, err error
 
 // Streams filtern
 func filterThisStream(s interface{}) (status bool, liveEvent bool) {
-
-	status = false
 	var stream = s.(map[string]string)
 	var regexpYES = `[{]+[^.]+[}]`
 	var regexpNO = `!+[{]+[^.]+[}]`

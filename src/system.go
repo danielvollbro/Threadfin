@@ -243,7 +243,7 @@ func saveSettings(settings structs.SettingsStruct) (err error) {
 
 	config.Settings = settings
 
-	if config.System.Dev == true {
+	if config.System.Dev {
 		config.Settings.UUID = "2019-01-DEV-Threadfin!"
 	}
 
@@ -283,8 +283,6 @@ func setGlobalDomain(domain string) {
 		config.System.Addresses.M3U = cli.GetErrMsg(2106)
 		config.System.Addresses.XML = cli.GetErrMsg(2106)
 	}
-
-	return
 }
 
 // UUID generieren
@@ -295,7 +293,6 @@ func createUUID() (uuid string) {
 
 // Eindeutige Geräte ID für Plex generieren
 func setDeviceID() {
-
 	var id = config.Settings.UUID
 
 	switch config.Settings.Tuner {
@@ -305,8 +302,6 @@ func setDeviceID() {
 	default:
 		config.System.DeviceID = fmt.Sprintf("%s:%d", id, config.Settings.Tuner)
 	}
-
-	return
 }
 
 // Provider Streaming-URL zu Threadfin Streaming-URL konvertieren
@@ -377,10 +372,6 @@ func getStreamInfo(urlID string) (streamInfo structs.StreamInfo, err error) {
 
 	if s, ok := config.Data.Cache.StreamingURLS[urlID]; ok {
 		s.URL = strings.Trim(s.URL, "\r\n")
-		s.BackupChannel1 = s.BackupChannel1
-		s.BackupChannel2 = s.BackupChannel2
-		s.BackupChannel3 = s.BackupChannel3
-
 		streamInfo = s
 	} else {
 		err = errors.New("streaming error")

@@ -78,8 +78,7 @@ func createMapFromFiles(folder string) string {
 }
 
 func readFilesToMap(path string, info os.FileInfo, err error) error {
-
-	if info.IsDir() == false {
+	if !info.IsDir() {
 		var base64Str = fileToBase64(getLocalPath(path))
 		blankMap[path] = base64Str
 	}

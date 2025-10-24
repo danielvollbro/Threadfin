@@ -304,7 +304,7 @@ func convertToNewFilter(oldFilter []interface{}) (newFilterMap map[int]interface
 
 func setValueForUUID() (err error) {
 
-	xepg, err := loadJSONFileToMap(config.System.File.XEPG)
+	xepg, _ := loadJSONFileToMap(config.System.File.XEPG)
 
 	for _, c := range xepg {
 

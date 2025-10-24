@@ -49,7 +49,7 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 		}
 
 		// Change binary filename to .filename
-		binary, err := osext.Executable()
+		binary, _ := osext.Executable()
 		var filename = getFilenameFromPath(binary)
 		var path = getPlatformPath(binary)
 		var oldBinary = path + "_old_" + filename
@@ -116,7 +116,7 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 		}
 
 		// Set the permission
-		err = os.Chmod(binary, 0755)
+		os.Chmod(binary, 0755)
 
 		// Close the new file !Windows
 		out.Close()
