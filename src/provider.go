@@ -260,8 +260,6 @@ func getProviderData(fileType, fileID string) (err error) {
 					if len(fileID) == 0 {
 						cli.ShowWarning(1011)
 					}
-
-					err = downloadErr
 				}
 
 				// Fehler Counter um 1 erhöhen

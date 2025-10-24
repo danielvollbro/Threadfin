@@ -497,7 +497,11 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		case "saveFilesM3U":
 			// Reset cache for urls.json
 			var filename = getPlatformFile(config.System.Folder.Config + "urls.json")
-			saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
+			err = saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
+			if err != nil {
+				cli.ShowError(err, 000)
+				return
+			}
 			config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
 
 			err = saveFiles(request, "m3u")
@@ -509,7 +513,11 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		case "updateFileM3U":
 			// Reset cache for urls.json
 			var filename = getPlatformFile(config.System.Folder.Config + "urls.json")
-			saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
+			err = saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
+			if err != nil {
+				cli.ShowError(err, 000)
+				return
+			}
 			config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
 
 			err = updateFile(request, "m3u")

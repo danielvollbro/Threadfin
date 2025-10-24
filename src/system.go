@@ -102,7 +102,11 @@ func updateUrlsJson() {
 	}
 
 	if config.Settings.EpgSource == "XEPG" {
-		getProviderData("xmltv", "")
+		err = getProviderData("xmltv", "")
+		if err != nil {
+			cli.ShowError(err, 0)
+			return
+		}
 	}
 	err = buildDatabaseDVR()
 	if err != nil {
