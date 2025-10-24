@@ -61,9 +61,11 @@ func buildXEPG(background bool) {
 
 	// Clear streaming URL cache
 	config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
-	saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
-
-	var err error
+	err := saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	if err != nil {
+		cli.ShowError(err, 000)
+		return
+	}
 
 	config.Data.Cache.Images, err = imgcache.New(config.System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", config.System.ServerProtocol.WEB, config.System.Domain), config.Settings.CacheImages)
 	if err != nil {
@@ -79,10 +81,25 @@ func buildXEPG(background bool) {
 			go func() {
 
 				createXEPGMapping()
-				createXEPGDatabase()
-				mapping()
+				err = createXEPGDatabase()
+				if err != nil {
+					cli.ShowError(err, 000)
+					return
+				}
+
+				err = mapping()
+				if err != nil {
+					cli.ShowError(err, 000)
+					return
+				}
+
 				cleanupXEPG()
-				createXMLTVFile()
+				err = createXMLTVFile()
+				if err != nil {
+					cli.ShowError(err, 000)
+					return
+				}
+
 				createM3UFile()
 
 				cli.ShowInfo("XEPG: Ready to use")
