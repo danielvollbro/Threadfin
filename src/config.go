@@ -234,7 +234,11 @@ func StartSystem(updateProviderFiles bool) (err error) {
 		}
 
 		if config.Settings.EpgSource == "XEPG" {
-			getProviderData("xmltv", "")
+			err = getProviderData("xmltv", "")
+			if err != nil {
+				cli.ShowError(err, 0)
+				return
+			}
 		}
 
 	}

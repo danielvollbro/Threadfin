@@ -352,12 +352,18 @@ func createXEPGDatabase() (err error) {
 	if err != nil || len(settings) == 0 {
 		return
 	}
+
 	settings_json, err := json.Marshal(settings)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
 	}
-	json.Unmarshal(settings_json, &config.Settings)
+
+	err = json.Unmarshal(settings_json, &config.Settings)
+	if err != nil {
+		cli.ShowError(err, 000)
+		return
+	}
 
 	// Remove duplicate channels from existing XEPG database based on new hash logic
 	removeDuplicateChannels()
@@ -673,7 +679,11 @@ func createXEPGDatabase() (err error) {
 					for _, filter := range config.Settings.Filter {
 						filter_json, _ := json.Marshal(filter)
 						f := structs.FilterStruct{}
-						json.Unmarshal(filter_json, &f)
+						err = json.Unmarshal(filter_json, &f)
+						if err != nil {
+							log.Println("XEPG:createXEPGDatabase:Error unmarshalling filter:", err)
+							return
+						}
 						filters = append(filters, f)
 					}
 					for _, filter := range filters {
@@ -822,7 +832,12 @@ func mapping() (err error) {
 						for _, filter := range config.Settings.Filter {
 							filter_json, _ := json.Marshal(filter)
 							f := structs.FilterStruct{}
-							json.Unmarshal(filter_json, &f)
+							err = json.Unmarshal(filter_json, &f)
+							if err != nil {
+								log.Println("XEPG:mapping:Error unmarshalling filter:", err)
+								return
+							}
+
 							filters = append(filters, f)
 						}
 						for _, filter := range filters {

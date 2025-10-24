@@ -56,10 +56,13 @@ func ThreadfinAutoBackup() (err error) {
 
 		for i := 0; i < len(oldBackupFiles)-end; i++ {
 
-			os.RemoveAll(config.System.Folder.Backup + oldBackupFiles[i])
+			err = os.RemoveAll(config.System.Folder.Backup + oldBackupFiles[i])
+			if err != nil {
+				cli.ShowError(err, 0)
+			}
+
 			debug = fmt.Sprintf("Delete backup file:%s", oldBackupFiles[i])
 			cli.ShowDebug(debug, 1)
-
 		}
 
 		if config.Settings.BackupKeep == 0 {
@@ -202,7 +205,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	var url = config.System.URLBase + "/web/"
 	newWebURL = strings.Replace(url, ":"+oldPort, ":"+newPort, 1)
 
-	os.RemoveAll(tmpRestore)
+	err = os.RemoveAll(tmpRestore)
 
 	return
 }

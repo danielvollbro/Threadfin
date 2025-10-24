@@ -79,7 +79,12 @@ func zipFiles(sourceFiles []string, target string) error {
 			if err != nil {
 				return err
 			}
-			defer file.Close()
+			defer func() {
+				err = file.Close()
+			}()
+			if err != nil {
+				return err
+			}
 
 			_, err = io.Copy(writer, file)
 

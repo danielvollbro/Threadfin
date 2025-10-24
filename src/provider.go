@@ -369,8 +369,8 @@ func downloadFileFromServer(providerURL string, proxyUrl string) (filename strin
 	if index > -1 {
 		var headerFilename = resp.Header.Get("Content-Disposition")[index:]
 		var value = strings.Split(headerFilename, `=`)
-		var f = strings.Replace(value[1], `"`, "", -1)
-		f = strings.Replace(f, `;`, "", -1)
+		var f = strings.ReplaceAll(value[1], `"`, "")
+		f = strings.ReplaceAll(f, `;`, "")
 		filename = f
 		cli.ShowInfo("Header filename:" + filename)
 	} else {

@@ -190,7 +190,7 @@ func searchFileInOS(file string) (path string) {
 		out, err := cmd.CombinedOutput()
 		if err == nil {
 
-			var slice = strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")
+			var slice = strings.Split(strings.ReplaceAll(string(out), "\r\n", "\n"), "\n")
 
 			if len(slice) > 0 {
 				path = strings.Trim(slice[0], "\r\n")
@@ -295,7 +295,7 @@ func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
 		err = json.Unmarshal([]byte(content), &tmpMap)
 	}
 
-	f.Close()
+	err = f.Close()
 
 	return
 }
@@ -304,10 +304,19 @@ func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
 func readByteFromFile(file string) (content []byte, err error) {
 
 	f, err := os.Open(getPlatformFile(file))
-	defer f.Close()
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		err = f.Close()
+	}()
+	if err != nil {
+		return
+	}
 
 	content, err = io.ReadAll(f)
-	f.Close()
+	err = f.Close()
 
 	return
 }

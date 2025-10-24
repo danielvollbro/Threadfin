@@ -270,7 +270,14 @@ func buildM3U(groups []string) (m3u string, err error) {
 		if err != nil {
 			return "", err
 		}
-		defer file.Close()
+
+		defer func() {
+			err = file.Close()
+		}()
+		if err != nil {
+			return "", err
+		}
+
 		writer = bufio.NewWriterSize(file, 1<<20) // 1MB buffer
 		if _, err = writer.WriteString(header); err != nil {
 			return "", err

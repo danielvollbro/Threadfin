@@ -384,8 +384,12 @@ func DataImages(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", getContentType(filePath))
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(content)))
+
 	w.WriteHeader(200)
-	w.Write(content)
+	_, err = w.Write(content)
+	if err != nil {
+		cli.ShowError(err, 000)
+	}
 }
 
 // WS : Web Sockets /ws/
@@ -828,7 +832,10 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		content = parseTemplate(content, lang)
 	}
 
-	w.Write([]byte(content))
+	_, err = w.Write([]byte(content))
+	if err != nil {
+		cli.ShowError(err, 000)
+	}
 }
 
 // API : API request /api/
@@ -895,7 +902,10 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(mapToJSON(response)))
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
 	}
 
 	response.Status = true

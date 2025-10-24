@@ -215,13 +215,19 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				switch config.Settings.CacheImages {
 
 				case false:
-					createXMLTVFile()
+					err = createXMLTVFile()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
 					createM3UFile()
 
 				case true:
 					go func() {
 
-						createXMLTVFile()
+						err := createXMLTVFile()
+						if err != nil {
+							cli.ShowError(err, 0)
+						}
 						createM3UFile()
 
 						config.System.ImageCachingInProgress = 1
@@ -416,7 +422,10 @@ func deleteLocalProviderFiles(dataID, fileType string) {
 
 	if _, ok := removeData[dataID]; ok {
 		delete(removeData, dataID)
-		os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
+		err := os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
 	}
 }
 

@@ -41,14 +41,14 @@ func SSDP() (err error) {
 
 	go func(adv *ssdp.Advertiser) {
 
-		aliveTick := time.Tick(300 * time.Second)
+		aliveTick := time.NewTicker(300 * time.Second)
 
 	loop:
 		for {
 
 			select {
 
-			case <-aliveTick:
+			case <-aliveTick.C:
 				err = adv.Alive()
 				if err != nil {
 					cli.ShowError(err, 0)
