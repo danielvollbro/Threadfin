@@ -175,6 +175,9 @@ func getLineup() (jsonContent []byte, err error) {
 	}
 
 	jsonContent, err = json.MarshalIndent(lineup, "", "  ")
+	if err != nil {
+		return
+	}
 
 	config.Data.Cache.PMS = nil
 

@@ -47,7 +47,10 @@ func BuildGoFile() error {
 	content += createMapFromFiles(htmlFolder) + "\n"
 
 	content += "}" + "\n\n"
-	writeStringToFile(goFile, content)
+	err = writeStringToFile(goFile, content)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

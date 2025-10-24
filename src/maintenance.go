@@ -40,8 +40,15 @@ func maintenance() {
 					}
 
 					// Playlist und XMLTV Dateien aktualisieren
-					getProviderData("m3u", "")
-					getProviderData("hdhr", "")
+					err = getProviderData("m3u", "")
+					if err != nil {
+						cli.ShowError(err, 000)
+					}
+
+					err = getProviderData("hdhr", "")
+					if err != nil {
+						cli.ShowError(err, 000)
+					}
 
 					if config.Settings.EpgSource == "XEPG" {
 						getProviderData("xmltv", "")
