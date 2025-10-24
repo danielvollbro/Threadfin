@@ -12,24 +12,22 @@ import (
 
 // Precompiled regex patterns for better performance
 var (
-	parameterRegex    = regexp.MustCompile(`[a-z-A-Z&=]*(".*?")`)
-	channelNameRegex  = regexp.MustCompile(`,([^\n]*|,[^\r]*)`)
-	crlfReplacer      = strings.NewReplacer("\r\n", "\n")
-	quoteReplacer     = strings.NewReplacer(`"`, "")
-	commaReplacer     = strings.NewReplacer(`,`, "")
-	oldM3UReplacer    = strings.NewReplacer(":-1", "", "'", `"`)
+	parameterRegex   = regexp.MustCompile(`[a-z-A-Z&=]*(".*?")`)
+	channelNameRegex = regexp.MustCompile(`,([^\n]*|,[^\r]*)`)
+	quoteReplacer    = strings.NewReplacer(`"`, "")
+	commaReplacer    = strings.NewReplacer(`,`, "")
 )
 
 // MakeInterfaceFromM3UOptimized : Optimized version for large M3U files
 func MakeInterfaceFromM3UOptimized(byteStream []byte) (allChannels []interface{}, err error) {
 	// Use bytes.Contains for faster validation
 	if bytes.Contains(byteStream, []byte("#EXT-X-TARGETDURATION")) || bytes.Contains(byteStream, []byte("#EXT-X-MEDIA-SEQUENCE")) {
-		err = errors.New("Invalid M3U file, an extended M3U file is required.")
+		err = errors.New("invalid M3U file, an extended M3U file is required")
 		return
 	}
 
 	if !bytes.Contains(byteStream, []byte("#EXTM3U")) {
-		err = errors.New("Invalid M3U file, an extended M3U file is required.")
+		err = errors.New("invalid M3U file, an extended M3U file is required")
 		return
 	}
 

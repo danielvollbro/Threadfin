@@ -14,7 +14,9 @@ import (
 	"strconv"
 	"strings"
 
+	"threadfin/src/internal/config"
 	m3u "threadfin/src/internal/m3u-parser"
+	"threadfin/src/internal/structs"
 )
 
 // Playlisten parsen
@@ -48,7 +50,7 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 
 	liveEvent = false
 
-	for _, filter := range Data.Filter {
+	for _, filter := range config.Data.Filter {
 
 		if filter.Rule == "" {
 			continue
@@ -190,17 +192,17 @@ func checkConditions(streamValues, conditions, coType string) (status bool) {
 // Threadfin M3U Datei erstellen
 func buildM3U(groups []string) (m3u string, err error) {
 
-	var imgc = Data.Cache.Images
+	var imgc = config.Data.Cache.Images
 	// Preserve every active channel as a distinct entry by iteration order, not keyed by number
 	type channelEntry struct {
 		idx int
-		ch  XEPGChannelStruct
+		ch  structs.XEPGChannelStruct
 	}
 	var entries []channelEntry
 
 	// Build a map of group -> expectedCount from Data.Playlist.M3U.Groups.Text (format: "Group (N)")
 	expectedGroupCount := make(map[string]int)
-	for _, label := range Data.Playlist.M3U.Groups.Text {
+	for _, label := range config.Data.Playlist.M3U.Groups.Text {
 		// label example: "nfl (42)"
 		open := strings.LastIndex(label, " (")
 		close := strings.LastIndex(label, ")")
@@ -215,8 +217,8 @@ func buildM3U(groups []string) (m3u string, err error) {
 
 	// Count deactivated channels per group
 	deactivatedPerGroup := make(map[string]int)
-	for _, dxc := range Data.XEPG.Channels {
-		var ch XEPGChannelStruct
+	for _, dxc := range config.Data.XEPG.Channels {
+		var ch structs.XEPGChannelStruct
 		if err := json.Unmarshal([]byte(mapToJSON(dxc)), &ch); err == nil {
 			group := ch.XGroupTitle
 			if ch.XCategory != "" {
@@ -231,8 +233,8 @@ func buildM3U(groups []string) (m3u string, err error) {
 		}
 	}
 
-	for _, dxc := range Data.XEPG.Channels {
-		var xepgChannel XEPGChannelStruct
+	for _, dxc := range config.Data.XEPG.Channels {
+		var xepgChannel structs.XEPGChannelStruct
 		err := json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
 		if err == nil {
 			if xepgChannel.TvgName == "" {
@@ -254,9 +256,9 @@ func buildM3U(groups []string) (m3u string, err error) {
 	}
 
 	// Prepare header
-	var xmltvURL = fmt.Sprintf("%s://%s/xmltv/threadfin.xml", System.ServerProtocol.XML, System.Domain)
-	if Settings.ForceHttps && Settings.HttpsThreadfinDomain != "" {
-		xmltvURL = fmt.Sprintf("https://%s/xmltv/threadfin.xml", Settings.HttpsThreadfinDomain)
+	var xmltvURL = fmt.Sprintf("%s://%s/xmltv/threadfin.xml", config.System.ServerProtocol.XML, config.System.Domain)
+	if config.Settings.ForceHttps && config.Settings.HttpsThreadfinDomain != "" {
+		xmltvURL = fmt.Sprintf("https://%s/xmltv/threadfin.xml", config.Settings.HttpsThreadfinDomain)
 	}
 	header := fmt.Sprintf(`#EXTM3U url-tvg="%s" x-tvg-url="%s"`+"\n", xmltvURL, xmltvURL)
 
@@ -264,7 +266,7 @@ func buildM3U(groups []string) (m3u string, err error) {
 	var writer *bufio.Writer
 	var file *os.File
 	if len(groups) == 0 {
-		filename := System.Folder.Data + "threadfin.m3u"
+		filename := config.System.Folder.Data + "threadfin.m3u"
 		file, err = os.Create(filename)
 		if err != nil {
 			return "", err
@@ -329,8 +331,8 @@ func buildM3U(groups []string) (m3u string, err error) {
 			}
 		}
 
-        // Disabling so not to rewrite stream to https domain when disable stream from https set
-		if Settings.ForceHttps && Settings.HttpsThreadfinDomain != "" && Settings.ExcludeStreamHttps == false {
+		// Disabling so not to rewrite stream to https domain when disable stream from https set
+		if config.Settings.ForceHttps && config.Settings.HttpsThreadfinDomain != "" && config.Settings.ExcludeStreamHttps == false {
 			u, err := url.Parse(channel.URL)
 			if err == nil {
 				u.Scheme = "https"
@@ -339,16 +341,16 @@ func buildM3U(groups []string) (m3u string, err error) {
 					u.Host = host_split[0]
 				}
 				if u.RawQuery != "" {
-					channel.URL = fmt.Sprintf("https://%s:%d%s?%s", u.Host, Settings.HttpsPort, u.Path, u.RawQuery)
+					channel.URL = fmt.Sprintf("https://%s:%d%s?%s", u.Host, config.Settings.HttpsPort, u.Path, u.RawQuery)
 				} else {
-					channel.URL = fmt.Sprintf("https://%s:%d%s", u.Host, Settings.HttpsPort, u.Path)
+					channel.URL = fmt.Sprintf("https://%s:%d%s", u.Host, config.Settings.HttpsPort, u.Path)
 				}
 			}
-	    }
+		}
 
 		logo := ""
 		if channel.TvgLogo != "" {
-			logo = imgc.Image.GetURL(channel.TvgLogo, Settings.HttpThreadfinDomain, Settings.Port, Settings.ForceHttps, Settings.HttpsPort, Settings.HttpsThreadfinDomain)
+			logo = imgc.Image.GetURL(channel.TvgLogo, config.Settings.HttpThreadfinDomain, config.Settings.Port, config.Settings.ForceHttps, config.Settings.HttpsPort, config.Settings.HttpsThreadfinDomain)
 		}
 		var parameter = fmt.Sprintf(`#EXTINF:0 channelID="%s" tvg-chno="%s" tvg-name="%s" tvg-id="%s" tvg-logo="%s" group-title="%s",%s`+"\n", channel.XEPG, channel.XChannelID, channel.XName, channel.XChannelID, logo, group, channel.XName)
 		var stream, err = createStreamingURL("M3U", channel.FileM3UID, channel.XChannelID, channel.XName, channel.URL, channel.BackupChannel1, channel.BackupChannel2, channel.BackupChannel3)
@@ -382,9 +384,9 @@ func buildM3U(groups []string) (m3u string, err error) {
 	return
 }
 
-func probeChannel(request RequestStruct) (string, string, string, error) {
+func probeChannel(request structs.RequestStruct) (string, string, string, error) {
 
-	ffmpegPath := Settings.FFmpegPath
+	ffmpegPath := config.Settings.FFmpegPath
 	ffprobePath := strings.Replace(ffmpegPath, "ffmpeg", "ffprobe", 1)
 
 	cmd := exec.Command(ffprobePath, "-v", "error", "-show_streams", "-of", "json", request.ProbeURL)
@@ -393,7 +395,7 @@ func probeChannel(request RequestStruct) (string, string, string, error) {
 		return "", "", "", fmt.Errorf("failed to execute ffprobe: %v", err)
 	}
 
-	var ffprobeOutput FFProbeOutput
+	var ffprobeOutput structs.FFProbeOutput
 	err = json.Unmarshal(output, &ffprobeOutput)
 	if err != nil {
 		return "", "", "", fmt.Errorf("failed to parse ffprobe output: %v", err)

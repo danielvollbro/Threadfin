@@ -8,18 +8,20 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"threadfin/src/internal/config"
+	"threadfin/src/internal/structs"
 	"time"
 )
 
 // Entwicklerinfos anzeigen
 func showDevInfo() {
 
-	if System.Dev == true {
+	if config.System.Dev == true {
 
 		fmt.Print("\033[31m")
 		fmt.Println("* * * * * D E V   M O D E * * * * *")
-		fmt.Println("Version: ", System.Version)
-		fmt.Println("Build:   ", System.Build)
+		fmt.Println("Version: ", config.System.Version)
+		fmt.Println("Build:   ", config.System.Build)
 		fmt.Println("* * * * * * * * * * * * * * * * * *")
 		fmt.Print("\033[0m")
 		fmt.Println()
@@ -32,7 +34,7 @@ func showDevInfo() {
 // Alle Systemordner erstellen
 func createSystemFolders() (err error) {
 
-	e := reflect.ValueOf(&System.Folder).Elem()
+	e := reflect.ValueOf(&config.System.Folder).Elem()
 
 	for i := 0; i < e.NumField(); i++ {
 
@@ -52,9 +54,9 @@ func createSystemFolders() (err error) {
 // Alle Systemdateien erstellen
 func createSystemFiles() (err error) {
 	var debug string
-	for _, file := range SystemFiles {
+	for _, file := range config.SystemFiles {
 
-		var filename = getPlatformFile(System.Folder.Config + file)
+		var filename = getPlatformFile(config.System.Folder.Config + file)
 
 		err = checkFile(filename)
 		if err != nil {
@@ -72,15 +74,15 @@ func createSystemFiles() (err error) {
 		switch file {
 
 		case "authentication.json":
-			System.File.Authentication = filename
+			config.System.File.Authentication = filename
 		case "pms.json":
-			System.File.PMS = filename
+			config.System.File.PMS = filename
 		case "settings.json":
-			System.File.Settings = filename
+			config.System.File.Settings = filename
 		case "xepg.json":
-			System.File.XEPG = filename
+			config.System.File.XEPG = filename
 		case "urls.json":
-			System.File.URLS = filename
+			config.System.File.URLS = filename
 
 		}
 
@@ -94,7 +96,7 @@ func updateUrlsJson() {
 	getProviderData("m3u", "")
 	getProviderData("hdhr", "")
 
-	if Settings.EpgSource == "XEPG" {
+	if config.Settings.EpgSource == "XEPG" {
 		getProviderData("xmltv", "")
 	}
 	err := buildDatabaseDVR()
@@ -107,11 +109,11 @@ func updateUrlsJson() {
 }
 
 // Einstellungen laden und default Werte setzen (Threadfin)
-func loadSettings() (settings SettingsStruct, err error) {
+func loadSettings() (settings structs.SettingsStruct, err error) {
 
-	settingsMap, err := loadJSONFileToMap(System.File.Settings)
+	settingsMap, err := loadJSONFileToMap(config.System.File.Settings)
 	if err != nil {
-		return SettingsStruct{}, err
+		return structs.SettingsStruct{}, err
 	}
 
 	// Deafult Werte setzten
@@ -129,18 +131,18 @@ func loadSettings() (settings SettingsStruct, err error) {
 	defaults["authentication.web"] = false
 	defaults["authentication.xml"] = false
 	defaults["backup.keep"] = 10
-	defaults["backup.path"] = System.Folder.Backup
+	defaults["backup.path"] = config.System.Folder.Backup
 	defaults["buffer"] = "-"
 	defaults["buffer.size.kb"] = 1024
 	defaults["buffer.timeout"] = 500
 	defaults["cache.images"] = false
 	defaults["epgSource"] = "PMS"
-	defaults["ffmpeg.options"] = System.FFmpeg.DefaultOptions
-	defaults["vlc.options"] = System.VLC.DefaultOptions
+	defaults["ffmpeg.options"] = config.System.FFmpeg.DefaultOptions
+	defaults["vlc.options"] = config.System.VLC.DefaultOptions
 	defaults["files"] = dataMap
 	defaults["files.update"] = true
 	defaults["filter"] = make(map[string]interface{})
-	defaults["git.branch"] = System.Branch
+	defaults["git.branch"] = config.System.Branch
 	defaults["language"] = "en"
 	defaults["log.entries.ram"] = 500
 	defaults["mapping.first.channel"] = 1000
@@ -151,7 +153,7 @@ func loadSettings() (settings SettingsStruct, err error) {
 	defaults["ssdp"] = true
 	defaults["storeBufferInRAM"] = true
 	defaults["forceHttps"] = false
-    defaults["excludeStreamHttps"] = false
+	defaults["excludeStreamHttps"] = false
 	defaults["httpsPort"] = 443
 	defaults["httpsThreadfinDomain"] = ""
 	defaults["httpThreadfinDomain"] = ""
@@ -160,15 +162,15 @@ func loadSettings() (settings SettingsStruct, err error) {
 	defaults["epgCategoriesColors"] = "kids:mediumpurple|news:tomato|movie:royalblue|series:gold|sports:yellowgreen"
 	defaults["tuner"] = 1
 	defaults["update"] = []string{"0000"}
-	defaults["user.agent"] = System.Name
+	defaults["user.agent"] = config.System.Name
 	defaults["uuid"] = createUUID()
 	defaults["udpxy"] = ""
-	defaults["version"] = System.DBVersion
+	defaults["version"] = config.System.DBVersion
 	defaults["ThreadfinAutoUpdate"] = true
 	if isRunningInContainer() {
 		defaults["ThreadfinAutoUpdate"] = false
 	}
-	defaults["temp.path"] = System.Folder.Temp
+	defaults["temp.path"] = config.System.Folder.Temp
 
 	// Default Werte setzen
 	for key, value := range defaults {
@@ -178,16 +180,16 @@ func loadSettings() (settings SettingsStruct, err error) {
 	}
 	err = json.Unmarshal([]byte(mapToJSON(settingsMap)), &settings)
 	if err != nil {
-		return SettingsStruct{}, err
+		return structs.SettingsStruct{}, err
 	}
 
 	// Einstellungen von den Flags übernehmen
-	if len(System.Flag.Port) > 0 {
-		settings.Port = System.Flag.Port
+	if len(config.System.Flag.Port) > 0 {
+		settings.Port = config.System.Flag.Port
 	}
 
-	if len(System.Flag.Branch) > 0 {
-		settings.Branch = System.Flag.Branch
+	if len(config.System.Flag.Branch) > 0 {
+		settings.Branch = config.System.Flag.Branch
 		showInfo(fmt.Sprintf("Git Branch:Switching Git Branch to -> %s", settings.Branch))
 	}
 
@@ -202,19 +204,19 @@ func loadSettings() (settings SettingsStruct, err error) {
 	// Initialze virutal filesystem for the Buffer
 	initBufferVFS()
 
-	settings.Version = System.DBVersion
+	settings.Version = config.System.DBVersion
 
 	err = saveSettings(settings)
 	if err != nil {
-		return SettingsStruct{}, err
+		return structs.SettingsStruct{}, err
 	}
 
 	// Warung wenn FFmpeg nicht gefunden wurde
-	if len(Settings.FFmpegPath) == 0 && Settings.Buffer == "ffmpeg" {
+	if len(config.Settings.FFmpegPath) == 0 && config.Settings.Buffer == "ffmpeg" {
 		showWarning(2020)
 	}
 
-	if len(Settings.VLCPath) == 0 && Settings.Buffer == "vlc" {
+	if len(config.Settings.VLCPath) == 0 && config.Settings.Buffer == "vlc" {
 		showWarning(2021)
 	}
 
@@ -222,31 +224,31 @@ func loadSettings() (settings SettingsStruct, err error) {
 }
 
 // Einstellungen speichern (Threadfin)
-func saveSettings(settings SettingsStruct) (err error) {
+func saveSettings(settings structs.SettingsStruct) (err error) {
 
 	if settings.BackupKeep == 0 {
 		settings.BackupKeep = 10
 	}
 
 	if len(settings.BackupPath) == 0 {
-		settings.BackupPath = System.Folder.Backup
+		settings.BackupPath = config.System.Folder.Backup
 	}
 
 	if settings.BufferTimeout < 0 {
 		settings.BufferTimeout = 0
 	}
 
-	System.Folder.Temp = settings.TempPath + settings.UUID + string(os.PathSeparator)
+	config.System.Folder.Temp = settings.TempPath + settings.UUID + string(os.PathSeparator)
 
-	err = writeByteToFile(System.File.Settings, []byte(mapToJSON(settings)))
+	err = writeByteToFile(config.System.File.Settings, []byte(mapToJSON(settings)))
 	if err != nil {
 		return
 	}
 
-	Settings = settings
+	config.Settings = settings
 
-	if System.Dev == true {
-		Settings.UUID = "2019-01-DEV-Threadfin!"
+	if config.System.Dev == true {
+		config.Settings.UUID = "2019-01-DEV-Threadfin!"
 	}
 
 	setDeviceID()
@@ -257,33 +259,33 @@ func saveSettings(settings SettingsStruct) (err error) {
 // Zugriff über die Domain ermöglichen
 func setGlobalDomain(domain string) {
 
-	System.Domain = domain
+	config.System.Domain = domain
 
-	switch Settings.AuthenticationPMS {
+	switch config.Settings.AuthenticationPMS {
 	case true:
-		System.Addresses.DVR = "username:password@" + System.Domain
+		config.System.Addresses.DVR = "username:password@" + config.System.Domain
 	case false:
-		System.Addresses.DVR = System.Domain
+		config.System.Addresses.DVR = config.System.Domain
 	}
 
-	switch Settings.AuthenticationM3U {
+	switch config.Settings.AuthenticationM3U {
 	case true:
-		System.Addresses.M3U = System.ServerProtocol.M3U + "://" + System.Domain + "/m3u/threadfin.m3u?username=xxx&password=yyy"
+		config.System.Addresses.M3U = config.System.ServerProtocol.M3U + "://" + config.System.Domain + "/m3u/threadfin.m3u?username=xxx&password=yyy"
 	case false:
-		System.Addresses.M3U = System.ServerProtocol.M3U + "://" + System.Domain + "/m3u/threadfin.m3u"
+		config.System.Addresses.M3U = config.System.ServerProtocol.M3U + "://" + config.System.Domain + "/m3u/threadfin.m3u"
 	}
 
-	switch Settings.AuthenticationXML {
+	switch config.Settings.AuthenticationXML {
 	case true:
-		System.Addresses.XML = System.ServerProtocol.XML + "://" + System.Domain + "/xmltv/threadfin.xml?username=xxx&password=yyy"
+		config.System.Addresses.XML = config.System.ServerProtocol.XML + "://" + config.System.Domain + "/xmltv/threadfin.xml?username=xxx&password=yyy"
 	case false:
-		System.Addresses.XML = System.ServerProtocol.XML + "://" + System.Domain + "/xmltv/threadfin.xml"
+		config.System.Addresses.XML = config.System.ServerProtocol.XML + "://" + config.System.Domain + "/xmltv/threadfin.xml"
 	}
 
-	if Settings.EpgSource != "XEPG" {
-		log.Println("SOURCE: ", Settings.EpgSource)
-		System.Addresses.M3U = getErrMsg(2106)
-		System.Addresses.XML = getErrMsg(2106)
+	if config.Settings.EpgSource != "XEPG" {
+		log.Println("SOURCE: ", config.Settings.EpgSource)
+		config.System.Addresses.M3U = getErrMsg(2106)
+		config.System.Addresses.XML = getErrMsg(2106)
 	}
 
 	return
@@ -298,32 +300,32 @@ func createUUID() (uuid string) {
 // Eindeutige Geräte ID für Plex generieren
 func setDeviceID() {
 
-	var id = Settings.UUID
+	var id = config.Settings.UUID
 
-	switch Settings.Tuner {
+	switch config.Settings.Tuner {
 	case 1:
-		System.DeviceID = id
+		config.System.DeviceID = id
 
 	default:
-		System.DeviceID = fmt.Sprintf("%s:%d", id, Settings.Tuner)
+		config.System.DeviceID = fmt.Sprintf("%s:%d", id, config.Settings.Tuner)
 	}
 
 	return
 }
 
 // Provider Streaming-URL zu Threadfin Streaming-URL konvertieren
-func createStreamingURL(streamingType, playlistID, channelNumber, channelName, url string, backup_channel_1 *BackupStream, backup_channel_2 *BackupStream, backup_channel_3 *BackupStream) (streamingURL string, err error) {
+func createStreamingURL(streamingType, playlistID, channelNumber, channelName, url string, backup_channel_1 *structs.BackupStream, backup_channel_2 *structs.BackupStream, backup_channel_3 *structs.BackupStream) (streamingURL string, err error) {
 
-	var streamInfo StreamInfo
+	var streamInfo structs.StreamInfo
 	var serverProtocol string
 
-	if len(Data.Cache.StreamingURLS) == 0 {
-		Data.Cache.StreamingURLS = make(map[string]StreamInfo)
+	if len(config.Data.Cache.StreamingURLS) == 0 {
+		config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
 	}
 
 	var urlID = getMD5(fmt.Sprintf("%s-%s", playlistID, url))
 
-	if s, ok := Data.Cache.StreamingURLS[urlID]; ok {
+	if s, ok := config.Data.Cache.StreamingURLS[urlID]; ok {
 		streamInfo = s
 
 	} else {
@@ -336,48 +338,48 @@ func createStreamingURL(streamingType, playlistID, channelNumber, channelName, u
 		streamInfo.ChannelNumber = channelNumber
 		streamInfo.URLid = urlID
 
-		Data.Cache.StreamingURLS[urlID] = streamInfo
+		config.Data.Cache.StreamingURLS[urlID] = streamInfo
 
 	}
 
 	switch streamingType {
 
 	case "DVR":
-		serverProtocol = System.ServerProtocol.DVR
+		serverProtocol = config.System.ServerProtocol.DVR
 
 	case "M3U":
-		serverProtocol = System.ServerProtocol.M3U
+		serverProtocol = config.System.ServerProtocol.M3U
 
 	}
 
-	if Settings.ForceHttps {
-		if Settings.HttpsThreadfinDomain != "" {
+	if config.Settings.ForceHttps {
+		if config.Settings.HttpsThreadfinDomain != "" {
 			serverProtocol = "https"
-			System.Domain = Settings.HttpsThreadfinDomain
+			config.System.Domain = config.Settings.HttpsThreadfinDomain
 		}
 	}
 
-	streamingURL = fmt.Sprintf("%s://%s/stream/%s", serverProtocol, System.Domain, streamInfo.URLid)
+	streamingURL = fmt.Sprintf("%s://%s/stream/%s", serverProtocol, config.System.Domain, streamInfo.URLid)
 	return
 }
 
-func getStreamInfo(urlID string) (streamInfo StreamInfo, err error) {
+func getStreamInfo(urlID string) (streamInfo structs.StreamInfo, err error) {
 
-	if len(Data.Cache.StreamingURLS) == 0 {
+	if len(config.Data.Cache.StreamingURLS) == 0 {
 
-		tmp, err := loadJSONFileToMap(System.File.URLS)
+		tmp, err := loadJSONFileToMap(config.System.File.URLS)
 		if err != nil {
 			return streamInfo, err
 		}
 
-		err = json.Unmarshal([]byte(mapToJSON(tmp)), &Data.Cache.StreamingURLS)
+		err = json.Unmarshal([]byte(mapToJSON(tmp)), &config.Data.Cache.StreamingURLS)
 		if err != nil {
 			return streamInfo, err
 		}
 
 	}
 
-	if s, ok := Data.Cache.StreamingURLS[urlID]; ok {
+	if s, ok := config.Data.Cache.StreamingURLS[urlID]; ok {
 		s.URL = strings.Trim(s.URL, "\r\n")
 		s.BackupChannel1 = s.BackupChannel1
 		s.BackupChannel2 = s.BackupChannel2

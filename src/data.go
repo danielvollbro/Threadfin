@@ -12,13 +12,15 @@ import (
 	"time"
 
 	"threadfin/src/internal/authentication"
+	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
+	"threadfin/src/internal/structs"
 )
 
 // Einstellungen ändern (WebUI)
-func updateServerSettings(request RequestStruct) (settings SettingsStruct, err error) {
+func updateServerSettings(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
 
-	var oldSettings = jsonToMap(mapToJSON(Settings))
+	var oldSettings = jsonToMap(mapToJSON(config.Settings))
 	var newSettings = jsonToMap(mapToJSON(request.Settings))
 	var reloadData = false
 	var cacheImages = false
@@ -50,7 +52,7 @@ func updateServerSettings(request RequestStruct) (settings SettingsStruct, err e
 					_, err := time.Parse("1504", v.(string))
 					if err != nil {
 						ShowError(err, 1012)
-						return Settings, err
+						return config.Settings, err
 					}
 
 					newUpdateTimes = append(newUpdateTimes, v.(string))
@@ -145,52 +147,52 @@ func updateServerSettings(request RequestStruct) (settings SettingsStruct, err e
 	}
 
 	// Einstellungen aktualisieren
-	err = json.Unmarshal([]byte(mapToJSON(oldSettings)), &Settings)
+	err = json.Unmarshal([]byte(mapToJSON(oldSettings)), &config.Settings)
 	if err != nil {
 		return
 	}
 
-	if Settings.AuthenticationWEB == false {
+	if config.Settings.AuthenticationWEB == false {
 
-		Settings.AuthenticationAPI = false
-		Settings.AuthenticationM3U = false
-		Settings.AuthenticationPMS = false
-		Settings.AuthenticationWEB = false
-		Settings.AuthenticationXML = false
+		config.Settings.AuthenticationAPI = false
+		config.Settings.AuthenticationM3U = false
+		config.Settings.AuthenticationPMS = false
+		config.Settings.AuthenticationWEB = false
+		config.Settings.AuthenticationXML = false
 
 	}
 
 	// Buffer Einstellungen überprüfen
-	if len(Settings.FFmpegOptions) == 0 {
-		Settings.FFmpegOptions = System.FFmpeg.DefaultOptions
+	if len(config.Settings.FFmpegOptions) == 0 {
+		config.Settings.FFmpegOptions = config.System.FFmpeg.DefaultOptions
 	}
 
-	if len(Settings.VLCOptions) == 0 {
-		Settings.VLCOptions = System.VLC.DefaultOptions
+	if len(config.Settings.VLCOptions) == 0 {
+		config.Settings.VLCOptions = config.System.VLC.DefaultOptions
 	}
 
-	switch Settings.Buffer {
+	switch config.Settings.Buffer {
 
 	case "ffmpeg":
 
-		if len(Settings.FFmpegPath) == 0 {
+		if len(config.Settings.FFmpegPath) == 0 {
 			err = errors.New(getErrMsg(2020))
 			return
 		}
 
 	case "vlc":
 
-		if len(Settings.VLCPath) == 0 {
+		if len(config.Settings.VLCPath) == 0 {
 			err = errors.New(getErrMsg(2021))
 			return
 		}
 
 	}
 
-	err = saveSettings(Settings)
+	err = saveSettings(config.Settings)
 	if err == nil {
 
-		settings = Settings
+		settings = config.Settings
 
 		if reloadData == true {
 
@@ -205,14 +207,14 @@ func updateServerSettings(request RequestStruct) (settings SettingsStruct, err e
 
 		if cacheImages == true {
 
-			if Settings.EpgSource == "XEPG" && System.ImageCachingInProgress == 0 {
+			if config.Settings.EpgSource == "XEPG" && config.System.ImageCachingInProgress == 0 {
 
-				Data.Cache.Images, err = imgcache.New(System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", System.ServerProtocol.WEB, System.Domain), Settings.CacheImages)
+				config.Data.Cache.Images, err = imgcache.New(config.System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", config.System.ServerProtocol.WEB, config.System.Domain), config.Settings.CacheImages)
 				if err != nil {
 					ShowError(err, 0)
 				}
 
-				switch Settings.CacheImages {
+				switch config.Settings.CacheImages {
 
 				case false:
 					createXMLTVFile()
@@ -224,13 +226,13 @@ func updateServerSettings(request RequestStruct) (settings SettingsStruct, err e
 						createXMLTVFile()
 						createM3UFile()
 
-						System.ImageCachingInProgress = 1
+						config.System.ImageCachingInProgress = 1
 						showInfo("Image Caching:Images are cached")
 
-						Data.Cache.Images.Image.Caching()
+						config.Data.Cache.Images.Image.Caching()
 						showInfo("Image Caching:Done")
 
-						System.ImageCachingInProgress = 0
+						config.System.ImageCachingInProgress = 0
 
 						buildXEPG(false)
 
@@ -257,7 +259,7 @@ func updateServerSettings(request RequestStruct) (settings SettingsStruct, err e
 }
 
 // Providerdaten speichern (WebUI)
-func saveFiles(request RequestStruct, fileType string) (err error) {
+func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 
 	var filesMap = make(map[string]interface{})
 	var newData = make(map[string]interface{})
@@ -266,17 +268,17 @@ func saveFiles(request RequestStruct, fileType string) (err error) {
 
 	switch fileType {
 	case "m3u":
-		filesMap = Settings.Files.M3U
+		filesMap = config.Settings.Files.M3U
 		newData = request.Files.M3U
 		indicator = "M"
 
 	case "hdhr":
-		filesMap = Settings.Files.HDHR
+		filesMap = config.Settings.Files.HDHR
 		newData = request.Files.HDHR
 		indicator = "H"
 
 	case "xmltv":
-		filesMap = Settings.Files.XMLTV
+		filesMap = config.Settings.Files.XMLTV
 		newData = request.Files.XMLTV
 		indicator = "X"
 	}
@@ -309,13 +311,13 @@ func saveFiles(request RequestStruct, fileType string) (err error) {
 		switch fileType {
 
 		case "m3u":
-			Settings.Files.M3U = filesMap
+			config.Settings.Files.M3U = filesMap
 
 		case "hdhr":
-			Settings.Files.HDHR = filesMap
+			config.Settings.Files.HDHR = filesMap
 
 		case "xmltv":
-			Settings.Files.XMLTV = filesMap
+			config.Settings.Files.XMLTV = filesMap
 
 		}
 
@@ -340,7 +342,7 @@ func saveFiles(request RequestStruct, fileType string) (err error) {
 
 		}
 
-		err = saveSettings(Settings)
+		err = saveSettings(config.Settings)
 		if err != nil {
 			return
 		}
@@ -356,7 +358,7 @@ func saveFiles(request RequestStruct, fileType string) (err error) {
 
 		}
 
-		Settings, _ = loadSettings()
+		config.Settings, _ = loadSettings()
 
 	}
 
@@ -364,7 +366,7 @@ func saveFiles(request RequestStruct, fileType string) (err error) {
 }
 
 // Providerdaten manuell aktualisieren (WebUI)
-func updateFile(request RequestStruct, fileType string) (err error) {
+func updateFile(request structs.RequestStruct, fileType string) (err error) {
 
 	var updateData = make(map[string]interface{})
 
@@ -402,38 +404,38 @@ func deleteLocalProviderFiles(dataID, fileType string) {
 	switch fileType {
 
 	case "m3u":
-		removeData = Settings.Files.M3U
+		removeData = config.Settings.Files.M3U
 		fileExtension = ".m3u"
 
 	case "hdhr":
-		removeData = Settings.Files.HDHR
+		removeData = config.Settings.Files.HDHR
 		fileExtension = ".json"
 
 	case "xmltv":
-		removeData = Settings.Files.XMLTV
+		removeData = config.Settings.Files.XMLTV
 		fileExtension = ".xml"
 	}
 
 	if _, ok := removeData[dataID]; ok {
 		delete(removeData, dataID)
-		os.RemoveAll(System.Folder.Data + dataID + fileExtension)
+		os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
 	}
 
 	return
 }
 
 // Filtereinstellungen speichern (WebUI)
-func saveFilter(request RequestStruct) (settings SettingsStruct, err error) {
+func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
 	var filterMap = make(map[int64]interface{})
 	var newData = make(map[int64]interface{})
-	var defaultFilter FilterStruct
+	var defaultFilter structs.FilterStruct
 	var newFilter = false
 
 	defaultFilter.Active = true
 	defaultFilter.CaseSensitive = false
 	defaultFilter.LiveEvent = false
 
-	filterMap = Settings.Filter
+	filterMap = config.Settings.Filter
 	newData = request.Filter
 	var createNewID = func() (id int64) {
 
@@ -486,13 +488,12 @@ func saveFilter(request RequestStruct) (settings SettingsStruct, err error) {
 
 	}
 
-	err = saveSettings(Settings)
+	err = saveSettings(config.Settings)
 	if err != nil {
 		return
 	}
 
-	settings = Settings
-
+	settings = config.Settings
 
 	err = buildDatabaseDVR()
 	if err != nil {
@@ -505,13 +506,13 @@ func saveFilter(request RequestStruct) (settings SettingsStruct, err error) {
 }
 
 // XEPG Mapping speichern
-func saveXEpgMapping(request RequestStruct) (err error) {
+func saveXEpgMapping(request structs.RequestStruct) (err error) {
 
-	var tmp = Data.XEPG
+	var tmp = config.Data.XEPG
 
-	Data.Cache.StreamingURLS = make(map[string]StreamInfo)
+	config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
 
-	Data.Cache.Images, err = imgcache.New(System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", System.ServerProtocol.WEB, System.Domain), Settings.CacheImages)
+	config.Data.Cache.Images, err = imgcache.New(config.System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", config.System.ServerProtocol.WEB, config.System.Domain), config.Settings.CacheImages)
 	if err != nil {
 		ShowError(err, 0)
 	}
@@ -521,19 +522,19 @@ func saveXEpgMapping(request RequestStruct) (err error) {
 		return
 	}
 
-	err = saveMapToJSONFile(System.File.XEPG, request.EpgMapping)
+	err = saveMapToJSONFile(config.System.File.XEPG, request.EpgMapping)
 	if err != nil {
 		return err
 	}
 
-	Data.XEPG.Channels = request.EpgMapping
+	config.Data.XEPG.Channels = request.EpgMapping
 
-	if System.ScanInProgress == 0 {
+	if config.System.ScanInProgress == 0 {
 
-		System.ScanInProgress = 1
+		config.System.ScanInProgress = 1
 		createXMLTVFile()
 		createM3UFile()
-		System.ScanInProgress = 0
+		config.System.ScanInProgress = 0
 		showInfo("XEPG:" + fmt.Sprintf("Ready to use"))
 
 	} else {
@@ -541,27 +542,27 @@ func saveXEpgMapping(request RequestStruct) (err error) {
 		// Wenn während des erstellen der Datanbank das Mapping erneut gespeichert wird, wird die Datenbank erst später erneut aktualisiert.
 		go func() {
 
-			if System.BackgroundProcess == true {
+			if config.System.BackgroundProcess == true {
 				return
 			}
 
-			System.BackgroundProcess = true
+			config.System.BackgroundProcess = true
 
 			for {
 				time.Sleep(time.Duration(1) * time.Second)
-				if System.ScanInProgress == 0 {
+				if config.System.ScanInProgress == 0 {
 					break
 				}
 
 			}
 
-			System.ScanInProgress = 1
+			config.System.ScanInProgress = 1
 			createXMLTVFile()
 			createM3UFile()
-			System.ScanInProgress = 0
+			config.System.ScanInProgress = 0
 			showInfo("XEPG:" + fmt.Sprintf("Ready to use"))
 
-			System.BackgroundProcess = false
+			config.System.BackgroundProcess = false
 
 		}()
 
@@ -571,7 +572,7 @@ func saveXEpgMapping(request RequestStruct) (err error) {
 }
 
 // Benutzerdaten speichern (WebUI)
-func saveUserData(request RequestStruct) (err error) {
+func saveUserData(request structs.RequestStruct) (err error) {
 
 	var userData = request.UserData
 
@@ -627,7 +628,7 @@ func saveUserData(request RequestStruct) (err error) {
 }
 
 // Neuen Benutzer anlegen (WebUI)
-func saveNewUser(request RequestStruct) (err error) {
+func saveNewUser(request structs.RequestStruct) (err error) {
 
 	var data = request.UserData
 	var username = data["username"].(string)
@@ -646,7 +647,7 @@ func saveNewUser(request RequestStruct) (err error) {
 }
 
 // Wizard (WebUI)
-func saveWizard(request RequestStruct) (nextStep int, err error) {
+func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 
 	var wizard = jsonToMap(mapToJSON(request.Wizard))
 
@@ -655,11 +656,11 @@ func saveWizard(request RequestStruct) (nextStep int, err error) {
 		switch key {
 
 		case "tuner":
-			Settings.Tuner = int(value.(float64))
+			config.Settings.Tuner = int(value.(float64))
 			nextStep = 1
 
 		case "epgSource":
-			Settings.EpgSource = value.(string)
+			config.Settings.EpgSource = value.(string)
 			nextStep = 2
 
 		case "m3u", "xmltv":
@@ -676,12 +677,12 @@ func saveWizard(request RequestStruct) (nextStep int, err error) {
 			switch key {
 
 			case "m3u":
-				filesMap = Settings.Files.M3U
+				filesMap = config.Settings.Files.M3U
 				data["name"] = "M3U"
 				indicator = "M"
 
 			case "xmltv":
-				filesMap = Settings.Files.XMLTV
+				filesMap = config.Settings.Files.XMLTV
 				data["name"] = "XMLTV"
 				indicator = "X"
 
@@ -694,7 +695,7 @@ func saveWizard(request RequestStruct) (nextStep int, err error) {
 
 			switch key {
 			case "m3u":
-				Settings.Files.M3U = filesMap
+				config.Settings.Files.M3U = filesMap
 				nextStep = 3
 
 				err = getProviderData(key, dataID)
@@ -712,12 +713,12 @@ func saveWizard(request RequestStruct) (nextStep int, err error) {
 					return
 				}
 
-				if Settings.EpgSource == "PMS" {
+				if config.Settings.EpgSource == "PMS" {
 					nextStep = 10
 				}
 
 			case "xmltv":
-				Settings.Files.XMLTV = filesMap
+				config.Settings.Files.XMLTV = filesMap
 				nextStep = 10
 
 				err = getProviderData(key, dataID)
@@ -731,7 +732,7 @@ func saveWizard(request RequestStruct) (nextStep int, err error) {
 				}
 
 				buildXEPG(false)
-				System.ScanInProgress = 0
+				config.System.ScanInProgress = 0
 
 			}
 
@@ -739,7 +740,7 @@ func saveWizard(request RequestStruct) (nextStep int, err error) {
 
 	}
 
-	err = saveSettings(Settings)
+	err = saveSettings(config.Settings)
 	if err != nil {
 		return
 	}
@@ -750,12 +751,12 @@ func saveWizard(request RequestStruct) (nextStep int, err error) {
 // Filterregeln erstellen
 func createFilterRules() (err error) {
 
-	Data.Filter = nil
-	var dataFilter Filter
+	config.Data.Filter = nil
+	var dataFilter structs.Filter
 
-	for _, f := range Settings.Filter {
+	for _, f := range config.Settings.Filter {
 
-		var filter FilterStruct
+		var filter structs.FilterStruct
 
 		var exclude, include string
 
@@ -771,7 +772,7 @@ func createFilterRules() (err error) {
 			dataFilter.Rule = filter.Filter
 			dataFilter.Type = filter.Type
 
-			Data.Filter = append(Data.Filter, dataFilter)
+			config.Data.Filter = append(config.Data.Filter, dataFilter)
 
 		case "group-title":
 			if len(filter.Include) > 0 {
@@ -787,7 +788,7 @@ func createFilterRules() (err error) {
 			dataFilter.Rule = fmt.Sprintf("%s%s%s", filter.Filter, include, exclude)
 			dataFilter.Type = filter.Type
 
-			Data.Filter = append(Data.Filter, dataFilter)
+			config.Data.Filter = append(config.Data.Filter, dataFilter)
 		}
 
 	}
@@ -798,15 +799,15 @@ func createFilterRules() (err error) {
 // Datenbank für das DVR System erstellen
 func buildDatabaseDVR() (err error) {
 
-	System.ScanInProgress = 1
+	config.System.ScanInProgress = 1
 
-	Data.Streams.All = make([]interface{}, 0, System.UnfilteredChannelLimit)
-	Data.Streams.Active = make([]interface{}, 0, System.UnfilteredChannelLimit)
-	Data.Streams.Inactive = make([]interface{}, 0, System.UnfilteredChannelLimit)
-	Data.Playlist.M3U.Groups.Text = []string{}
-	Data.Playlist.M3U.Groups.Value = []string{}
-	Data.StreamPreviewUI.Active = []string{}
-	Data.StreamPreviewUI.Inactive = []string{}
+	config.Data.Streams.All = make([]interface{}, 0, config.System.UnfilteredChannelLimit)
+	config.Data.Streams.Active = make([]interface{}, 0, config.System.UnfilteredChannelLimit)
+	config.Data.Streams.Inactive = make([]interface{}, 0, config.System.UnfilteredChannelLimit)
+	config.Data.Playlist.M3U.Groups.Text = []string{}
+	config.Data.Playlist.M3U.Groups.Value = []string{}
+	config.Data.StreamPreviewUI.Active = []string{}
+	config.Data.StreamPreviewUI.Inactive = []string{}
 
 	var availableFileTypes = []string{"m3u", "hdhr"}
 
@@ -890,13 +891,13 @@ func buildDatabaseDVR() (err error) {
 
 				}
 
-				Data.Streams.All = append(Data.Streams.All, stream)
+				config.Data.Streams.All = append(config.Data.Streams.All, stream)
 
 				// Neuer Filter ab Version 1.3.0
 				var preview string
 				var status bool
 
-				if Settings.IgnoreFilters {
+				if config.Settings.IgnoreFilters {
 					status = true
 				} else {
 					var liveEvent bool
@@ -918,12 +919,12 @@ func buildDatabaseDVR() (err error) {
 				switch status {
 
 				case true:
-					Data.StreamPreviewUI.Active = append(Data.StreamPreviewUI.Active, preview)
-					Data.Streams.Active = append(Data.Streams.Active, stream)
+					config.Data.StreamPreviewUI.Active = append(config.Data.StreamPreviewUI.Active, preview)
+					config.Data.Streams.Active = append(config.Data.Streams.Active, stream)
 
 				case false:
-					Data.StreamPreviewUI.Inactive = append(Data.StreamPreviewUI.Inactive, preview)
-					Data.Streams.Inactive = append(Data.Streams.Inactive, stream)
+					config.Data.StreamPreviewUI.Inactive = append(config.Data.StreamPreviewUI.Inactive, preview)
+					config.Data.Streams.Inactive = append(config.Data.Streams.Inactive, stream)
 
 				}
 
@@ -958,37 +959,37 @@ func buildDatabaseDVR() (err error) {
 	for group, count := range tmpGroupsM3U {
 		var text = fmt.Sprintf("%s (%d)", group, count)
 		var value = fmt.Sprintf("%s", group)
-		Data.Playlist.M3U.Groups.Text = append(Data.Playlist.M3U.Groups.Text, text)
-		Data.Playlist.M3U.Groups.Value = append(Data.Playlist.M3U.Groups.Value, value)
+		config.Data.Playlist.M3U.Groups.Text = append(config.Data.Playlist.M3U.Groups.Text, text)
+		config.Data.Playlist.M3U.Groups.Value = append(config.Data.Playlist.M3U.Groups.Value, value)
 	}
 
-	sort.Strings(Data.Playlist.M3U.Groups.Text)
-	sort.Strings(Data.Playlist.M3U.Groups.Value)
+	sort.Strings(config.Data.Playlist.M3U.Groups.Text)
+	sort.Strings(config.Data.Playlist.M3U.Groups.Value)
 
-	if len(Data.Streams.Active) == 0 && len(Data.Streams.All) <= System.UnfilteredChannelLimit && len(Settings.Filter) == 0 {
-		Data.Streams.Active = Data.Streams.All
-		Data.Streams.Inactive = make([]interface{}, 0)
+	if len(config.Data.Streams.Active) == 0 && len(config.Data.Streams.All) <= config.System.UnfilteredChannelLimit && len(config.Settings.Filter) == 0 {
+		config.Data.Streams.Active = config.Data.Streams.All
+		config.Data.Streams.Inactive = make([]interface{}, 0)
 
-		Data.StreamPreviewUI.Active = Data.StreamPreviewUI.Inactive
-		Data.StreamPreviewUI.Inactive = []string{}
+		config.Data.StreamPreviewUI.Active = config.Data.StreamPreviewUI.Inactive
+		config.Data.StreamPreviewUI.Inactive = []string{}
 
 	}
 
-	if len(Data.Streams.Active) > System.PlexChannelLimit {
+	if len(config.Data.Streams.Active) > config.System.PlexChannelLimit {
 		showWarning(2000)
 	}
 
-	if len(Settings.Filter) == 0 && len(Data.Streams.All) > System.UnfilteredChannelLimit {
+	if len(config.Settings.Filter) == 0 && len(config.Data.Streams.All) > config.System.UnfilteredChannelLimit {
 		showWarning(2001)
 	}
 
-	System.ScanInProgress = 0
-	showInfo(fmt.Sprintf("All streams:%d", len(Data.Streams.All)))
-	showInfo(fmt.Sprintf("Active streams:%d", len(Data.Streams.Active)))
-	showInfo(fmt.Sprintf("Filter:%d", len(Data.Filter)))
+	config.System.ScanInProgress = 0
+	showInfo(fmt.Sprintf("All streams:%d", len(config.Data.Streams.All)))
+	showInfo(fmt.Sprintf("Active streams:%d", len(config.Data.Streams.Active)))
+	showInfo(fmt.Sprintf("Filter:%d", len(config.Data.Filter)))
 
-	sort.Strings(Data.StreamPreviewUI.Active)
-	sort.Strings(Data.StreamPreviewUI.Inactive)
+	sort.Strings(config.Data.StreamPreviewUI.Active)
+	sort.Strings(config.Data.StreamPreviewUI.Inactive)
 
 	return
 }
@@ -1003,20 +1004,20 @@ func getLocalProviderFiles(fileType string) (localFiles []string) {
 
 	case "m3u":
 		fileExtension = ".m3u"
-		dataMap = Settings.Files.M3U
+		dataMap = config.Settings.Files.M3U
 
 	case "hdhr":
 		fileExtension = ".json"
-		dataMap = Settings.Files.HDHR
+		dataMap = config.Settings.Files.HDHR
 
 	case "xmltv":
 		fileExtension = ".xml"
-		dataMap = Settings.Files.XMLTV
+		dataMap = config.Settings.Files.XMLTV
 
 	}
 
 	for dataID := range dataMap {
-		localFiles = append(localFiles, System.Folder.Data+dataID+fileExtension)
+		localFiles = append(localFiles, config.System.Folder.Data+dataID+fileExtension)
 	}
 
 	return
@@ -1029,13 +1030,13 @@ func getProviderParameter(id, fileType, key string) (s string) {
 
 	switch fileType {
 	case "m3u":
-		dataMap = Settings.Files.M3U
+		dataMap = config.Settings.Files.M3U
 
 	case "hdhr":
-		dataMap = Settings.Files.HDHR
+		dataMap = config.Settings.Files.HDHR
 
 	case "xmltv":
-		dataMap = Settings.Files.XMLTV
+		dataMap = config.Settings.Files.XMLTV
 	}
 
 	if data, ok := dataMap[id].(map[string]interface{}); ok {
@@ -1060,13 +1061,13 @@ func setProviderCompatibility(id, fileType string, compatibility map[string]int)
 
 	switch fileType {
 	case "m3u":
-		dataMap = Settings.Files.M3U
+		dataMap = config.Settings.Files.M3U
 
 	case "hdhr":
-		dataMap = Settings.Files.HDHR
+		dataMap = config.Settings.Files.HDHR
 
 	case "xmltv":
-		dataMap = Settings.Files.XMLTV
+		dataMap = config.Settings.Files.XMLTV
 	}
 
 	if data, ok := dataMap[id].(map[string]interface{}); ok {
@@ -1075,14 +1076,14 @@ func setProviderCompatibility(id, fileType string, compatibility map[string]int)
 
 		switch fileType {
 		case "m3u":
-			Settings.Files.M3U = dataMap
+			config.Settings.Files.M3U = dataMap
 		case "hdhr":
-			Settings.Files.HDHR = dataMap
+			config.Settings.Files.HDHR = dataMap
 		case "xmltv":
-			Settings.Files.XMLTV = dataMap
+			config.Settings.Files.XMLTV = dataMap
 		}
 
-		saveSettings(Settings)
+		saveSettings(config.Settings)
 
 	}
 

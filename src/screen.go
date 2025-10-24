@@ -7,14 +7,16 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"threadfin/src/internal/config"
+	"threadfin/src/internal/structs"
 	"time"
 )
 
 func showInfo(str string) {
-	infoMutex.Lock()
-	defer infoMutex.Unlock()
+	config.InfoMutex.Lock()
+	defer config.InfoMutex.Unlock()
 
-	if System.Flag.Info == true {
+	if config.System.Flag.Info == true {
 		return
 	}
 
@@ -31,12 +33,12 @@ func showInfo(str string) {
 
 		msg[0] = msg[0] + ":" + space
 
-		var logMsg = fmt.Sprintf("[%s] %s%s", System.Name, msg[0], msg[1])
+		var logMsg = fmt.Sprintf("[%s] %s%s", config.System.Name, msg[0], msg[1])
 
 		printLogOnScreen(logMsg, "info")
 
 		logMsg = strings.Replace(logMsg, " ", "&nbsp;", -1)
-		WebScreenLog.Log = append(WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
+		config.WebScreenLog.Log = append(config.WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
 		logCleanUp()
 
 	}
@@ -46,7 +48,7 @@ func showInfo(str string) {
 
 func showDebug(str string, level int) {
 
-	if System.Flag.Debug < level {
+	if config.System.Flag.Debug < level {
 		return
 	}
 
@@ -69,7 +71,7 @@ func showDebug(str string, level int) {
 
 		mutex.Lock()
 		logMsg = strings.Replace(logMsg, " ", "&nbsp;", -1)
-		WebScreenLog.Log = append(WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
+		config.WebScreenLog.Log = append(config.WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
 		logCleanUp()
 		mutex.Unlock()
 
@@ -85,7 +87,7 @@ func showHighlight(str string) {
 	var length = len(msg[0])
 	var space string
 
-	var notification Notification
+	var notification structs.Notification
 	notification.Type = "info"
 
 	if len(msg) == 2 {
@@ -96,7 +98,7 @@ func showHighlight(str string) {
 
 		msg[0] = msg[0] + ":" + space
 
-		var logMsg = fmt.Sprintf("[%s] %s%s", System.Name, msg[0], msg[1])
+		var logMsg = fmt.Sprintf("[%s] %s%s", config.System.Name, msg[0], msg[1])
 
 		printLogOnScreen(logMsg, "highlight")
 
@@ -119,14 +121,14 @@ func showHighlight(str string) {
 func showWarning(errCode int) {
 
 	var errMsg = getErrMsg(errCode)
-	var logMsg = fmt.Sprintf("[%s] [WARNING] %s", System.Name, errMsg)
+	var logMsg = fmt.Sprintf("[%s] [WARNING] %s", config.System.Name, errMsg)
 	var mutex = sync.RWMutex{}
 
 	printLogOnScreen(logMsg, "warning")
 
 	mutex.Lock()
-	WebScreenLog.Log = append(WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
-	WebScreenLog.Warnings++
+	config.WebScreenLog.Log = append(config.WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
+	config.WebScreenLog.Warnings++
 	mutex.Unlock()
 
 	return
@@ -138,13 +140,13 @@ func ShowError(err error, errCode int) {
 	var mutex = sync.RWMutex{}
 
 	var errMsg = getErrMsg(errCode)
-	var logMsg = fmt.Sprintf("[%s] [ERROR] %s (%s) - EC: %d", System.Name, err, errMsg, errCode)
+	var logMsg = fmt.Sprintf("[%s] [ERROR] %s (%s) - EC: %d", config.System.Name, err, errMsg, errCode)
 
 	printLogOnScreen(logMsg, "error")
 
 	mutex.Lock()
-	WebScreenLog.Log = append(WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
-	WebScreenLog.Errors++
+	config.WebScreenLog.Log = append(config.WebScreenLog.Log, time.Now().Format("2006-01-02 15:04:05")+" "+logMsg)
+	config.WebScreenLog.Errors++
 	mutex.Unlock()
 
 	return
@@ -188,14 +190,14 @@ func printLogOnScreen(logMsg string, logType string) {
 }
 
 func logCleanUp() {
-	logMutex.Lock()
-	defer logMutex.Unlock()
+	config.LogMutex.Lock()
+	defer config.LogMutex.Unlock()
 
-	var logEntriesRAM = Settings.LogEntriesRAM
-	var logs = WebScreenLog.Log
+	var logEntriesRAM = config.Settings.LogEntriesRAM
+	var logs = config.WebScreenLog.Log
 
-	WebScreenLog.Warnings = 0
-	WebScreenLog.Errors = 0
+	config.WebScreenLog.Warnings = 0
+	config.WebScreenLog.Errors = 0
 
 	if len(logs) > logEntriesRAM {
 
@@ -210,16 +212,16 @@ func logCleanUp() {
 	for _, log := range logs {
 
 		if strings.Contains(log, "WARNING") {
-			WebScreenLog.Warnings++
+			config.WebScreenLog.Warnings++
 		}
 
 		if strings.Contains(log, "ERROR") {
-			WebScreenLog.Errors++
+			config.WebScreenLog.Errors++
 		}
 
 	}
 
-	WebScreenLog.Log = logs
+	config.WebScreenLog.Log = logs
 
 	return
 }
@@ -250,11 +252,11 @@ func getErrMsg(errCode int) (errMsg string) {
 	case 1010:
 		errMsg = fmt.Sprintf("Invalid file compression")
 	case 1011:
-		errMsg = fmt.Sprintf("Data is corrupt or unavailable, %s now uses an older version of this file", System.Name)
+		errMsg = fmt.Sprintf("Data is corrupt or unavailable, %s now uses an older version of this file", config.System.Name)
 	case 1012:
 		errMsg = fmt.Sprintf("Invalid formatting of the time")
 	case 1013:
-		errMsg = fmt.Sprintf("Invalid settings file (settings.json), file must be at least version %s", System.Compatibility)
+		errMsg = fmt.Sprintf("Invalid settings file (settings.json), file must be at least version %s", config.System.Compatibility)
 	case 1014:
 		errMsg = fmt.Sprintf("Invalid filter rule")
 
@@ -263,7 +265,7 @@ func getErrMsg(errCode int) (errMsg string) {
 
 	// Datenbank Update
 	case 1030:
-		errMsg = fmt.Sprintf("Invalid settings file (%s)", System.File.Settings)
+		errMsg = fmt.Sprintf("Invalid settings file (%s)", config.System.File.Settings)
 	case 1031:
 		errMsg = fmt.Sprintf("Database error. The database version of your settings is not compatible with this version.")
 
@@ -310,9 +312,9 @@ func getErrMsg(errCode int) (errMsg string) {
 
 	// Warnings
 	case 2000:
-		errMsg = fmt.Sprintf("Plex can not handle more than %d streams. If you do not use Plex, you can ignore this warning.", System.PlexChannelLimit)
+		errMsg = fmt.Sprintf("Plex can not handle more than %d streams. If you do not use Plex, you can ignore this warning.", config.System.PlexChannelLimit)
 	case 2001:
-		errMsg = fmt.Sprintf("%s has loaded more than %d streams. Use the filter to reduce the number of streams.", System.Name, System.UnfilteredChannelLimit)
+		errMsg = fmt.Sprintf("%s has loaded more than %d streams. Use the filter to reduce the number of streams.", config.System.Name, config.System.UnfilteredChannelLimit)
 	case 2002:
 		errMsg = fmt.Sprintf("PMS can not play m3u8 streams")
 	case 2003:
@@ -335,7 +337,7 @@ func getErrMsg(errCode int) (errMsg string) {
 
 	// Tuner
 	case 2105:
-		errMsg = fmt.Sprintf("The number of tuners has changed, you have to delete " + System.Name + " in Plex / Emby HDHR and set it up again.")
+		errMsg = fmt.Sprintf("The number of tuners has changed, you have to delete " + config.System.Name + " in Plex / Emby HDHR and set it up again.")
 	case 2106:
 		errMsg = fmt.Sprintf("This function is only available with XEPG as EPG source")
 
@@ -406,7 +408,7 @@ func getErrMsg(errCode int) (errMsg string) {
 	return errMsg
 }
 
-func addNotification(notification Notification) (err error) {
+func addNotification(notification structs.Notification) (err error) {
 
 	var i int
 	var t = time.Now().UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
@@ -417,16 +419,16 @@ func addNotification(notification Notification) (err error) {
 		notification.Headline = strings.ToUpper(notification.Type)
 	}
 
-	if len(System.Notification) == 0 {
-		System.Notification = make(map[string]Notification)
+	if len(config.System.Notification) == 0 {
+		config.System.Notification = make(map[string]structs.Notification)
 	}
 
-	System.Notification[notification.Time] = notification
+	config.System.Notification[notification.Time] = notification
 
-	for key := range System.Notification {
+	for key := range config.System.Notification {
 
-		if i < len(System.Notification)-10 {
-			delete(System.Notification, key)
+		if i < len(config.System.Notification)-10 {
+			delete(config.System.Notification, key)
 		}
 
 		i++

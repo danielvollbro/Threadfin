@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"threadfin/src/internal/config"
 	"time"
 )
 
@@ -18,20 +19,20 @@ func ThreadfinAutoBackup() (err error) {
 	var oldBackupFiles = make([]string, 0)
 	var debug string
 
-	if len(Settings.BackupPath) > 0 {
-		System.Folder.Backup = Settings.BackupPath
+	if len(config.Settings.BackupPath) > 0 {
+		config.System.Folder.Backup = config.Settings.BackupPath
 	}
 
-	showInfo("Backup Path:" + System.Folder.Backup)
+	showInfo("Backup Path:" + config.System.Folder.Backup)
 
-	err = checkFolder(System.Folder.Backup)
+	err = checkFolder(config.System.Folder.Backup)
 	if err != nil {
 		ShowError(err, 1070)
 		return
 	}
 
 	// Alte Backups löschen
-	files, err := os.ReadDir(System.Folder.Backup)
+	files, err := os.ReadDir(config.System.Folder.Backup)
 
 	if err == nil {
 
@@ -45,22 +46,22 @@ func ThreadfinAutoBackup() (err error) {
 
 		// Alle Backups löschen
 		var end int
-		switch Settings.BackupKeep {
+		switch config.Settings.BackupKeep {
 		case 0:
 			end = 0
 		default:
-			end = Settings.BackupKeep - 1
+			end = config.Settings.BackupKeep - 1
 		}
 
 		for i := 0; i < len(oldBackupFiles)-end; i++ {
 
-			os.RemoveAll(System.Folder.Backup + oldBackupFiles[i])
+			os.RemoveAll(config.System.Folder.Backup + oldBackupFiles[i])
 			debug = fmt.Sprintf("Delete backup file:%s", oldBackupFiles[i])
 			showDebug(debug, 1)
 
 		}
 
-		if Settings.BackupKeep == 0 {
+		if config.Settings.BackupKeep == 0 {
 			return
 		}
 
@@ -73,13 +74,13 @@ func ThreadfinAutoBackup() (err error) {
 	// Backup erstellen
 	if err == nil {
 
-		target = System.Folder.Backup + archiv
+		target = config.System.Folder.Backup + archiv
 
-		for _, i := range SystemFiles {
-			sourceFiles = append(sourceFiles, System.Folder.Config+i)
+		for _, i := range config.SystemFiles {
+			sourceFiles = append(sourceFiles, config.System.Folder.Config+i)
 		}
 
-		sourceFiles = append(sourceFiles, System.Folder.ImagesUpload)
+		sourceFiles = append(sourceFiles, config.System.Folder.ImagesUpload)
 
 		err = zipFiles(sourceFiles, target)
 
@@ -99,21 +100,21 @@ func ThreadfinAutoBackup() (err error) {
 
 func ThreadfinBackup() (archiv string, err error) {
 
-	err = checkFolder(System.Folder.Temp)
+	err = checkFolder(config.System.Folder.Temp)
 	if err != nil {
 		return
 	}
 
 	archiv = "threadfin_backup_" + time.Now().Format("20060102_1504") + ".zip"
 
-	var target = System.Folder.Temp + archiv
+	var target = config.System.Folder.Temp + archiv
 	var sourceFiles = make([]string, 0)
 
-	for _, i := range SystemFiles {
-		sourceFiles = append(sourceFiles, System.Folder.Config+i)
+	for _, i := range config.SystemFiles {
+		sourceFiles = append(sourceFiles, config.System.Folder.Config+i)
 	}
 
-	sourceFiles = append(sourceFiles, System.Folder.Data)
+	sourceFiles = append(sourceFiles, config.System.Folder.Data)
 
 	err = zipFiles(sourceFiles, target)
 	if err != nil {
@@ -128,7 +129,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 
 	var newPort, oldPort, backupVersion, tmpRestore string
 
-	tmpRestore = System.Folder.Temp + "restore" + string(os.PathSeparator)
+	tmpRestore = config.System.Folder.Temp + "restore" + string(os.PathSeparator)
 
 	err = checkFolder(tmpRestore)
 	if err != nil {
@@ -149,26 +150,26 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	}
 
 	backupVersion = newConfig["version"].(string)
-	if backupVersion < System.Compatibility {
+	if backupVersion < config.System.Compatibility {
 		err = errors.New(getErrMsg(1013))
 		return
 	}
 
 	// Zip Archiv in den Config Ordner entpacken
-	err = extractZIP(archive, System.Folder.Config)
+	err = extractZIP(archive, config.System.Folder.Config)
 	if err != nil {
 		return
 	}
 
 	// Neue Config laden um den Port und die Version zu überprüfen
-	newConfig, err = loadJSONFileToMap(System.Folder.Config + "settings.json")
+	newConfig, err = loadJSONFileToMap(config.System.Folder.Config + "settings.json")
 	if err != nil {
 		ShowError(err, 0)
 		return
 	}
 
 	newPort = newConfig["port"].(string)
-	oldPort = Settings.Port
+	oldPort = config.Settings.Port
 
 	if newPort == oldPort {
 
@@ -193,7 +194,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 		return "", err
 	}
 
-	var url = System.URLBase + "/web/"
+	var url = config.System.URLBase + "/web/"
 	newWebURL = strings.Replace(url, ":"+oldPort, ":"+newPort, 1)
 
 	os.RemoveAll(tmpRestore)
@@ -213,7 +214,7 @@ func ThreadfinRestoreFromWeb(input string) (newWebURL string, err error) {
 		return
 	}
 
-	var archive = System.Folder.Temp + "restore.zip"
+	var archive = config.System.Folder.Temp + "restore.zip"
 
 	err = writeByteToFile(archive, sDec)
 	if err != nil {
@@ -231,9 +232,9 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 	var confirm string
 
 	println()
-	showInfo(fmt.Sprintf("Version:%s Build: %s", System.Version, System.Build))
+	showInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
 	showInfo(fmt.Sprintf("Backup File:%s", archive))
-	showInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(System.Folder.Config)))
+	showInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
 	println()
 
 	fmt.Print("All data will be replaced with those from the backup. Should the files be restored? [yes|no]:")
@@ -254,9 +255,9 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 
 	}
 
-	if len(System.Folder.Config) > 0 {
+	if len(config.System.Folder.Config) > 0 {
 
-		err = checkFilePermission(System.Folder.Config)
+		err = checkFilePermission(config.System.Folder.Config)
 		if err != nil {
 			return
 		}
@@ -266,7 +267,7 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 			return
 		}
 
-		showHighlight(fmt.Sprintf("Restor:Backup was successfully restored. %s can now be started normally", System.Name))
+		showHighlight(fmt.Sprintf("Restor:Backup was successfully restored. %s can now be started normally", config.System.Name))
 
 	}
 	return

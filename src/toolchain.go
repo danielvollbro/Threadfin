@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+	"threadfin/src/internal/config"
 
 	"github.com/avfs/avfs"
 )
@@ -177,7 +178,7 @@ func getFilenameFromPath(path string) (file string) {
 // Nicht mehr verwendete Systemdaten löschen
 func removeOldSystemData() {
 	// Temporären Ordner löschen
-	os.RemoveAll(System.Folder.Temp)
+	os.RemoveAll(config.System.Folder.Temp)
 }
 
 // Sucht eine Datei im OS
@@ -350,7 +351,7 @@ func resolveHostIP() error {
 
 		for _, addr := range addrs {
 			networkIP, ok := addr.(*net.IPNet)
-			System.IPAddressesList = append(System.IPAddressesList, networkIP.IP.String())
+			config.System.IPAddressesList = append(config.System.IPAddressesList, networkIP.IP.String())
 
 			if ok {
 				ip := networkIP.IP.String()
@@ -358,25 +359,25 @@ func resolveHostIP() error {
 				if networkIP.IP.To4() != nil {
 					// Skip unwanted IPs
 					if !strings.HasPrefix(ip, "169.254") {
-						System.IPAddressesV4 = append(System.IPAddressesV4, ip)
-						System.IPAddress = ip
+						config.System.IPAddressesV4 = append(config.System.IPAddressesV4, ip)
+						config.System.IPAddress = ip
 					}
 				} else {
-					System.IPAddressesV6 = append(System.IPAddressesV6, ip)
+					config.System.IPAddressesV6 = append(config.System.IPAddressesV6, ip)
 				}
 			}
 		}
 	}
 
-	if len(System.IPAddress) == 0 {
-		if len(System.IPAddressesV4) > 0 {
-			System.IPAddress = System.IPAddressesV4[0]
-		} else if len(System.IPAddressesV6) > 0 {
-			System.IPAddress = System.IPAddressesV6[0]
+	if len(config.System.IPAddress) == 0 {
+		if len(config.System.IPAddressesV4) > 0 {
+			config.System.IPAddress = config.System.IPAddressesV4[0]
+		} else if len(config.System.IPAddressesV6) > 0 {
+			config.System.IPAddress = config.System.IPAddressesV6[0]
 		}
 	}
 
-	System.Hostname, err = os.Hostname()
+	config.System.Hostname, err = os.Hostname()
 	if err != nil {
 		return err
 	}
