@@ -163,7 +163,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 		err := checkVFSFolder(playlist.Folder, config.BufferVFS)
 		if err != nil {
 			cli.ShowError(err, 000)
-			httpStatusError(w, r, 404)
+			httpStatusError(w, 404)
 			return
 		}
 

@@ -84,7 +84,7 @@ func buildXEPG(background bool) {
 				createXMLTVFile()
 				createM3UFile()
 
-				cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+				cli.ShowInfo("XEPG: Ready to use")
 
 				if config.Settings.CacheImages && config.System.ImageCachingInProgress == 0 {
 
@@ -161,7 +161,7 @@ func buildXEPG(background bool) {
 
 				}
 
-				cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+				cli.ShowInfo("XEPG: Ready to use")
 
 				// Cache löschen
 				config.Data.Cache.XMLTV = make(map[string]structs.XMLTV)
@@ -206,7 +206,7 @@ func updateXEPG(background bool) {
 
 				createXMLTVFile()
 				createM3UFile()
-				cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+				cli.ShowInfo("XEPG: Ready to use")
 
 			}()
 
@@ -223,8 +223,6 @@ func updateXEPG(background bool) {
 
 	// Cache löschen
 	config.Data.Cache.XMLTV = make(map[string]structs.XMLTV)
-
-	return
 }
 
 // Mapping Menü für die XMLTV Dateien erstellen
@@ -303,7 +301,7 @@ func createXEPGMapping() {
 
 	} else {
 
-		if config.System.ConfigurationWizard == false {
+		if !config.System.ConfigurationWizard {
 			cli.ShowWarning(1007)
 		}
 
@@ -330,8 +328,6 @@ func createXEPGMapping() {
 	}
 
 	config.Data.XMLTV.Mapping["Threadfin Dummy"] = dummy
-
-	return
 }
 
 // XEPG Datenbank erstellen / aktualisieren
@@ -868,7 +864,7 @@ func mapping() (err error) {
 
 				if value, ok := config.Data.XMLTV.Mapping[file].(map[string]interface{}); ok {
 
-					if channel, ok := value[mapping].(map[string]interface{}); ok {
+					if _, ok := value[mapping].(map[string]interface{}); ok {
 
 						filters := []structs.FilterStruct{}
 						for _, filter := range config.Settings.Filter {
@@ -887,17 +883,6 @@ func mapping() (err error) {
 								}
 							}
 						}
-
-						// Kanallogo aktualisieren
-						if logo, ok := channel["icon"].(string); ok {
-
-							if xepgChannel.XUpdateChannelIcon && len(logo) > 0 {
-								/*var imgc = Data.Cache.Images
-								xepgChannel.TvgLogo = imgc.Image.GetURL(logo, Settings.HttpThreadfinDomain, Settings.Port, Settings.ForceHttps, Settings.HttpsPort, Settings.HttpsThreadfinDomain)*/
-							}
-
-						}
-
 					}
 
 				}
@@ -1562,8 +1547,6 @@ func getEpisodeNum(program *structs.Program, xmltvProgram *structs.Program, xepg
 		}
 
 	}
-
-	return
 }
 
 // Videoparameter erstellen (createXMLTVFile)
@@ -1588,8 +1571,6 @@ func getVideo(program *structs.Program, xmltvProgram *structs.Program, xepgChann
 	}
 
 	program.Video = video
-
-	return
 }
 
 // Lokale Provider XMLTV Datei laden
@@ -1605,7 +1586,7 @@ func getLocalXMLTV(file string, xmltv *structs.XMLTV) (err error) {
 		// Check file size to determine parsing strategy
 		fileInfo, err := os.Stat(file)
 		if err != nil {
-			err = errors.New("Local copy of the file no longer exists")
+			err = errors.New("local copy of the file no longer exists")
 			return err
 		}
 
@@ -1617,12 +1598,12 @@ func getLocalXMLTV(file string, xmltv *structs.XMLTV) (err error) {
 			// Use original method for smaller files
 			content, err := readByteFromFile(file)
 			if err != nil {
-				err = errors.New("Local copy of the file no longer exists")
+				err = errors.New("local copy of the file no longer exists")
 				return err
 			}
 
 			// XML Datei parsen
-			err = xml.Unmarshal(content, &xmltv)
+			xml.Unmarshal(content, &xmltv)
 		}
 
 		if err != nil {
@@ -1746,8 +1727,6 @@ func createM3UFile() {
 	}
 
 	saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
-
-	return
 }
 
 // XEPG Datenbank bereinigen
@@ -1763,7 +1742,7 @@ func cleanupXEPG() {
 		sourceIDs = append(sourceIDs, source)
 	}
 
-	cli.ShowInfo("XEPG:" + fmt.Sprintf("Cleanup database"))
+	cli.ShowInfo("XEPG: Cleanup database")
 	config.Data.XEPG.XEPGCount = 0
 
 	for id, dxc := range config.Data.XEPG.Channels {
@@ -1816,8 +1795,6 @@ func cleanupXEPG() {
 	if len(config.Data.Streams.Active) > 0 && config.Data.XEPG.XEPGCount == 0 {
 		cli.ShowWarning(2005)
 	}
-
-	return
 }
 
 // Remove duplicate channels from XEPG database using consistent hash logic

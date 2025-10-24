@@ -93,7 +93,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			_, err := basicAuth(r, "authentication.pms")
 			if err != nil {
 				cli.ShowError(err, 000)
-				httpStatusError(w, r, 403)
+				httpStatusError(w, 403)
 				return
 			}
 		} else {
@@ -115,8 +115,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpStatusError(w, r, 500)
-	return
+	httpStatusError(w, 500)
 }
 
 // Stream : Web Server /stream/
@@ -125,7 +124,7 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 	streamInfo, err := getStreamInfo(path)
 	if err != nil {
 		cli.ShowError(err, 1203)
-		httpStatusError(w, r, 404)
+		httpStatusError(w, 404)
 		return
 	}
 
@@ -141,7 +140,7 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 	config.SystemMutex.Unlock()
 
 	// Dont Change Source M3Us to use HTTPs when forceHttps set and Exclude Streams from https
-	if forceHttps && noStreamHttps == false {
+	if forceHttps && !noStreamHttps {
 		u, err := url.Parse(streamInfo.URL)
 		if err == nil {
 			u.Scheme = "https"
@@ -158,13 +157,13 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 		req, err := http.NewRequest("HEAD", streamInfo.URL, nil)
 		if err != nil {
 			cli.ShowError(err, 1501)
-			httpStatusError(w, r, 405)
+			httpStatusError(w, 405)
 			return
 		}
 		resp, err := client.Do(req)
 		if err != nil {
 			cli.ShowError(err, 1502)
-			httpStatusError(w, r, 405)
+			httpStatusError(w, 405)
 			return
 		}
 		defer resp.Body.Close()
@@ -197,11 +196,11 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 	case "-":
 		cli.ShowInfo(fmt.Sprintf("Buffer:false [%s]", playListBuffer))
 	case "threadfin":
-		if strings.Index(streamInfo.URL, "rtsp://") != -1 || strings.Index(streamInfo.URL, "rtp://") != -1 {
+		if strings.Contains(streamInfo.URL, "rtsp://") || strings.Contains(streamInfo.URL, "rtp://") {
 			err = errors.New("RTSP and RTP streams are not supported")
 			cli.ShowError(err, 2004)
 			cli.ShowInfo("Streaming URL:" + streamInfo.URL)
-			http.Redirect(w, r, streamInfo.URL, 302)
+			http.Redirect(w, r, streamInfo.URL, http.StatusFound)
 			return
 		}
 		cli.ShowInfo(fmt.Sprintf("Buffer:true [%s]", playListBuffer))
@@ -216,20 +215,18 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 	case "-":
 		cli.ShowInfo("Streaming URL:" + streamInfo.URL)
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		http.Redirect(w, r, streamInfo.URL, 302)
+		http.Redirect(w, r, streamInfo.URL, http.StatusFound)
 		cli.ShowInfo("Streaming Info:URL was passed to the client.")
 		cli.ShowInfo("Streaming Info:Threadfin is no longer involved, the client connects directly to the streaming server.")
 	default:
 		bufferingStream(streamInfo.PlaylistID, streamInfo.URL, streamInfo.BackupChannel1, streamInfo.BackupChannel2, streamInfo.BackupChannel3, streamInfo.Name, w, r)
 	}
-	return
 }
 
 // Auto : HDHR routing (wird derzeit nicht benutzt)
 func Auto(w http.ResponseWriter, r *http.Request) {
 	var channelID = strings.Replace(r.RequestURI, "/auto/v", "", 1)
 	fmt.Println(channelID)
-	return
 }
 
 // Threadfin : Web Server /xmltv/ und /m3u/
@@ -256,7 +253,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 		err = urlAuth(r, requestType)
 		if err != nil {
 			cli.ShowError(err, 000)
-			httpStatusError(w, r, 403)
+			httpStatusError(w, 403)
 			return
 		}
 
@@ -266,7 +263,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 		content, err = readStringFromFile(file)
 		if err != nil {
-			httpStatusError(w, r, 404)
+			httpStatusError(w, 404)
 			return
 		}
 
@@ -280,7 +277,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 		err = urlAuth(r, requestType)
 		if err != nil {
 			cli.ShowError(err, 000)
-			httpStatusError(w, r, 403)
+			httpStatusError(w, 403)
 			return
 		}
 
@@ -343,7 +340,7 @@ func Images(w http.ResponseWriter, r *http.Request) {
 
 	content, err := readByteFromFile(filePath)
 	if err != nil {
-		httpStatusError(w, r, 404)
+		httpStatusError(w, 404)
 		return
 	}
 
@@ -351,8 +348,6 @@ func Images(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(content)))
 	w.WriteHeader(200)
 	w.Write(content)
-
-	return
 }
 
 // DataImages : Image Pfad für Logos / Bilder die hochgeladen wurden /data_images/
@@ -365,7 +360,7 @@ func DataImages(w http.ResponseWriter, r *http.Request) {
 
 	content, err := readByteFromFile(filePath)
 	if err != nil {
-		httpStatusError(w, r, 404)
+		httpStatusError(w, 404)
 		return
 	}
 
@@ -373,8 +368,6 @@ func DataImages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(content)))
 	w.WriteHeader(200)
 	w.Write(content)
-
-	return
 }
 
 // WS : Web Sockets /ws/
@@ -419,7 +412,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		}
 
 		config.SystemMutex.Lock()
-		if config.System.ConfigurationWizard == false {
+		if !config.System.ConfigurationWizard {
 
 			switch config.Settings.AuthenticationWEB {
 
@@ -459,38 +452,24 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		config.SystemMutex.Unlock()
 
 		switch request.Cmd {
-		// Data read commands
-		case "getServerConfig":
-			// response.Config = Settings
-
 		case "updateLog":
 			response = setDefaultResponseData(response, false)
 			if err = conn.WriteJSON(response); err != nil {
 				cli.ShowError(err, 1022)
 			} else {
 				return
-				break
 			}
 			return
-
-		case "loadFiles":
-			// response.Response = Settings.Files
 
 		// Data write commands
 		case "saveSettings":
 			var authenticationUpdate = config.Settings.AuthenticationWEB
-			// var previousStoreBufferInRAM = Settings.StoreBufferInRAM
 			response.Settings, err = updateServerSettings(request)
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(indexOfString("settings", config.System.WEB.Menu))
+				response.Reload = config.Settings.AuthenticationWEB && !authenticationUpdate
 
-				if config.Settings.AuthenticationWEB == true && authenticationUpdate == false {
-					response.Reload = true
-				}
-
-				// if Settings.StoreBufferInRAM != previousStoreBufferInRAM {
 				initBufferVFS()
-				// }
 			}
 
 		case "saveFilesM3U":
@@ -637,7 +616,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		}
 
 		response = setDefaultResponseData(response, true)
-		if config.System.ConfigurationWizard == true {
+		if config.System.ConfigurationWizard {
 			response.ConfigurationWizard = config.System.ConfigurationWizard
 		}
 
@@ -648,17 +627,15 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-
-	return
 }
 
 // Web : Web Server /web/
 func Web(w http.ResponseWriter, r *http.Request) {
 
-	var lang = make(map[string]interface{})
+	var lang = make(map[string]any)
 	var err error
 
-	var requestFile = strings.Replace(r.URL.Path, "/web", "html", -1)
+	var requestFile = strings.ReplaceAll(r.URL.Path, "/web", "html")
 	var content, contentType, file string
 
 	var language structs.LanguageUI
@@ -672,7 +649,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 	config.SystemMutex.Unlock()
 
 	config.SystemMutex.Lock()
-	if config.System.Dev == true {
+	if config.System.Dev {
 		lang, err = loadJSONFileToMap(fmt.Sprintf("html/lang/%s.json", config.Settings.Language))
 		config.SystemMutex.Unlock()
 		if err != nil {
@@ -697,7 +674,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 	if getFilenameFromPath(requestFile) == "html" {
 
 		config.SystemMutex.Lock()
-		if config.System.ConfigurationWizard == true {
+		if config.System.ConfigurationWizard {
 			file = requestFile + "configuration.html"
 			config.Settings.AuthenticationWEB = false
 		} else {
@@ -710,7 +687,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		authenticationWebEnabled := config.Settings.AuthenticationWEB
 		config.SystemMutex.Unlock()
 
-		if authenticationWebEnabled == true {
+		if authenticationWebEnabled {
 			var username, password, confirm string
 			switch r.Method {
 			case "POST":
@@ -728,12 +705,12 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 					var token, err = createFirstUserForAuthentication(username, password)
 					if err != nil {
-						httpStatusError(w, r, 429)
+						httpStatusError(w, 429)
 						return
 					}
 					// Redirect, damit die Daten aus dem Browser gelöscht werden.
 					w = authentication.SetCookieToken(w, token)
-					http.Redirect(w, r, "/web", 301)
+					http.Redirect(w, r, "/web", http.StatusMovedPermanently)
 					return
 
 				}
@@ -749,11 +726,11 @@ func Web(w http.ResponseWriter, r *http.Request) {
 					}
 
 					w = authentication.SetCookieToken(w, token)
-					http.Redirect(w, r, "/web", 301) // Redirect, damit die Daten aus dem Browser gelöscht werden.
+					http.Redirect(w, r, "/web", http.StatusMovedPermanently) // Redirect, damit die Daten aus dem Browser gelöscht werden.
 
 				} else {
 					w = authentication.SetCookieToken(w, "-")
-					http.Redirect(w, r, "/web", 301) // Redirect, damit die Daten aus dem Browser gelöscht werden.
+					http.Redirect(w, r, "/web", http.StatusMovedPermanently) // Redirect, damit die Daten aus dem Browser gelöscht werden.
 				}
 
 				return
@@ -778,12 +755,12 @@ func Web(w http.ResponseWriter, r *http.Request) {
 			allUserData, err := authentication.GetAllUserData()
 			if err != nil {
 				cli.ShowError(err, 000)
-				httpStatusError(w, r, 403)
+				httpStatusError(w, 403)
 				return
 			}
 
 			config.SystemMutex.Lock()
-			if len(allUserData) == 0 && config.Settings.AuthenticationWEB == true {
+			if len(allUserData) == 0 && config.Settings.AuthenticationWEB {
 				file = requestFile + "create-first-user.html"
 			}
 			config.SystemMutex.Unlock()
@@ -791,16 +768,13 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 		requestFile = file
 
-		if value, ok := webUI[requestFile]; ok {
-
-			content = GetHTMLString(value.(string))
-
+		if _, ok := webUI[requestFile]; ok {
 			if contentType == "text/plain" {
 				w.Header().Set("Content-Disposition", "attachment; filename="+getFilenameFromPath(requestFile))
 			}
 
 		} else {
-			httpStatusError(w, r, 404)
+			httpStatusError(w, 404)
 			return
 		}
 
@@ -816,14 +790,14 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		httpStatusError(w, r, 404)
+		httpStatusError(w, 404)
 		return
 	}
 
 	contentType = getContentType(requestFile)
 
 	config.SystemMutex.Lock()
-	if config.System.Dev == true {
+	if config.System.Dev {
 		// Lokale Webserver Dateien werden geladen, nur für die Entwicklung
 		content, _ = readStringFromFile(requestFile)
 	}
@@ -904,39 +878,37 @@ func API(w http.ResponseWriter, r *http.Request) {
 		response.Status = false
 		response.Error = err.Error()
 		w.Write([]byte(mapToJSON(response)))
-		return
-
 	}
 
 	response.Status = true
 
-	if config.Settings.API == false {
-		httpStatusError(w, r, 423)
+	if config.Settings.API {
+		httpStatusError(w, 423)
 		return
 	}
 
 	if r.Method == "GET" {
-		httpStatusError(w, r, 404)
+		httpStatusError(w, 404)
 		return
 	}
 
 	b, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		httpStatusError(w, r, 400)
+		httpStatusError(w, 400)
 		return
 
 	}
 
 	err = json.Unmarshal(b, &request)
 	if err != nil {
-		httpStatusError(w, r, 400)
+		httpStatusError(w, 400)
 		return
 	}
 
 	w.Header().Set("content-type", "application/json")
 
-	if config.Settings.AuthenticationAPI == true {
+	if config.Settings.AuthenticationAPI {
 		var token string
 		switch len(request.Token) {
 		case 0:
@@ -948,7 +920,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 				}
 
 			} else {
-				err = errors.New("Login incorrect")
+				err = errors.New("login incorrect")
 				if err != nil {
 					responseAPIError(err)
 					return
@@ -1038,8 +1010,6 @@ func API(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(mapToJSON(response)))
-
-	return
 }
 
 // Download : Datei Download
@@ -1057,7 +1027,6 @@ func Download(w http.ResponseWriter, r *http.Request) {
 
 	os.RemoveAll(config.System.Folder.Temp + getFilenameFromPath(path))
 	w.Write([]byte(content))
-	return
 }
 
 func setDefaultResponseData(response structs.ResponseStruct, data bool) (defaults structs.ResponseStruct) {
@@ -1110,7 +1079,7 @@ func setDefaultResponseData(response structs.ResponseStruct, data bool) (default
 	switch config.System.Branch {
 
 	case "master":
-		defaults.ClientInfo.Version = fmt.Sprintf("%s", config.System.Version)
+		defaults.ClientInfo.Version = config.System.Version
 
 	default:
 		defaults.ClientInfo.Version = fmt.Sprintf("%s (%s)", config.System.Version, config.System.Build)
@@ -1118,10 +1087,8 @@ func setDefaultResponseData(response structs.ResponseStruct, data bool) (default
 
 	}
 
-	if data == true {
-
+	if data {
 		defaults.Users, _ = authentication.GetAllUserData()
-		//defaults.DVR = System.DVRAddress
 
 		if config.Settings.EpgSource == "XEPG" {
 
@@ -1225,9 +1192,8 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func httpStatusError(w http.ResponseWriter, r *http.Request, httpStatusCode int) {
+func httpStatusError(w http.ResponseWriter, httpStatusCode int) {
 	http.Error(w, fmt.Sprintf("%s [%d]", http.StatusText(httpStatusCode), httpStatusCode), httpStatusCode)
-	return
 }
 
 func getContentType(filename string) (contentType string) {

@@ -153,7 +153,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 		return
 	}
 
-	if config.Settings.AuthenticationWEB == false {
+	if !config.Settings.AuthenticationWEB {
 
 		config.Settings.AuthenticationAPI = false
 		config.Settings.AuthenticationM3U = false
@@ -195,7 +195,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 		settings = config.Settings
 
-		if reloadData == true {
+		if reloadData {
 
 			err = buildDatabaseDVR()
 			if err != nil {
@@ -206,7 +206,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 		}
 
-		if cacheImages == true {
+		if cacheImages {
 
 			if config.Settings.EpgSource == "XEPG" && config.System.ImageCachingInProgress == 0 {
 
@@ -245,7 +245,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 		}
 
-		if createXEPGFiles == true {
+		if createXEPGFiles {
 
 			go func() {
 				createXMLTVFile()
@@ -348,7 +348,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 			return
 		}
 
-		if reloadData == true {
+		if reloadData {
 
 			err = buildDatabaseDVR()
 			if err != nil {
@@ -421,8 +421,6 @@ func deleteLocalProviderFiles(dataID, fileType string) {
 		delete(removeData, dataID)
 		os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
 	}
-
-	return
 }
 
 // Filtereinstellungen speichern (WebUI)
@@ -536,14 +534,14 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 		createXMLTVFile()
 		createM3UFile()
 		config.System.ScanInProgress = 0
-		cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+		cli.ShowInfo("XEPG: Ready to use")
 
 	} else {
 
 		// Wenn während des erstellen der Datanbank das Mapping erneut gespeichert wird, wird die Datenbank erst später erneut aktualisiert.
 		go func() {
 
-			if config.System.BackgroundProcess == true {
+			if config.System.BackgroundProcess {
 				return
 			}
 
@@ -561,7 +559,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 			createXMLTVFile()
 			createM3UFile()
 			config.System.ScanInProgress = 0
-			cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+			cli.ShowInfo("XEPG: Ready to use")
 
 			config.System.BackgroundProcess = false
 
@@ -602,7 +600,7 @@ func saveUserData(request structs.RequestStruct) (err error) {
 			return
 		}
 
-		if request.DeleteUser == true {
+		if request.DeleteUser {
 			err = authentication.RemoveUser(userID)
 			return
 		}
@@ -870,13 +868,7 @@ func buildDatabaseDVR() (err error) {
 					case "group-title":
 						if value, ok := s[key]; ok {
 							if len(value) > 0 {
-
-								if _, ok := tmpGroupsM3U[value]; ok {
-									tmpGroupsM3U[value]++
-								} else {
-									tmpGroupsM3U[value] = 1
-								}
-
+								tmpGroupsM3U[value]++
 								groupTitle++
 							}
 						}
@@ -959,9 +951,8 @@ func buildDatabaseDVR() (err error) {
 
 	for group, count := range tmpGroupsM3U {
 		var text = fmt.Sprintf("%s (%d)", group, count)
-		var value = fmt.Sprintf("%s", group)
 		config.Data.Playlist.M3U.Groups.Text = append(config.Data.Playlist.M3U.Groups.Text, text)
-		config.Data.Playlist.M3U.Groups.Value = append(config.Data.Playlist.M3U.Groups.Value, value)
+		config.Data.Playlist.M3U.Groups.Value = append(config.Data.Playlist.M3U.Groups.Value, group)
 	}
 
 	sort.Strings(config.Data.Playlist.M3U.Groups.Text)

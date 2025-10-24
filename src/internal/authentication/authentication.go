@@ -449,7 +449,7 @@ func CheckTheValidityOfTheTokenFromHTTPHeader(w http.ResponseWriter, r *http.Req
 // Framework tools
 
 func checkInit() (err error) {
-	if initAuthentication == false {
+	if !initAuthentication {
 		err = createError(000)
 	}
 

@@ -97,7 +97,7 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 				if indexOfString(value, uuids) != -1 {
 					break
 				}
-				uuids = append(uuids, value)
+
 				stream["_uuid.key"] = key
 				stream["_uuid.value"] = value
 				break
@@ -109,7 +109,7 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 
 	// Check if the content is a valid M3U file
 	if strings.Contains(content, "#EXT-X-TARGETDURATION") || strings.Contains(content, "#EXT-X-MEDIA-SEQUENCE") {
-		err = errors.New("Invalid M3U file, an extended M3U file is required.")
+		err = errors.New("invalid M3U file, an extended M3U file is required")
 		return
 	}
 
@@ -128,7 +128,7 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 		}
 
 	} else {
-		err = errors.New("Invalid M3U file, an extended M3U file is required.")
+		err = errors.New("invalid M3U file, an extended M3U file is required")
 	}
 
 	return

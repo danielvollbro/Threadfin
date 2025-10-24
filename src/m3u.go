@@ -125,18 +125,18 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 			}
 		}
 
-		if match == true {
+		if match {
 
 			if len(exclude) > 0 {
 				var status = checkConditions(search, exclude, "exclude")
-				if status == false {
+				if !status {
 					return false, liveEvent
 				}
 			}
 
 			if len(include) > 0 {
 				var status = checkConditions(search, include, "include")
-				if status == false {
+				if !status {
 					return false, liveEvent
 				}
 			}
@@ -332,7 +332,7 @@ func buildM3U(groups []string) (m3u string, err error) {
 		}
 
 		// Disabling so not to rewrite stream to https domain when disable stream from https set
-		if config.Settings.ForceHttps && config.Settings.HttpsThreadfinDomain != "" && config.Settings.ExcludeStreamHttps == false {
+		if config.Settings.ForceHttps && config.Settings.HttpsThreadfinDomain != "" && !config.Settings.ExcludeStreamHttps {
 			u, err := url.Parse(channel.URL)
 			if err == nil {
 				u.Scheme = "https"
