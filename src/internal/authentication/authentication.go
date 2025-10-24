@@ -3,6 +3,7 @@ package authentication
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -168,7 +169,10 @@ func CreateDefaultUser(username, password string) (err error) {
 
 	var defaults = defaultsForNewUser(username, password)
 	users[defaults["_id"].(string)] = defaults
-	saveDatabase(data)
+	err = saveDatabase(data)
+	if err != nil {
+		log.Println("Error saving database:", err)
+	}
 
 	return
 }
@@ -204,7 +208,11 @@ func CreateNewUser(username, password string) (userID string, err error) {
 	userID = defaults["_id"].(string)
 	users[userID] = defaults
 
-	saveDatabase(data)
+	err = saveDatabase(data)
+	if err != nil {
+		log.Println("Error saving database:", err)
+		return
+	}
 
 	return
 }
@@ -422,7 +430,12 @@ func GetAllUserData() (allUserData map[string]interface{}, err error) {
 		defaults["dbVersion"] = "1.0"
 		defaults["hash"] = "sha256"
 		defaults["users"] = make(map[string]interface{})
-		saveDatabase(defaults)
+		err = saveDatabase(defaults)
+		if err != nil {
+			log.Println("Error saving database:", err)
+			return
+		}
+
 		data = defaults
 	}
 
@@ -449,7 +462,7 @@ func CheckTheValidityOfTheTokenFromHTTPHeader(w http.ResponseWriter, r *http.Req
 // Framework tools
 
 func checkInit() (err error) {
-	if initAuthentication == false {
+	if !initAuthentication {
 		err = createError(000)
 	}
 
@@ -498,7 +511,11 @@ func randomString(n int) string {
 	const alphanum = "-AbCdEfGhIjKlMnOpQrStUvWxYz0123456789aBcDeFgHiJkLmNoPqRsTuVwXyZ_"
 
 	var bytes = make([]byte, n)
-	rand.Read(bytes)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		log.Println("Error generating random string:", err)
+		return ""
+	}
 	for i, b := range bytes {
 		bytes[i] = alphanum[b%byte(len(alphanum))]
 	}
@@ -509,7 +526,12 @@ func randomID(n int) string {
 	const alphanum = "ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789"
 
 	var bytes = make([]byte, n)
-	rand.Read(bytes)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		log.Println("Error generating random ID:", err)
+		return ""
+	}
+
 	for i, b := range bytes {
 		bytes[i] = alphanum[b%byte(len(alphanum))]
 	}
@@ -572,14 +594,6 @@ loopToken:
 	tokens[newToken] = tmp
 
 	return
-}
-
-func mapToJSON(tmpMap interface{}) string {
-	jsonString, err := json.MarshalIndent(tmpMap, "", "  ")
-	if err != nil {
-		return "{}"
-	}
-	return string(jsonString)
 }
 
 // SetCookieToken : set cookie

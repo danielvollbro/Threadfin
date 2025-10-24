@@ -40,7 +40,13 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() {
+			err = resp.Body.Close()
+		}()
+		if err != nil {
+			return err
+		}
+
 		log.Println("["+strings.ToUpper(fileType)+"]", "Download new version...")
 
 		if resp.StatusCode != http.StatusOK {
@@ -49,7 +55,7 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 		}
 
 		// Change binary filename to .filename
-		binary, err := osext.Executable()
+		binary, _ := osext.Executable()
 		var filename = getFilenameFromPath(binary)
 		var path = getPlatformPath(binary)
 		var oldBinary = path + "_old_" + filename
@@ -59,8 +65,10 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 		var tmpFolder = path + "tmp"
 		var tmpFile = tmpFolder + string(os.PathSeparator) + filenameBIN
 
-		//fmt.Println(binary, path+"."+filename)
-		os.Rename(newBinary, oldBinary)
+		err = os.Rename(newBinary, oldBinary)
+		if err != nil {
+			return err
+		}
 
 		// Save the new binary with the old file name
 		out, err := os.Create(binary)
@@ -68,7 +76,13 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 			restorOldBinary(oldBinary, newBinary)
 			return err
 		}
-		defer out.Close()
+		defer func() {
+			err = out.Close()
+		}()
+		if err != nil {
+			restorOldBinary(oldBinary, newBinary)
+			return err
+		}
 
 		// Write the body to file
 
@@ -110,16 +124,29 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 					return err
 				}
 
-				os.RemoveAll(tmpFolder)
+				err = os.RemoveAll(tmpFolder)
+				if err != nil {
+					log.Println("["+strings.ToUpper(fileType)+"]", "Remove temp folder...ERROR")
+					restorOldBinary(oldBinary, newBinary)
+					return err
+				}
 			}
 
 		}
 
 		// Set the permission
 		err = os.Chmod(binary, 0755)
+		if err != nil {
+			restorOldBinary(oldBinary, newBinary)
+			return err
+		}
 
 		// Close the new file !Windows
-		out.Close()
+		err = out.Close()
+		if err != nil {
+			restorOldBinary(oldBinary, newBinary)
+			return err
+		}
 
 		log.Println("["+strings.ToUpper(fileType)+"]", "Update Successful")
 
@@ -138,9 +165,24 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 
 			if proc, err := start(bin); err == nil {
 
-				os.RemoveAll(oldBinary)
-				process.Kill()
-				proc.Wait()
+				err = os.RemoveAll(oldBinary)
+				if err != nil {
+					restorOldBinary(oldBinary, newBinary)
+					log.Fatal(err)
+					return err
+				}
+
+				err = process.Kill()
+				if err != nil {
+					log.Fatal(err)
+					return err
+				}
+
+				_, err = proc.Wait()
+				if err != nil {
+					log.Fatal(err)
+					return err
+				}
 
 			} else {
 				restorOldBinary(oldBinary, newBinary)
@@ -150,7 +192,13 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 
 			// Restart binary (Linux and UNIX)
 			file, _ := osext.Executable()
-			os.RemoveAll(oldBinary)
+			err = os.RemoveAll(oldBinary)
+			if err != nil {
+				restorOldBinary(oldBinary, newBinary)
+				log.Fatal(err)
+				return err
+			}
+
 			err = syscall.Exec(file, os.Args, os.Environ())
 			if err != nil {
 				restorOldBinary(oldBinary, newBinary)
@@ -168,7 +216,6 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 func start(args ...string) (p *os.Process, err error) {
 
 	if args[0], err = exec.LookPath(args[0]); err == nil {
-		//fmt.Println(args[0])
 		var procAttr os.ProcAttr
 		procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
 		p, err := os.StartProcess(args[0], args, &procAttr)
@@ -183,17 +230,15 @@ func start(args ...string) (p *os.Process, err error) {
 }
 
 func restorOldBinary(oldBinary, newBinary string) {
-	os.RemoveAll(newBinary)
-	os.Rename(oldBinary, newBinary)
-}
+	err := os.RemoveAll(newBinary)
+	if err != nil {
+		log.Println("[UPDATE]", "Remove new binary...ERROR")
+	}
 
-func getPlatformFile(filename string) string {
-
-	path, file := filepath.Split(filename)
-	var newPath = filepath.Dir(path)
-	var newFileName = newPath + string(os.PathSeparator) + file
-
-	return newFileName
+	err = os.Rename(oldBinary, newBinary)
+	if err != nil {
+		log.Println("[UPDATE]", "Restor old binary...ERROR")
+	}
 }
 
 func getFilenameFromPath(path string) string {
@@ -215,13 +260,25 @@ func copyFile(src, dst string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+
+	defer func() {
+		err = in.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+
+	defer func() {
+		err = out.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	_, err = io.Copy(out, in)
 	if err != nil {
@@ -242,10 +299,13 @@ func extractZIP(archive, target string) (err error) {
 	}
 
 	for _, file := range reader.File {
-
 		path := filepath.Join(target, file.Name)
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(path, file.Mode())
+			err = os.MkdirAll(path, file.Mode())
+			if err != nil {
+				return err
+			}
+
 			continue
 		}
 
@@ -253,13 +313,24 @@ func extractZIP(archive, target string) (err error) {
 		if err != nil {
 			return err
 		}
-		defer fileReader.Close()
+
+		defer func() {
+			err = fileReader.Close()
+		}()
+		if err != nil {
+			return err
+		}
 
 		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
 			return err
 		}
-		defer targetFile.Close()
+		defer func() {
+			err = targetFile.Close()
+		}()
+		if err != nil {
+			return err
+		}
 
 		if _, err := io.Copy(targetFile, fileReader); err != nil {
 			return err

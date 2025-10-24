@@ -14,8 +14,7 @@ import (
 
 // SSDP : SSPD / DLNA Server
 func SSDP() (err error) {
-
-	if config.Settings.SSDP == false || config.System.Flag.Info == true {
+	if !config.Settings.SSDP || config.System.Flag.Info {
 		return
 	}
 
@@ -25,11 +24,11 @@ func SSDP() (err error) {
 	signal.Notify(quit, os.Interrupt)
 
 	ad, err := ssdp.Advertise(
-		fmt.Sprintf("upnp:rootdevice"),                                  // send as "ST"
+		"upnp:rootdevice", // send as "ST"
 		fmt.Sprintf("uuid:%s::upnp:rootdevice", config.System.DeviceID), // send as "USN"
 		fmt.Sprintf("%s/device.xml", config.System.URLBase),             // send as "LOCATION"
-		config.System.AppName,                                           // send as "SERVER"
-		1800)                                                            // send as "maxAge" in "CACHE-CONTROL"
+		config.System.AppName, // send as "SERVER"
+		1800)                  // send as "maxAge" in "CACHE-CONTROL"
 
 	if err != nil {
 		return
@@ -42,25 +41,38 @@ func SSDP() (err error) {
 
 	go func(adv *ssdp.Advertiser) {
 
-		aliveTick := time.Tick(300 * time.Second)
+		aliveTick := time.NewTicker(300 * time.Second)
 
 	loop:
 		for {
 
 			select {
 
-			case <-aliveTick:
+			case <-aliveTick.C:
 				err = adv.Alive()
 				if err != nil {
 					cli.ShowError(err, 0)
-					adv.Bye()
-					adv.Close()
+					err = adv.Bye()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
+
+					err = adv.Close()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
 					break loop
 				}
 
 			case <-quit:
-				adv.Bye()
-				adv.Close()
+				err = adv.Bye()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
+				err = adv.Close()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
 				os.Exit(0)
 				break loop
 

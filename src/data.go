@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -46,9 +47,9 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				// Leerzeichen aus den Werten entfernen und Formatierung der Uhrzeit überprüfen (0000 - 2359)
 				var newUpdateTimes = make([]string, 0)
 
-				for _, v := range value.([]interface{}) {
+				for _, v := range value.([]any) {
 
-					v = strings.Replace(v.(string), " ", "", -1)
+					v = strings.ReplaceAll(v.(string), " ", "")
 
 					_, err := time.Parse("1504", v.(string))
 					if err != nil {
@@ -58,10 +59,6 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 					newUpdateTimes = append(newUpdateTimes, v.(string))
 
-				}
-
-				if len(newUpdateTimes) == 0 {
-					//newUpdateTimes = append(newUpdateTimes, "0000")
 				}
 
 				value = newUpdateTimes
@@ -153,7 +150,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 		return
 	}
 
-	if config.Settings.AuthenticationWEB == false {
+	if !config.Settings.AuthenticationWEB {
 
 		config.Settings.AuthenticationAPI = false
 		config.Settings.AuthenticationM3U = false
@@ -195,7 +192,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 		settings = config.Settings
 
-		if reloadData == true {
+		if reloadData {
 
 			err = buildDatabaseDVR()
 			if err != nil {
@@ -206,7 +203,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 		}
 
-		if cacheImages == true {
+		if cacheImages {
 
 			if config.Settings.EpgSource == "XEPG" && config.System.ImageCachingInProgress == 0 {
 
@@ -218,13 +215,19 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				switch config.Settings.CacheImages {
 
 				case false:
-					createXMLTVFile()
+					err = createXMLTVFile()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
 					createM3UFile()
 
 				case true:
 					go func() {
 
-						createXMLTVFile()
+						err := createXMLTVFile()
+						if err != nil {
+							cli.ShowError(err, 0)
+						}
 						createM3UFile()
 
 						config.System.ImageCachingInProgress = 1
@@ -245,10 +248,13 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 		}
 
-		if createXEPGFiles == true {
+		if createXEPGFiles {
 
 			go func() {
-				createXMLTVFile()
+				err = createXMLTVFile()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
 				createM3UFile()
 			}()
 
@@ -348,7 +354,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 			return
 		}
 
-		if reloadData == true {
+		if reloadData {
 
 			err = buildDatabaseDVR()
 			if err != nil {
@@ -419,16 +425,15 @@ func deleteLocalProviderFiles(dataID, fileType string) {
 
 	if _, ok := removeData[dataID]; ok {
 		delete(removeData, dataID)
-		os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
+		err := os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
 	}
-
-	return
 }
 
 // Filtereinstellungen speichern (WebUI)
 func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
-	var filterMap = make(map[int64]interface{})
-	var newData = make(map[int64]interface{})
 	var defaultFilter structs.FilterStruct
 	var newFilter = false
 
@@ -436,8 +441,8 @@ func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct,
 	defaultFilter.CaseSensitive = false
 	defaultFilter.LiveEvent = false
 
-	filterMap = config.Settings.Filter
-	newData = request.Filter
+	var filterMap = config.Settings.Filter
+	var newData = request.Filter
 	var createNewID = func() (id int64) {
 
 	newID:
@@ -533,17 +538,20 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 	if config.System.ScanInProgress == 0 {
 
 		config.System.ScanInProgress = 1
-		createXMLTVFile()
+		err = createXMLTVFile()
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
 		createM3UFile()
 		config.System.ScanInProgress = 0
-		cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+		cli.ShowInfo("XEPG: Ready to use")
 
 	} else {
 
 		// Wenn während des erstellen der Datanbank das Mapping erneut gespeichert wird, wird die Datenbank erst später erneut aktualisiert.
 		go func() {
 
-			if config.System.BackgroundProcess == true {
+			if config.System.BackgroundProcess {
 				return
 			}
 
@@ -558,10 +566,13 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 			}
 
 			config.System.ScanInProgress = 1
-			createXMLTVFile()
+			err = createXMLTVFile()
+			if err != nil {
+				cli.ShowError(err, 0)
+			}
 			createM3UFile()
 			config.System.ScanInProgress = 0
-			cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+			cli.ShowInfo("XEPG: Ready to use")
 
 			config.System.BackgroundProcess = false
 
@@ -602,7 +613,7 @@ func saveUserData(request structs.RequestStruct) (err error) {
 			return
 		}
 
-		if request.DeleteUser == true {
+		if request.DeleteUser {
 			err = authentication.RemoveUser(userID)
 			return
 		}
@@ -612,7 +623,11 @@ func saveUserData(request structs.RequestStruct) (err error) {
 
 		if _, ok := newUserData.(map[string]interface{})["delete"]; ok {
 
-			authentication.RemoveUser(userID)
+			err = authentication.RemoveUser(userID)
+			if err != nil {
+				log.Println("failed to remove user: ", err)
+				return
+			}
 
 		} else {
 
@@ -669,8 +684,6 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 			var filesMap = make(map[string]interface{})
 			var data = make(map[string]interface{})
 			var indicator, dataID string
-
-			filesMap = make(map[string]interface{})
 
 			data["type"] = key
 			data["new"] = true
@@ -826,7 +839,7 @@ func buildDatabaseDVR() (err error) {
 		for n, i := range playlistFile {
 
 			var channels []interface{}
-			var groupTitle, tvgID, uuid int = 0, 0, 0
+			var groupTitle, tvgID, uuid = 0, 0, 0
 			var keys = []string{"group-title", "tvg-id", "uuid"}
 			var compatibility = make(map[string]int)
 
@@ -870,13 +883,7 @@ func buildDatabaseDVR() (err error) {
 					case "group-title":
 						if value, ok := s[key]; ok {
 							if len(value) > 0 {
-
-								if _, ok := tmpGroupsM3U[value]; ok {
-									tmpGroupsM3U[value]++
-								} else {
-									tmpGroupsM3U[value] = 1
-								}
-
+								tmpGroupsM3U[value]++
 								groupTitle++
 							}
 						}
@@ -959,9 +966,8 @@ func buildDatabaseDVR() (err error) {
 
 	for group, count := range tmpGroupsM3U {
 		var text = fmt.Sprintf("%s (%d)", group, count)
-		var value = fmt.Sprintf("%s", group)
 		config.Data.Playlist.M3U.Groups.Text = append(config.Data.Playlist.M3U.Groups.Text, text)
-		config.Data.Playlist.M3U.Groups.Value = append(config.Data.Playlist.M3U.Groups.Value, value)
+		config.Data.Playlist.M3U.Groups.Value = append(config.Data.Playlist.M3U.Groups.Value, group)
 	}
 
 	sort.Strings(config.Data.Playlist.M3U.Groups.Text)
@@ -1084,8 +1090,10 @@ func setProviderCompatibility(id, fileType string, compatibility map[string]int)
 			config.Settings.Files.XMLTV = dataMap
 		}
 
-		saveSettings(config.Settings)
-
+		err := saveSettings(config.Settings)
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
 	}
 
 }

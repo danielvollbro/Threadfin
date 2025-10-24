@@ -10,8 +10,6 @@ import (
 
 // InitMaintenance : Wartungsprozess initialisieren
 func InitMaintenance() (err error) {
-
-	rand.Seed(time.Now().Unix())
 	config.System.TimeForAutoUpdate = fmt.Sprintf("0%d%d", randomTime(0, 2), randomTime(10, 59))
 
 	go maintenance()
@@ -42,11 +40,21 @@ func maintenance() {
 					}
 
 					// Playlist und XMLTV Dateien aktualisieren
-					getProviderData("m3u", "")
-					getProviderData("hdhr", "")
+					err = getProviderData("m3u", "")
+					if err != nil {
+						cli.ShowError(err, 000)
+					}
+
+					err = getProviderData("hdhr", "")
+					if err != nil {
+						cli.ShowError(err, 000)
+					}
 
 					if config.Settings.EpgSource == "XEPG" {
-						getProviderData("xmltv", "")
+						err = getProviderData("xmltv", "")
+						if err != nil {
+							cli.ShowError(err, 000)
+						}
 					}
 
 					// Datenbank für DVR erstellen
@@ -58,7 +66,10 @@ func maintenance() {
 					config.SystemMutex.Lock()
 					if !config.Settings.CacheImages && config.System.ImageCachingInProgress == 0 {
 						config.SystemMutex.Unlock()
-						removeChildItems(config.System.Folder.ImagesCache)
+						err = removeChildItems(config.System.Folder.ImagesCache)
+						if err != nil {
+							cli.ShowError(err, 000)
+						}
 					} else {
 						config.SystemMutex.Unlock()
 					}
@@ -74,7 +85,10 @@ func maintenance() {
 			config.SystemMutex.Lock()
 			if config.System.TimeForAutoUpdate == t.Format("1504") {
 				config.SystemMutex.Unlock()
-				BinaryUpdate()
+				err := BinaryUpdate()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
 			} else {
 				config.SystemMutex.Unlock()
 			}
@@ -89,6 +103,5 @@ func maintenance() {
 }
 
 func randomTime(min, max int) int {
-	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
 }

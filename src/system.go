@@ -16,9 +16,7 @@ import (
 
 // Entwicklerinfos anzeigen
 func showDevInfo() {
-
-	if config.System.Dev == true {
-
+	if config.System.Dev {
 		fmt.Print("\033[31m")
 		fmt.Println("* * * * * D E V   M O D E * * * * *")
 		fmt.Println("Version: ", config.System.Version)
@@ -26,10 +24,7 @@ func showDevInfo() {
 		fmt.Println("* * * * * * * * * * * * * * * * * *")
 		fmt.Print("\033[0m")
 		fmt.Println()
-
 	}
-
-	return
 }
 
 // Alle Systemordner erstellen
@@ -94,13 +89,26 @@ func createSystemFiles() (err error) {
 
 func updateUrlsJson() {
 
-	getProviderData("m3u", "")
-	getProviderData("hdhr", "")
+	err := getProviderData("m3u", "")
+	if err != nil {
+		cli.ShowError(err, 0)
+		return
+	}
+
+	err = getProviderData("hdhr", "")
+	if err != nil {
+		cli.ShowError(err, 0)
+		return
+	}
 
 	if config.Settings.EpgSource == "XEPG" {
-		getProviderData("xmltv", "")
+		err = getProviderData("xmltv", "")
+		if err != nil {
+			cli.ShowError(err, 0)
+			return
+		}
 	}
-	err := buildDatabaseDVR()
+	err = buildDatabaseDVR()
 	if err != nil {
 		cli.ShowError(err, 0)
 		return
@@ -248,7 +256,7 @@ func saveSettings(settings structs.SettingsStruct) (err error) {
 
 	config.Settings = settings
 
-	if config.System.Dev == true {
+	if config.System.Dev {
 		config.Settings.UUID = "2019-01-DEV-Threadfin!"
 	}
 
@@ -288,8 +296,6 @@ func setGlobalDomain(domain string) {
 		config.System.Addresses.M3U = cli.GetErrMsg(2106)
 		config.System.Addresses.XML = cli.GetErrMsg(2106)
 	}
-
-	return
 }
 
 // UUID generieren
@@ -300,7 +306,6 @@ func createUUID() (uuid string) {
 
 // Eindeutige Geräte ID für Plex generieren
 func setDeviceID() {
-
 	var id = config.Settings.UUID
 
 	switch config.Settings.Tuner {
@@ -310,8 +315,6 @@ func setDeviceID() {
 	default:
 		config.System.DeviceID = fmt.Sprintf("%s:%d", id, config.Settings.Tuner)
 	}
-
-	return
 }
 
 // Provider Streaming-URL zu Threadfin Streaming-URL konvertieren
@@ -382,10 +385,6 @@ func getStreamInfo(urlID string) (streamInfo structs.StreamInfo, err error) {
 
 	if s, ok := config.Data.Cache.StreamingURLS[urlID]; ok {
 		s.URL = strings.Trim(s.URL, "\r\n")
-		s.BackupChannel1 = s.BackupChannel1
-		s.BackupChannel2 = s.BackupChannel2
-		s.BackupChannel3 = s.BackupChannel3
-
 		streamInfo = s
 	} else {
 		err = errors.New("streaming error")

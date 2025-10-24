@@ -110,7 +110,7 @@ func BinaryUpdate() (err error) {
 		err = up2date.GetVersion()
 		if err != nil {
 
-			debug = fmt.Sprintf(err.Error())
+			debug = err.Error()
 			cli.ShowDebug(debug, 1)
 
 			return nil
@@ -118,7 +118,7 @@ func BinaryUpdate() (err error) {
 
 		if len(updater.Response.Reason) > 0 {
 
-			err = fmt.Errorf(fmt.Sprintf("Update Server: %s", updater.Response.Reason))
+			err = fmt.Errorf("update Server: %s", updater.Response.Reason)
 			cli.ShowError(err, 6002)
 
 			return nil
@@ -304,7 +304,7 @@ func convertToNewFilter(oldFilter []interface{}) (newFilterMap map[int]interface
 
 func setValueForUUID() (err error) {
 
-	xepg, err := loadJSONFileToMap(config.System.File.XEPG)
+	xepg, _ := loadJSONFileToMap(config.System.File.XEPG)
 
 	for _, c := range xepg {
 

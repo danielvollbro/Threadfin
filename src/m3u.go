@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/url"
 	"os"
@@ -42,8 +43,6 @@ func parsePlaylist(filename, fileType string) (channels []interface{}, err error
 
 // Streams filtern
 func filterThisStream(s interface{}) (status bool, liveEvent bool) {
-
-	status = false
 	var stream = s.(map[string]string)
 	var regexpYES = `[{]+[^.]+[}]`
 	var regexpNO = `!+[{]+[^.]+[}]`
@@ -62,7 +61,7 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 		var exclude, include string
 		var match = false
 
-		var streamValues = strings.Replace(stream["_values"], "\r", "", -1)
+		var streamValues = strings.ReplaceAll(stream["_values"], "\r", "")
 
 		if v, ok := stream["group-title"]; ok {
 			group = v
@@ -79,8 +78,8 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 		if len(val) == 1 {
 
 			exclude = val[0][2 : len(val[0])-1]
-			filter.Rule = strings.Replace(filter.Rule, " "+val[0], "", -1)
-			filter.Rule = strings.Replace(filter.Rule, val[0], "", -1)
+			filter.Rule = strings.ReplaceAll(filter.Rule, " "+val[0], "")
+			filter.Rule = strings.ReplaceAll(filter.Rule, val[0], "")
 
 		}
 
@@ -91,8 +90,8 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 		if len(val) == 1 {
 
 			include = val[0][1 : len(val[0])-1]
-			filter.Rule = strings.Replace(filter.Rule, " "+val[0], "", -1)
-			filter.Rule = strings.Replace(filter.Rule, val[0], "", -1)
+			filter.Rule = strings.ReplaceAll(filter.Rule, " "+val[0], "")
+			filter.Rule = strings.ReplaceAll(filter.Rule, val[0], "")
 
 		}
 
@@ -125,18 +124,18 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 			}
 		}
 
-		if match == true {
+		if match {
 
 			if len(exclude) > 0 {
 				var status = checkConditions(search, exclude, "exclude")
-				if status == false {
+				if !status {
 					return false, liveEvent
 				}
 			}
 
 			if len(include) > 0 {
 				var status = checkConditions(search, include, "include")
-				if status == false {
+				if !status {
 					return false, liveEvent
 				}
 			}
@@ -163,8 +162,8 @@ func checkConditions(streamValues, conditions, coType string) (status bool) {
 
 	}
 
-	conditions = strings.Replace(conditions, ", ", ",", -1)
-	conditions = strings.Replace(conditions, " ,", ",", -1)
+	conditions = strings.ReplaceAll(conditions, ", ", ",")
+	conditions = strings.ReplaceAll(conditions, " ,", ",")
 
 	var keys = strings.Split(conditions, ",")
 
@@ -271,7 +270,14 @@ func buildM3U(groups []string) (m3u string, err error) {
 		if err != nil {
 			return "", err
 		}
-		defer file.Close()
+
+		defer func() {
+			err = file.Close()
+		}()
+		if err != nil {
+			return "", err
+		}
+
 		writer = bufio.NewWriterSize(file, 1<<20) // 1MB buffer
 		if _, err = writer.WriteString(header); err != nil {
 			return "", err
@@ -332,7 +338,7 @@ func buildM3U(groups []string) (m3u string, err error) {
 		}
 
 		// Disabling so not to rewrite stream to https domain when disable stream from https set
-		if config.Settings.ForceHttps && config.Settings.HttpsThreadfinDomain != "" && config.Settings.ExcludeStreamHttps == false {
+		if config.Settings.ForceHttps && config.Settings.HttpsThreadfinDomain != "" && !config.Settings.ExcludeStreamHttps {
 			u, err := url.Parse(channel.URL)
 			if err == nil {
 				u.Scheme = "https"
@@ -437,8 +443,18 @@ func probeChannel(request structs.RequestStruct) (string, string, string, error)
 
 func parseFrameRate(parts []string) int {
 	numerator, denom := 1, 1
-	fmt.Sscanf(parts[0], "%d", &numerator)
-	fmt.Sscanf(parts[1], "%d", &denom)
+	_, err := fmt.Sscanf(parts[0], "%d", &numerator)
+	if err != nil {
+		log.Println("Error parsing frame rate numerator:", err)
+		return 0
+	}
+
+	_, err = fmt.Sscanf(parts[1], "%d", &denom)
+	if err != nil {
+		log.Println("Error parsing frame rate denominator:", err)
+		return 0
+	}
+
 	if denom == 0 {
 		return 0
 	}

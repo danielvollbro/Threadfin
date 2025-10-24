@@ -157,11 +157,10 @@ func getLineup() (jsonContent []byte, err error) {
 				return
 			}
 
-			if xepgChannel.XActive == true && !xepgChannel.XHideChannel {
+			if xepgChannel.XActive && !xepgChannel.XHideChannel {
 				var stream structs.LineupStream
 				stream.GuideName = xepgChannel.XName
 				stream.GuideNumber = xepgChannel.XChannelID
-				//stream.URL = fmt.Sprintf("%s://%s/stream/%s-%s", System.ServerProtocol.DVR, System.Domain, xepgChannel.FileM3UID, base64.StdEncoding.EncodeToString([]byte(xepgChannel.URL)))
 				stream.URL, err = createStreamingURL("DVR", xepgChannel.FileM3UID, xepgChannel.XChannelID, xepgChannel.XName, xepgChannel.URL, xepgChannel.BackupChannel1, xepgChannel.BackupChannel2, xepgChannel.BackupChannel3)
 				if err == nil {
 					lineup = append(lineup, stream)
@@ -176,10 +175,13 @@ func getLineup() (jsonContent []byte, err error) {
 	}
 
 	jsonContent, err = json.MarshalIndent(lineup, "", "  ")
+	if err != nil {
+		return
+	}
 
 	config.Data.Cache.PMS = nil
 
-	saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	err = saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
 
 	return
 }
@@ -231,8 +233,7 @@ func getGuideNumberPMS(channelName string) (pmsID string, err error) {
 
 		pmsID = getNewID(channelName)
 		config.Data.Cache.PMS[channelName] = pmsID
-		saveMapToJSONFile(config.System.File.PMS, config.Data.Cache.PMS)
-
+		err = saveMapToJSONFile(config.System.File.PMS, config.Data.Cache.PMS)
 	}
 
 	return

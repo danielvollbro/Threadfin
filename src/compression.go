@@ -18,10 +18,20 @@ func zipFiles(sourceFiles []string, target string) error {
 	if err != nil {
 		return err
 	}
-	defer zipfile.Close()
+	defer func() {
+		err = zipfile.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	archive := zip.NewWriter(zipfile)
-	defer archive.Close()
+	defer func() {
+		err = archive.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	for _, source := range sourceFiles {
 
@@ -35,7 +45,7 @@ func zipFiles(sourceFiles []string, target string) error {
 			baseDir = filepath.Base(config.System.Folder.Data)
 		}
 
-		filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
 
 			if err != nil {
 				return err
@@ -69,13 +79,21 @@ func zipFiles(sourceFiles []string, target string) error {
 			if err != nil {
 				return err
 			}
-			defer file.Close()
+			defer func() {
+				err = file.Close()
+			}()
+			if err != nil {
+				return err
+			}
 
 			_, err = io.Copy(writer, file)
 
 			return err
 
 		})
+		if err != nil {
+			return err
+		}
 
 	}
 
@@ -97,7 +115,11 @@ func extractZIP(archive, target string) (err error) {
 
 		path := filepath.Join(target, file.Name)
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(path, file.Mode())
+			err = os.MkdirAll(path, file.Mode())
+			if err != nil {
+				return err
+			}
+
 			continue
 		}
 
@@ -105,13 +127,23 @@ func extractZIP(archive, target string) (err error) {
 		if err != nil {
 			return err
 		}
-		defer fileReader.Close()
+		defer func() {
+			err = fileReader.Close()
+		}()
+		if err != nil {
+			return err
+		}
 
 		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
 			return err
 		}
-		defer targetFile.Close()
+		defer func() {
+			err = targetFile.Close()
+		}()
+		if err != nil {
+			return err
+		}
 
 		if _, err := io.Copy(targetFile, fileReader); err != nil {
 			return err
@@ -149,38 +181,36 @@ func extractGZIP(gzipBody []byte, fileSource string) (body []byte, err error) {
 	return
 }
 
-func compressGZIP(data *[]byte, file string) (err error) {
-
-	if len(file) != 0 {
-
-		f, err := os.Create(file)
-		if err != nil {
-			return err
-		}
-
-		w := gzip.NewWriter(f)
-		w.Write(*data)
-		w.Close()
-	}
-
-	return
-}
-
 func compressGZIPFile(sourcePath, targetPath string) (err error) {
 	in, err := os.Open(sourcePath)
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() {
+		err = in.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	out, err := os.Create(targetPath)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		err = out.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	gw := gzip.NewWriter(out)
-	defer gw.Close()
+	defer func() {
+		err = gw.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	_, err = io.Copy(gw, in)
 	return err

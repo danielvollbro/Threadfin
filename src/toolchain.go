@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -64,7 +65,10 @@ func checkVFSFolder(path string, vfs avfs.VFS) (err error) {
 		// Failure to do so here will result in a panic error and the stream not playing
 		vm := vfs.(avfs.VolumeManager)
 		if vfs.OSType() == avfs.OsWindows && avfs.VolumeName(vfs, path) != "C:" {
-			vm.VolumeAdd(path)
+			err = vm.VolumeAdd(path)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = vfs.MkdirAll(getPlatformPath(path), 0755)
@@ -113,8 +117,6 @@ func checkFile(filename string) (err error) {
 	switch mode := fi.Mode(); {
 	case mode.IsDir():
 		err = fmt.Errorf("%s: %s", file, cli.GetErrMsg(1072))
-	case mode.IsRegular():
-		break
 	}
 
 	return
@@ -176,12 +178,6 @@ func getFilenameFromPath(path string) (file string) {
 	return filepath.Base(path)
 }
 
-// Nicht mehr verwendete Systemdaten löschen
-func removeOldSystemData() {
-	// Temporären Ordner löschen
-	os.RemoveAll(config.System.Folder.Temp)
-}
-
 // Sucht eine Datei im OS
 func searchFileInOS(file string) (path string) {
 
@@ -194,7 +190,7 @@ func searchFileInOS(file string) (path string) {
 		out, err := cmd.CombinedOutput()
 		if err == nil {
 
-			var slice = strings.Split(strings.Replace(string(out), "\r\n", "\n", -1), "\n")
+			var slice = strings.Split(strings.ReplaceAll(string(out), "\r\n", "\n"), "\n")
 
 			if len(slice) > 0 {
 				path = strings.Trim(slice[0], "\r\n")
@@ -243,15 +239,10 @@ func mapToJSON(tmpMap interface{}) string {
 func jsonToMap(content string) map[string]interface{} {
 
 	var tmpMap = make(map[string]interface{})
-	json.Unmarshal([]byte(content), &tmpMap)
-
-	return (tmpMap)
-}
-
-func jsonToMapInt64(content string) map[int64]interface{} {
-
-	var tmpMap = make(map[int64]interface{})
-	json.Unmarshal([]byte(content), &tmpMap)
+	err := json.Unmarshal([]byte(content), &tmpMap)
+	if err != nil {
+		return make(map[string]interface{})
+	}
 
 	return (tmpMap)
 }
@@ -272,7 +263,11 @@ func saveMapToJSONFile(file string, tmpMap interface{}) error {
 		return err
 	}
 
-	os.Create(filename)
+	_, err = os.Create(filename)
+	if err != nil {
+		return err
+	}
+
 	err = os.WriteFile(filename, []byte(jsonString), 0644)
 	if err != nil {
 		return err
@@ -283,7 +278,16 @@ func saveMapToJSONFile(file string, tmpMap interface{}) error {
 
 func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
 	f, err := os.Open(getPlatformFile(file))
-	defer f.Close()
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		err = f.Close()
+	}()
+	if err != nil {
+		return
+	}
 
 	content, err := io.ReadAll(f)
 
@@ -291,7 +295,7 @@ func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
 		err = json.Unmarshal([]byte(content), &tmpMap)
 	}
 
-	f.Close()
+	err = f.Close()
 
 	return
 }
@@ -300,10 +304,19 @@ func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
 func readByteFromFile(file string) (content []byte, err error) {
 
 	f, err := os.Open(getPlatformFile(file))
-	defer f.Close()
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		err = f.Close()
+	}()
+	if err != nil {
+		return
+	}
 
 	content, err = io.ReadAll(f)
-	f.Close()
+	err = f.Close()
 
 	return
 }
@@ -393,7 +406,11 @@ func randomString(n int) string {
 
 	var bytes = make([]byte, n)
 
-	rand.Read(bytes)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
 
 	for i, b := range bytes {
 		bytes[i] = alphanum[b%byte(len(alphanum))]
@@ -428,17 +445,6 @@ func indexOfString(element string, data []string) int {
 }
 
 func indexOfFloat64(element float64, data []float64) int {
-
-	for k, v := range data {
-		if element == v {
-			return (k)
-		}
-	}
-
-	return -1
-}
-
-func indexOfInt(element int, data []int) int {
 
 	for k, v := range data {
 		if element == v {

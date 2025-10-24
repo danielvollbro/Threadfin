@@ -6,11 +6,9 @@
 package src
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -218,22 +216,4 @@ func Run() {
 		os.Exit(0)
 	}
 
-}
-
-func getPIDs(command string) ([]string, error) {
-	var out bytes.Buffer
-	cmd := exec.Command("bash", "-c", command)
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		return nil, err
-	}
-	pids := strings.Fields(out.String())
-	return pids, nil
-}
-
-// killProcess kills a process by its PID
-func killProcess(pid string) error {
-	cmd := exec.Command("kill", "-9", pid)
-	return cmd.Run()
 }

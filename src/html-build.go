@@ -47,7 +47,10 @@ func BuildGoFile() error {
 	content += createMapFromFiles(htmlFolder) + "\n"
 
 	content += "}" + "\n\n"
-	writeStringToFile(goFile, content)
+	err = writeStringToFile(goFile, content)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -78,8 +81,7 @@ func createMapFromFiles(folder string) string {
 }
 
 func readFilesToMap(path string, info os.FileInfo, err error) error {
-
-	if info.IsDir() == false {
+	if !info.IsDir() {
 		var base64Str = fileToBase64(getLocalPath(path))
 		blankMap[path] = base64Str
 	}
@@ -90,7 +92,11 @@ func readFilesToMap(path string, info os.FileInfo, err error) error {
 func fileToBase64(file string) string {
 
 	imgFile, _ := os.Open(file)
-	defer imgFile.Close()
+	var err error
+	defer func() {
+		err = imgFile.Close()
+	}()
+	checkErr(err)
 
 	// create a new buffer base on file size
 	fInfo, _ := imgFile.Stat()
@@ -99,7 +105,8 @@ func fileToBase64(file string) string {
 
 	// read file content into buffer
 	fReader := bufio.NewReader(imgFile)
-	fReader.Read(buf)
+	_, err = fReader.Read(buf)
+	checkErr(err)
 
 	imgBase64Str := base64.StdEncoding.EncodeToString(buf)
 

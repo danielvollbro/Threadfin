@@ -45,7 +45,7 @@ func Init() (err error) {
 
 	// Ordnerpfade festlegen
 	var tempFolder = os.TempDir() + string(os.PathSeparator) + config.System.AppName + string(os.PathSeparator)
-	tempFolder = getPlatformPath(strings.Replace(tempFolder, "//", "/", -1))
+	tempFolder = getPlatformPath(strings.ReplaceAll(tempFolder, "//", "/"))
 
 	if len(config.System.Folder.Config) == 0 {
 		config.System.Folder.Config = GetUserHomeDirectory() + string(os.PathSeparator) + "." + config.System.AppName + string(os.PathSeparator)
@@ -135,12 +135,6 @@ func Init() (err error) {
 		return
 	}
 
-	// Berechtigung aller Ordner überprüfen
-	err = checkFilePermission(config.System.Folder.Config)
-	if err == nil {
-		err = checkFilePermission(config.System.Folder.Temp)
-	}
-
 	// Separaten tmp Ordner für jede Instanz
 	//System.Folder.Temp = System.Folder.Temp + Settings.UUID + string(os.PathSeparator)
 	cli.ShowInfo(fmt.Sprintf("Temporary Folder:%s", getPlatformPath(config.System.Folder.Temp)))
@@ -179,7 +173,7 @@ func Init() (err error) {
 	config.System.URLBase = fmt.Sprintf("%s://%s:%s", config.System.ServerProtocol.WEB, config.System.IPAddress, config.Settings.Port)
 
 	// HTML Dateien erstellen, mit dev == true werden die lokalen HTML Dateien verwendet
-	if config.System.Dev == true {
+	if config.System.Dev {
 
 		HTMLInit("webUI", "src", "html"+string(os.PathSeparator), "src"+string(os.PathSeparator)+"webUI.go")
 		err = BuildGoFile()
@@ -220,18 +214,31 @@ func StartSystem(updateProviderFiles bool) (err error) {
 	cli.ShowInfo(fmt.Sprintf("Unfiltered Chan. Limit:%d", config.System.UnfilteredChannelLimit))
 
 	// Providerdaten aktualisieren
-	if len(config.Settings.Files.M3U) > 0 && config.Settings.FilesUpdate == true || updateProviderFiles == true {
+	if len(config.Settings.Files.M3U) > 0 && config.Settings.FilesUpdate || updateProviderFiles {
 
 		err = ThreadfinAutoBackup()
 		if err != nil {
 			cli.ShowError(err, 1090)
 		}
 
-		getProviderData("m3u", "")
-		getProviderData("hdhr", "")
+		err = getProviderData("m3u", "")
+		if err != nil {
+			cli.ShowError(err, 0)
+			return
+		}
+
+		err = getProviderData("hdhr", "")
+		if err != nil {
+			cli.ShowError(err, 0)
+			return
+		}
 
 		if config.Settings.EpgSource == "XEPG" {
-			getProviderData("xmltv", "")
+			err = getProviderData("xmltv", "")
+			if err != nil {
+				cli.ShowError(err, 0)
+				return
+			}
 		}
 
 	}
