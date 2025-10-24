@@ -51,7 +51,10 @@ func maintenance() {
 					}
 
 					if config.Settings.EpgSource == "XEPG" {
-						getProviderData("xmltv", "")
+						err = getProviderData("xmltv", "")
+						if err != nil {
+							cli.ShowError(err, 000)
+						}
 					}
 
 					// Datenbank für DVR erstellen
@@ -63,7 +66,10 @@ func maintenance() {
 					config.SystemMutex.Lock()
 					if !config.Settings.CacheImages && config.System.ImageCachingInProgress == 0 {
 						config.SystemMutex.Unlock()
-						removeChildItems(config.System.Folder.ImagesCache)
+						err = removeChildItems(config.System.Folder.ImagesCache)
+						if err != nil {
+							cli.ShowError(err, 000)
+						}
 					} else {
 						config.SystemMutex.Unlock()
 					}
@@ -79,7 +85,10 @@ func maintenance() {
 			config.SystemMutex.Lock()
 			if config.System.TimeForAutoUpdate == t.Format("1504") {
 				config.SystemMutex.Unlock()
-				BinaryUpdate()
+				err := BinaryUpdate()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
 			} else {
 				config.SystemMutex.Unlock()
 			}
