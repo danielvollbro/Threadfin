@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"threadfin/src/internal/authentication"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	"threadfin/src/internal/structs"
@@ -36,7 +37,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 			switch key {
 
 			case "tuner":
-				showWarning(2105)
+				cli.ShowWarning(2105)
 
 			case "epgSource":
 				reloadData = true
@@ -51,7 +52,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 					_, err := time.Parse("1504", v.(string))
 					if err != nil {
-						ShowError(err, 1012)
+						cli.ShowError(err, 1012)
 						return config.Settings, err
 					}
 
@@ -140,7 +141,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				debug = fmt.Sprintf("%T", value)
 			}
 
-			showDebug(debug, 1)
+			cli.ShowDebug(debug, 1)
 
 		}
 
@@ -176,14 +177,14 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 	case "ffmpeg":
 
 		if len(config.Settings.FFmpegPath) == 0 {
-			err = errors.New(getErrMsg(2020))
+			err = errors.New(cli.GetErrMsg(2020))
 			return
 		}
 
 	case "vlc":
 
 		if len(config.Settings.VLCPath) == 0 {
-			err = errors.New(getErrMsg(2021))
+			err = errors.New(cli.GetErrMsg(2021))
 			return
 		}
 
@@ -211,7 +212,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 				config.Data.Cache.Images, err = imgcache.New(config.System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", config.System.ServerProtocol.WEB, config.System.Domain), config.Settings.CacheImages)
 				if err != nil {
-					ShowError(err, 0)
+					cli.ShowError(err, 0)
 				}
 
 				switch config.Settings.CacheImages {
@@ -227,10 +228,10 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 						createM3UFile()
 
 						config.System.ImageCachingInProgress = 1
-						showInfo("Image Caching:Images are cached")
+						cli.ShowInfo("Image Caching:Images are cached")
 
 						config.Data.Cache.Images.Image.Caching()
-						showInfo("Image Caching:Done")
+						cli.ShowInfo("Image Caching:Done")
 
 						config.System.ImageCachingInProgress = 0
 
@@ -470,7 +471,7 @@ func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct,
 
 				if len(filter) == 0 {
 
-					err = errors.New(getErrMsg(1014))
+					err = errors.New(cli.GetErrMsg(1014))
 					if newFilter {
 						delete(filterMap, dataID)
 					}
@@ -514,7 +515,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 
 	config.Data.Cache.Images, err = imgcache.New(config.System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", config.System.ServerProtocol.WEB, config.System.Domain), config.Settings.CacheImages)
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 	}
 
 	err = json.Unmarshal([]byte(mapToJSON(request.EpgMapping)), &tmp)
@@ -535,7 +536,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 		createXMLTVFile()
 		createM3UFile()
 		config.System.ScanInProgress = 0
-		showInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+		cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
 
 	} else {
 
@@ -560,7 +561,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 			createXMLTVFile()
 			createM3UFile()
 			config.System.ScanInProgress = 0
-			showInfo("XEPG:" + fmt.Sprintf("Ready to use"))
+			cli.ShowInfo("XEPG:" + fmt.Sprintf("Ready to use"))
 
 			config.System.BackgroundProcess = false
 
@@ -701,14 +702,14 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 				err = getProviderData(key, dataID)
 
 				if err != nil {
-					ShowError(err, 000)
+					cli.ShowError(err, 000)
 					delete(filesMap, dataID)
 					return
 				}
 
 				err = buildDatabaseDVR()
 				if err != nil {
-					ShowError(err, 000)
+					cli.ShowError(err, 000)
 					delete(filesMap, dataID)
 					return
 				}
@@ -725,7 +726,7 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 
 				if err != nil {
 
-					ShowError(err, 000)
+					cli.ShowError(err, 000)
 					delete(filesMap, dataID)
 					return
 
@@ -842,9 +843,9 @@ func buildDatabaseDVR() (err error) {
 			}
 
 			if err != nil {
-				ShowError(err, 1005)
+				cli.ShowError(err, 1005)
 				err = errors.New(playlistName + ": Local copy of the file no longer exists")
-				ShowError(err, 0)
+				cli.ShowError(err, 0)
 				playlistFile = append(playlistFile[:n], playlistFile[n+1:]...)
 			}
 
@@ -976,17 +977,17 @@ func buildDatabaseDVR() (err error) {
 	}
 
 	if len(config.Data.Streams.Active) > config.System.PlexChannelLimit {
-		showWarning(2000)
+		cli.ShowWarning(2000)
 	}
 
 	if len(config.Settings.Filter) == 0 && len(config.Data.Streams.All) > config.System.UnfilteredChannelLimit {
-		showWarning(2001)
+		cli.ShowWarning(2001)
 	}
 
 	config.System.ScanInProgress = 0
-	showInfo(fmt.Sprintf("All streams:%d", len(config.Data.Streams.All)))
-	showInfo(fmt.Sprintf("Active streams:%d", len(config.Data.Streams.Active)))
-	showInfo(fmt.Sprintf("Filter:%d", len(config.Data.Filter)))
+	cli.ShowInfo(fmt.Sprintf("All streams:%d", len(config.Data.Streams.All)))
+	cli.ShowInfo(fmt.Sprintf("Active streams:%d", len(config.Data.Streams.Active)))
+	cli.ShowInfo(fmt.Sprintf("Filter:%d", len(config.Data.Filter)))
 
 	sort.Strings(config.Data.StreamPreviewUI.Active)
 	sort.Strings(config.Data.StreamPreviewUI.Inactive)

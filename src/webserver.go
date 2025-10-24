@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"threadfin/src/internal/authentication"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/structs"
 
@@ -48,16 +49,16 @@ func StartWebserver() (err error) {
 	ips := len(config.System.IPAddressesV4) + len(config.System.IPAddressesV6) - 1
 	switch ips {
 	case 0:
-		showHighlight(fmt.Sprintf("Web Interface:%s://%s:%s/web/", config.System.ServerProtocol.WEB, ipAddress, config.Settings.Port))
+		cli.ShowHighlight(fmt.Sprintf("Web Interface:%s://%s:%s/web/", config.System.ServerProtocol.WEB, ipAddress, config.Settings.Port))
 	case 1:
-		showHighlight(fmt.Sprintf("Web Interface:%s://%s:%s/web/ | Threadfin is also available via the other %d IP.", config.System.ServerProtocol.WEB, ipAddress, config.Settings.Port, ips))
+		cli.ShowHighlight(fmt.Sprintf("Web Interface:%s://%s:%s/web/ | Threadfin is also available via the other %d IP.", config.System.ServerProtocol.WEB, ipAddress, config.Settings.Port, ips))
 	default:
-		showHighlight(fmt.Sprintf("Web Interface:%s://%s:%s/web/ | Threadfin is also available via the other %d IP's.", config.System.ServerProtocol.WEB, ipAddress, config.Settings.Port, len(config.System.IPAddressesV4)+len(config.System.IPAddressesV6)-1))
+		cli.ShowHighlight(fmt.Sprintf("Web Interface:%s://%s:%s/web/ | Threadfin is also available via the other %d IP's.", config.System.ServerProtocol.WEB, ipAddress, config.Settings.Port, len(config.System.IPAddressesV4)+len(config.System.IPAddressesV6)-1))
 	}
 	config.SystemMutex.Unlock()
 
 	if err = http.ListenAndServe(ipAddress+":"+port, nil); err != nil {
-		ShowError(err, 1001)
+		cli.ShowError(err, 1001)
 		return
 	}
 
@@ -91,7 +92,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			config.SystemMutex.Unlock()
 			_, err := basicAuth(r, "authentication.pms")
 			if err != nil {
-				ShowError(err, 000)
+				cli.ShowError(err, 000)
 				httpStatusError(w, r, 403)
 				return
 			}
@@ -123,7 +124,7 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 	var path = strings.Replace(r.RequestURI, "/stream/", "", 1)
 	streamInfo, err := getStreamInfo(path)
 	if err != nil {
-		ShowError(err, 1203)
+		cli.ShowError(err, 1203)
 		httpStatusError(w, r, 404)
 		return
 	}
@@ -156,13 +157,13 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 		client := &http.Client{}
 		req, err := http.NewRequest("HEAD", streamInfo.URL, nil)
 		if err != nil {
-			ShowError(err, 1501)
+			cli.ShowError(err, 1501)
 			httpStatusError(w, r, 405)
 			return
 		}
 		resp, err := client.Do(req)
 		if err != nil {
-			ShowError(err, 1502)
+			cli.ShowError(err, 1502)
 			httpStatusError(w, r, 405)
 			return
 		}
@@ -194,30 +195,30 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 
 	switch playListBuffer {
 	case "-":
-		showInfo(fmt.Sprintf("Buffer:false [%s]", playListBuffer))
+		cli.ShowInfo(fmt.Sprintf("Buffer:false [%s]", playListBuffer))
 	case "threadfin":
 		if strings.Index(streamInfo.URL, "rtsp://") != -1 || strings.Index(streamInfo.URL, "rtp://") != -1 {
 			err = errors.New("RTSP and RTP streams are not supported")
-			ShowError(err, 2004)
-			showInfo("Streaming URL:" + streamInfo.URL)
+			cli.ShowError(err, 2004)
+			cli.ShowInfo("Streaming URL:" + streamInfo.URL)
 			http.Redirect(w, r, streamInfo.URL, 302)
 			return
 		}
-		showInfo(fmt.Sprintf("Buffer:true [%s]", playListBuffer))
+		cli.ShowInfo(fmt.Sprintf("Buffer:true [%s]", playListBuffer))
 	default:
-		showInfo(fmt.Sprintf("Buffer:true [%s]", playListBuffer))
+		cli.ShowInfo(fmt.Sprintf("Buffer:true [%s]", playListBuffer))
 	}
 
-	showInfo(fmt.Sprintf("Channel Name:%s", streamInfo.Name))
-	showInfo(fmt.Sprintf("Client User-Agent:%s", r.Header.Get("User-Agent")))
+	cli.ShowInfo(fmt.Sprintf("Channel Name:%s", streamInfo.Name))
+	cli.ShowInfo(fmt.Sprintf("Client User-Agent:%s", r.Header.Get("User-Agent")))
 
 	switch playListBuffer {
 	case "-":
-		showInfo("Streaming URL:" + streamInfo.URL)
+		cli.ShowInfo("Streaming URL:" + streamInfo.URL)
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		http.Redirect(w, r, streamInfo.URL, 302)
-		showInfo("Streaming Info:URL was passed to the client.")
-		showInfo("Streaming Info:Threadfin is no longer involved, the client connects directly to the streaming server.")
+		cli.ShowInfo("Streaming Info:URL was passed to the client.")
+		cli.ShowInfo("Streaming Info:Threadfin is no longer involved, the client connects directly to the streaming server.")
 	default:
 		bufferingStream(streamInfo.PlaylistID, streamInfo.URL, streamInfo.BackupChannel1, streamInfo.BackupChannel2, streamInfo.BackupChannel3, streamInfo.Name, w, r)
 	}
@@ -254,7 +255,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 		err = urlAuth(r, requestType)
 		if err != nil {
-			ShowError(err, 000)
+			cli.ShowError(err, 000)
 			httpStatusError(w, r, 403)
 			return
 		}
@@ -278,7 +279,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 		err = urlAuth(r, requestType)
 		if err != nil {
-			ShowError(err, 000)
+			cli.ShowError(err, 000)
 			httpStatusError(w, r, 403)
 			return
 		}
@@ -315,7 +316,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 		content, err = buildM3U(groups)
 		if err != nil {
-			ShowError(err, 000)
+			cli.ShowError(err, 000)
 		}
 
 	}
@@ -396,7 +397,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 		return
 	}
@@ -442,7 +443,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 					request.Cmd = "-"
 
 					if err = conn.WriteJSON(response); err != nil {
-						ShowError(err, 1102)
+						cli.ShowError(err, 1102)
 					}
 
 					config.SystemMutex.Unlock()
@@ -465,7 +466,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		case "updateLog":
 			response = setDefaultResponseData(response, false)
 			if err = conn.WriteJSON(response); err != nil {
-				ShowError(err, 1022)
+				cli.ShowError(err, 1022)
 			} else {
 				return
 				break
@@ -582,7 +583,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			if len(request.Base64) > 0 {
 				newWebURL, err := ThreadfinRestoreFromWeb(request.Base64)
 				if err != nil {
-					ShowError(err, 000)
+					cli.ShowError(err, 000)
 					response.Alert = err.Error()
 				}
 
@@ -593,7 +594,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 						response.Alert = "Backup was successfully restored."
 						response.Reload = true
 					}
-					showInfo("Threadfin:" + "Backup successfully restored.")
+					cli.ShowInfo("Threadfin:" + "Backup successfully restored.")
 				}
 			}
 
@@ -602,7 +603,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 				response.LogoURL, err = uploadLogo(request.Base64, request.Filename)
 				if err == nil {
 					if err = conn.WriteJSON(response); err != nil {
-						ShowError(err, 1022)
+						cli.ShowError(err, 1022)
 					} else {
 						return
 					}
@@ -641,7 +642,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err = conn.WriteJSON(response); err != nil {
-			ShowError(err, 1022)
+			cli.ShowError(err, 1022)
 		} else {
 			break
 		}
@@ -675,7 +676,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		lang, err = loadJSONFileToMap(fmt.Sprintf("html/lang/%s.json", config.Settings.Language))
 		config.SystemMutex.Unlock()
 		if err != nil {
-			ShowError(err, 000)
+			cli.ShowError(err, 000)
 		}
 	} else {
 		config.SystemMutex.Unlock()
@@ -689,7 +690,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal([]byte(mapToJSON(lang)), &language)
 	if err != nil {
-		ShowError(err, 000)
+		cli.ShowError(err, 000)
 		return
 	}
 
@@ -776,7 +777,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 			allUserData, err := authentication.GetAllUserData()
 			if err != nil {
-				ShowError(err, 000)
+				cli.ShowError(err, 000)
 				httpStatusError(w, r, 403)
 				return
 			}
@@ -1028,7 +1029,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		buildXEPG(false)
 
 	default:
-		err = errors.New(getErrMsg(5000))
+		err = errors.New(cli.GetErrMsg(5000))
 
 	}
 

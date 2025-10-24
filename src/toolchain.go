@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 
 	"github.com/avfs/avfs"
@@ -38,7 +39,7 @@ func checkFolder(path string) (err error) {
 		if err == nil {
 
 			debug = fmt.Sprintf("Create Folder:%s", path)
-			showDebug(debug, 1)
+			cli.ShowDebug(debug, 1)
 
 		} else {
 			return err
@@ -70,7 +71,7 @@ func checkVFSFolder(path string, vfs avfs.VFS) (err error) {
 		if err == nil {
 
 			debug = fmt.Sprintf("Create virtual filesystem Folder:%s", path)
-			showDebug(debug, 1)
+			cli.ShowDebug(debug, 1)
 
 		} else {
 			return err
@@ -111,7 +112,7 @@ func checkFile(filename string) (err error) {
 
 	switch mode := fi.Mode(); {
 	case mode.IsDir():
-		err = fmt.Errorf("%s: %s", file, getErrMsg(1072))
+		err = fmt.Errorf("%s: %s", file, cli.GetErrMsg(1072))
 	case mode.IsRegular():
 		break
 	}
@@ -327,7 +328,7 @@ func readStringFromFile(file string) (str string, err error) {
 
 	content, err = os.ReadFile(filename)
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 
@@ -408,7 +409,7 @@ func parseTemplate(content string, tmpMap map[string]interface{}) (result string
 	var tpl bytes.Buffer
 
 	if err := t.Execute(&tpl, tmpMap); err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 	}
 	result = tpl.String()
 

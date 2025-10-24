@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"time"
 
@@ -18,7 +19,7 @@ func SSDP() (err error) {
 		return
 	}
 
-	showInfo(fmt.Sprintf("SSDP / DLNA:%t", config.Settings.SSDP))
+	cli.ShowInfo(fmt.Sprintf("SSDP / DLNA:%t", config.Settings.SSDP))
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
@@ -51,7 +52,7 @@ func SSDP() (err error) {
 			case <-aliveTick:
 				err = adv.Alive()
 				if err != nil {
-					ShowError(err, 0)
+					cli.ShowError(err, 0)
 					adv.Bye()
 					adv.Close()
 					break loop

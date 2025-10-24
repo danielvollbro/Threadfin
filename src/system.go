@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/structs"
 	"time"
@@ -67,7 +68,7 @@ func createSystemFiles() (err error) {
 			}
 
 			debug = fmt.Sprintf("Create File:%s", filename)
-			showDebug(debug, 1)
+			cli.ShowDebug(debug, 1)
 
 		}
 
@@ -101,7 +102,7 @@ func updateUrlsJson() {
 	}
 	err := buildDatabaseDVR()
 	if err != nil {
-		ShowError(err, 0)
+		cli.ShowError(err, 0)
 		return
 	}
 
@@ -190,7 +191,7 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 
 	if len(config.System.Flag.Branch) > 0 {
 		settings.Branch = config.System.Flag.Branch
-		showInfo(fmt.Sprintf("Git Branch:Switching Git Branch to -> %s", settings.Branch))
+		cli.ShowInfo(fmt.Sprintf("Git Branch:Switching Git Branch to -> %s", settings.Branch))
 	}
 
 	if len(settings.FFmpegPath) == 0 {
@@ -213,11 +214,11 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 
 	// Warung wenn FFmpeg nicht gefunden wurde
 	if len(config.Settings.FFmpegPath) == 0 && config.Settings.Buffer == "ffmpeg" {
-		showWarning(2020)
+		cli.ShowWarning(2020)
 	}
 
 	if len(config.Settings.VLCPath) == 0 && config.Settings.Buffer == "vlc" {
-		showWarning(2021)
+		cli.ShowWarning(2021)
 	}
 
 	return settings, nil
@@ -284,8 +285,8 @@ func setGlobalDomain(domain string) {
 
 	if config.Settings.EpgSource != "XEPG" {
 		log.Println("SOURCE: ", config.Settings.EpgSource)
-		config.System.Addresses.M3U = getErrMsg(2106)
-		config.System.Addresses.XML = getErrMsg(2106)
+		config.System.Addresses.M3U = cli.GetErrMsg(2106)
+		config.System.Addresses.XML = cli.GetErrMsg(2106)
 	}
 
 	return

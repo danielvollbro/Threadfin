@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/structs"
 	up2date "threadfin/src/internal/up2date/client"
@@ -21,12 +22,12 @@ import (
 func BinaryUpdate() (err error) {
 
 	if !config.System.GitHub.Update {
-		showWarning(2099)
+		cli.ShowWarning(2099)
 		return
 	}
 
 	if !config.Settings.ThreadfinAutoUpdate {
-		showWarning(2098)
+		cli.ShowWarning(2098)
 		return
 	}
 
@@ -51,7 +52,7 @@ func BinaryUpdate() (err error) {
 
 		resp, err := http.Get(releaseInfo)
 		if err != nil {
-			ShowError(err, 6003)
+			cli.ShowError(err, 6003)
 			return nil
 		}
 
@@ -98,11 +99,11 @@ func BinaryUpdate() (err error) {
 		updater.URL = config.Settings.UpdateURL
 
 		if len(updater.URL) == 0 {
-			showInfo(fmt.Sprintf("Update URL:No server URL specified, update will not be performed. Branch: %s", config.System.Branch))
+			cli.ShowInfo(fmt.Sprintf("Update URL:No server URL specified, update will not be performed. Branch: %s", config.System.Branch))
 			return
 		}
 
-		showInfo("Update URL:" + updater.URL)
+		cli.ShowInfo("Update URL:" + updater.URL)
 		fmt.Println("-----------------")
 
 		// Versionsinformationen vom Server laden
@@ -110,7 +111,7 @@ func BinaryUpdate() (err error) {
 		if err != nil {
 
 			debug = fmt.Sprintf(err.Error())
-			showDebug(debug, 1)
+			cli.ShowDebug(debug, 1)
 
 			return nil
 		}
@@ -118,7 +119,7 @@ func BinaryUpdate() (err error) {
 		if len(updater.Response.Reason) > 0 {
 
 			err = fmt.Errorf(fmt.Sprintf("Update Server: %s", updater.Response.Reason))
-			ShowError(err, 6002)
+			cli.ShowError(err, 6002)
 
 			return nil
 		}
@@ -134,21 +135,21 @@ func BinaryUpdate() (err error) {
 			// Update durchführen
 			var fileType, url string
 
-			showInfo(fmt.Sprintf("Update Available:Version: %s", updater.Response.Version))
+			cli.ShowInfo(fmt.Sprintf("Update Available:Version: %s", updater.Response.Version))
 
 			switch config.System.Branch {
 
 			// Update von GitHub
 			case "master", "beta":
-				showInfo("Update Server:GitHub")
+				cli.ShowInfo("Update Server:GitHub")
 
 			// Update vom eigenen Server
 			default:
-				showInfo(fmt.Sprintf("Update Server:%s", config.Settings.UpdateURL))
+				cli.ShowInfo(fmt.Sprintf("Update Server:%s", config.Settings.UpdateURL))
 
 			}
 
-			showInfo(fmt.Sprintf("Start Update:Branch: %s", updater.Branch))
+			cli.ShowInfo(fmt.Sprintf("Start Update:Branch: %s", updater.Branch))
 
 			// Neue Version als BIN Datei herunterladen
 			if len(updater.Response.UpdateBIN) > 0 {
@@ -166,14 +167,14 @@ func BinaryUpdate() (err error) {
 
 				err = up2date.DoUpdate(fileType, updater.Response.Filename)
 				if err != nil {
-					ShowError(err, 6002)
+					cli.ShowError(err, 6002)
 				}
 
 			}
 
 		} else {
 			// Hinweis ausgeben
-			showWarning(6004)
+			cli.ShowWarning(6004)
 		}
 
 	}
@@ -192,15 +193,15 @@ checkVersion:
 	if settingsVersion, ok := settingsMap["version"].(string); ok {
 
 		if settingsVersion > config.System.DBVersion {
-			showInfo("Settings DB Version:" + settingsVersion)
-			showInfo("System DB Version:" + config.System.DBVersion)
-			err = errors.New(getErrMsg(1031))
+			cli.ShowInfo("Settings DB Version:" + settingsVersion)
+			cli.ShowInfo("System DB Version:" + config.System.DBVersion)
+			err = errors.New(cli.GetErrMsg(1031))
 			return
 		}
 
 		// Letzte Kompatible Version (1.4.4)
 		if settingsVersion < config.System.Compatibility {
-			err = errors.New(getErrMsg(1013))
+			err = errors.New(cli.GetErrMsg(1013))
 			return
 		}
 
@@ -228,7 +229,7 @@ checkVersion:
 				goto checkVersion
 
 			} else {
-				err = errors.New(getErrMsg(1030))
+				err = errors.New(cli.GetErrMsg(1030))
 				return
 			}
 
@@ -256,7 +257,7 @@ checkVersion:
 				goto checkVersion
 
 			} else {
-				err = errors.New(getErrMsg(1030))
+				err = errors.New(cli.GetErrMsg(1030))
 				return
 			}
 
@@ -268,7 +269,7 @@ checkVersion:
 
 	} else {
 		// settings.json ist zu alt (älter als Version 1.4.4)
-		err = errors.New(getErrMsg(1013))
+		err = errors.New(cli.GetErrMsg(1013))
 	}
 
 	return
