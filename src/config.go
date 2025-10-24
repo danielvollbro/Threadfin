@@ -221,8 +221,17 @@ func StartSystem(updateProviderFiles bool) (err error) {
 			cli.ShowError(err, 1090)
 		}
 
-		getProviderData("m3u", "")
-		getProviderData("hdhr", "")
+		err = getProviderData("m3u", "")
+		if err != nil {
+			cli.ShowError(err, 0)
+			return
+		}
+
+		err = getProviderData("hdhr", "")
+		if err != nil {
+			cli.ShowError(err, 0)
+			return
+		}
 
 		if config.Settings.EpgSource == "XEPG" {
 			getProviderData("xmltv", "")

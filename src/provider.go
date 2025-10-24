@@ -349,7 +349,12 @@ func downloadFileFromServer(providerURL string, proxyUrl string) (filename strin
 	if err != nil {
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+	}()
+	if err != nil {
+		return
+	}
 
 	resp.Header.Set("User-Agent", config.Settings.UserAgent)
 

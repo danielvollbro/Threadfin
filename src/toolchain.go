@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -64,7 +65,10 @@ func checkVFSFolder(path string, vfs avfs.VFS) (err error) {
 		// Failure to do so here will result in a panic error and the stream not playing
 		vm := vfs.(avfs.VolumeManager)
 		if vfs.OSType() == avfs.OsWindows && avfs.VolumeName(vfs, path) != "C:" {
-			vm.VolumeAdd(path)
+			err = vm.VolumeAdd(path)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = vfs.MkdirAll(getPlatformPath(path), 0755)
@@ -235,7 +239,10 @@ func mapToJSON(tmpMap interface{}) string {
 func jsonToMap(content string) map[string]interface{} {
 
 	var tmpMap = make(map[string]interface{})
-	json.Unmarshal([]byte(content), &tmpMap)
+	err := json.Unmarshal([]byte(content), &tmpMap)
+	if err != nil {
+		return make(map[string]interface{})
+	}
 
 	return (tmpMap)
 }
@@ -256,7 +263,11 @@ func saveMapToJSONFile(file string, tmpMap interface{}) error {
 		return err
 	}
 
-	os.Create(filename)
+	_, err = os.Create(filename)
+	if err != nil {
+		return err
+	}
+
 	err = os.WriteFile(filename, []byte(jsonString), 0644)
 	if err != nil {
 		return err
@@ -267,7 +278,16 @@ func saveMapToJSONFile(file string, tmpMap interface{}) error {
 
 func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
 	f, err := os.Open(getPlatformFile(file))
-	defer f.Close()
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		err = f.Close()
+	}()
+	if err != nil {
+		return
+	}
 
 	content, err := io.ReadAll(f)
 
@@ -377,7 +397,11 @@ func randomString(n int) string {
 
 	var bytes = make([]byte, n)
 
-	rand.Read(bytes)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
 
 	for i, b := range bytes {
 		bytes[i] = alphanum[b%byte(len(alphanum))]

@@ -102,7 +102,8 @@ func fileToBase64(file string) string {
 
 	// read file content into buffer
 	fReader := bufio.NewReader(imgFile)
-	fReader.Read(buf)
+	_, err = fReader.Read(buf)
+	checkErr(err)
 
 	imgBase64Str := base64.StdEncoding.EncodeToString(buf)
 

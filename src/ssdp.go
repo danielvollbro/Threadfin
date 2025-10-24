@@ -52,14 +52,27 @@ func SSDP() (err error) {
 				err = adv.Alive()
 				if err != nil {
 					cli.ShowError(err, 0)
-					adv.Bye()
-					adv.Close()
+					err = adv.Bye()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
+
+					err = adv.Close()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
 					break loop
 				}
 
 			case <-quit:
-				adv.Bye()
-				adv.Close()
+				err = adv.Bye()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
+				err = adv.Close()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
 				os.Exit(0)
 				break loop
 

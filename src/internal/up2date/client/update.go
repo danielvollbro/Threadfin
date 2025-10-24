@@ -165,7 +165,13 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 
 			if proc, err := start(bin); err == nil {
 
-				os.RemoveAll(oldBinary)
+				err = os.RemoveAll(oldBinary)
+				if err != nil {
+					restorOldBinary(oldBinary, newBinary)
+					log.Fatal(err)
+					return err
+				}
+
 				err = process.Kill()
 				if err != nil {
 					log.Fatal(err)
@@ -186,7 +192,13 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 
 			// Restart binary (Linux and UNIX)
 			file, _ := osext.Executable()
-			os.RemoveAll(oldBinary)
+			err = os.RemoveAll(oldBinary)
+			if err != nil {
+				restorOldBinary(oldBinary, newBinary)
+				log.Fatal(err)
+				return err
+			}
+
 			err = syscall.Exec(file, os.Args, os.Environ())
 			if err != nil {
 				restorOldBinary(oldBinary, newBinary)
@@ -218,8 +230,12 @@ func start(args ...string) (p *os.Process, err error) {
 }
 
 func restorOldBinary(oldBinary, newBinary string) {
-	os.RemoveAll(newBinary)
-	err := os.Rename(oldBinary, newBinary)
+	err := os.RemoveAll(newBinary)
+	if err != nil {
+		log.Println("[UPDATE]", "Remove new binary...ERROR")
+	}
+
+	err = os.Rename(oldBinary, newBinary)
 	if err != nil {
 		log.Println("[UPDATE]", "Restor old binary...ERROR")
 	}
@@ -244,8 +260,9 @@ func copyFile(src, dst string) (err error) {
 	if err != nil {
 		return err
 	}
+
 	defer func() {
-		in.Close()
+		err = in.Close()
 	}()
 	if err != nil {
 		return err
@@ -255,7 +272,13 @@ func copyFile(src, dst string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+
+	defer func() {
+		err = out.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	_, err = io.Copy(out, in)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/url"
 	"os"
@@ -60,7 +61,7 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 		var exclude, include string
 		var match = false
 
-		var streamValues = strings.Replace(stream["_values"], "\r", "", -1)
+		var streamValues = strings.ReplaceAll(stream["_values"], "\r", "")
 
 		if v, ok := stream["group-title"]; ok {
 			group = v
@@ -77,8 +78,8 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 		if len(val) == 1 {
 
 			exclude = val[0][2 : len(val[0])-1]
-			filter.Rule = strings.Replace(filter.Rule, " "+val[0], "", -1)
-			filter.Rule = strings.Replace(filter.Rule, val[0], "", -1)
+			filter.Rule = strings.ReplaceAll(filter.Rule, " "+val[0], "")
+			filter.Rule = strings.ReplaceAll(filter.Rule, val[0], "")
 
 		}
 
@@ -89,8 +90,8 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 		if len(val) == 1 {
 
 			include = val[0][1 : len(val[0])-1]
-			filter.Rule = strings.Replace(filter.Rule, " "+val[0], "", -1)
-			filter.Rule = strings.Replace(filter.Rule, val[0], "", -1)
+			filter.Rule = strings.ReplaceAll(filter.Rule, " "+val[0], "")
+			filter.Rule = strings.ReplaceAll(filter.Rule, val[0], "")
 
 		}
 
@@ -161,8 +162,8 @@ func checkConditions(streamValues, conditions, coType string) (status bool) {
 
 	}
 
-	conditions = strings.Replace(conditions, ", ", ",", -1)
-	conditions = strings.Replace(conditions, " ,", ",", -1)
+	conditions = strings.ReplaceAll(conditions, ", ", ",")
+	conditions = strings.ReplaceAll(conditions, " ,", ",")
 
 	var keys = strings.Split(conditions, ",")
 
@@ -435,8 +436,18 @@ func probeChannel(request structs.RequestStruct) (string, string, string, error)
 
 func parseFrameRate(parts []string) int {
 	numerator, denom := 1, 1
-	fmt.Sscanf(parts[0], "%d", &numerator)
-	fmt.Sscanf(parts[1], "%d", &denom)
+	_, err := fmt.Sscanf(parts[0], "%d", &numerator)
+	if err != nil {
+		log.Println("Error parsing frame rate numerator:", err)
+		return 0
+	}
+
+	_, err = fmt.Sscanf(parts[1], "%d", &denom)
+	if err != nil {
+		log.Println("Error parsing frame rate denominator:", err)
+		return 0
+	}
+
 	if denom == 0 {
 		return 0
 	}

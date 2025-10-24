@@ -517,13 +517,22 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 										return
 									}
 
-									file.Close()
+									err = file.Close()
+									if err != nil {
+										cli.ShowError(err, 0)
+										killClientConnection(streamID, playlistID, false)
+										return
+									}
 									streaming = true
 
 								}
 
-								file.Close()
-
+								err = file.Close()
+								if err != nil {
+									cli.ShowError(err, 0)
+									killClientConnection(streamID, playlistID, false)
+									return
+								}
 							}
 
 							var n = indexOfString(f, oldSegments)
@@ -540,8 +549,12 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 
 						}
 
-						file.Close()
-
+						err = file.Close()
+						if err != nil {
+							cli.ShowError(err, 0)
+							killClientConnection(streamID, playlistID, false)
+							return
+						}
 					}
 
 					if len(tmpFiles) == 0 {
@@ -1051,7 +1064,12 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 				if err != nil {
 					cli.ShowError(err, 0)
 				}
-				f.Close()
+
+				err = f.Close()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
+
 				err = cmd.Wait()
 				if err != nil {
 					cli.ShowError(err, 0)
@@ -1074,7 +1092,11 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 				}
 				killClientConnection(streamID, playlistID, false)
 				addErrorToStream(err)
-				cmd.Wait()
+				err = cmd.Wait()
+				if err != nil {
+					cli.ShowError(err, 0)
+				}
+
 				return
 			}
 
@@ -1086,7 +1108,12 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 					cli.ShowInfo(fmt.Sprintf("Streaming Status:Buffering data from %s", bufferType))
 				}
 
-				f.Close()
+				err = f.Close()
+				if err != nil {
+					cli.ShowError(err, 0)
+					return
+				}
+
 				tmpSegment++
 
 				if !stream.Status {
@@ -1105,11 +1132,18 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 				_, errCreate = config.BufferVFS.Create(tmpFile)
 				f, errOpen = config.BufferVFS.OpenFile(tmpFile, os.O_APPEND|os.O_WRONLY, 0600)
 				if errCreate != nil || errOpen != nil {
-					cmd.Process.Kill()
 					cli.ShowError(err, 0)
+					err = cmd.Process.Kill()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
+
 					killClientConnection(streamID, playlistID, false)
 					addErrorToStream(err)
-					cmd.Wait()
+					err = cmd.Wait()
+					if err != nil {
+						cli.ShowError(err, 0)
+					}
 					return
 				}
 
@@ -1117,8 +1151,15 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 
 		}
 
-		cmd.Process.Kill()
-		cmd.Wait()
+		err = cmd.Process.Kill()
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
+
+		err = cmd.Wait()
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
 
 		err = errors.New(bufferType + " error")
 		addErrorToStream(err)

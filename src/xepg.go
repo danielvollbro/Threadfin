@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"regexp"
@@ -351,7 +352,11 @@ func createXEPGDatabase() (err error) {
 	if err != nil || len(settings) == 0 {
 		return
 	}
-	settings_json, _ := json.Marshal(settings)
+	settings_json, err := json.Marshal(settings)
+	if err != nil {
+		cli.ShowError(err, 000)
+		return
+	}
 	json.Unmarshal(settings_json, &config.Settings)
 
 	// Remove duplicate channels from existing XEPG database based on new hash logic
@@ -621,7 +626,11 @@ func createXEPGDatabase() (err error) {
 			for _, filter := range config.Settings.Filter {
 				filter_json, _ := json.Marshal(filter)
 				f := structs.FilterStruct{}
-				json.Unmarshal(filter_json, &f)
+				err = json.Unmarshal(filter_json, &f)
+				if err != nil {
+					log.Println("XEPG:createXEPGDatabase:Error unmarshalling filter:", err)
+					return
+				}
 				filters = append(filters, f)
 			}
 
@@ -963,9 +972,21 @@ func createXMLTVFile() (err error) {
 	if err != nil {
 		return err
 	}
-	defer xmlFile.Close()
+	defer func() {
+		err = xmlFile.Close()
+	}()
+	if err != nil {
+		return err
+	}
+
+	// Use buffered writer for performance
 	writer := bufio.NewWriterSize(xmlFile, 1<<20) // 1MB buffer
-	defer writer.Flush()
+	defer func() {
+		err = writer.Flush()
+	}()
+	if err != nil {
+		return err
+	}
 
 	var xepgXML structs.XMLTV
 
@@ -1601,7 +1622,10 @@ func getLocalXMLTV(file string, xmltv *structs.XMLTV) (err error) {
 			}
 
 			// XML Datei parsen
-			xml.Unmarshal(content, &xmltv)
+			err = xml.Unmarshal(content, &xmltv)
+			if err != nil {
+				return err
+			}
 		}
 
 		if err != nil {
@@ -1623,7 +1647,12 @@ func parseXMLTVStream(file string, xmltv *structs.XMLTV) error {
 	if err != nil {
 		return err
 	}
-	defer xmlFile.Close()
+	defer func() {
+		err = xmlFile.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	decoder := xml.NewDecoder(xmlFile)
 

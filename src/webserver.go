@@ -111,7 +111,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	if err == nil {
 		w.WriteHeader(200)
-		w.Write(response)
+		_, err = w.Write(response)
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
 		return
 	}
 
@@ -166,7 +169,16 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 			httpStatusError(w, 405)
 			return
 		}
-		defer resp.Body.Close()
+
+		defer func() {
+			err = resp.Body.Close()
+		}()
+		if err != nil {
+			cli.ShowError(err, 1503)
+			httpStatusError(w, 405)
+			return
+		}
+
 		// Copy headers from the source HEAD response to the outgoing response
 		for key, values := range resp.Header {
 			for _, value := range values {
@@ -326,7 +338,10 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", contentType)
 
 	if err == nil {
-		w.Write([]byte(content))
+		_, err = w.Write([]byte(content))
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
 	}
 }
 
@@ -347,7 +362,10 @@ func Images(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", getContentType(filePath))
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(content)))
 	w.WriteHeader(200)
-	w.Write(content)
+	_, err = w.Write(content)
+	if err != nil {
+		cli.ShowError(err, 000)
+	}
 }
 
 // DataImages : Image Pfad für Logos / Bilder die hochgeladen wurden /data_images/
@@ -893,11 +911,17 @@ func API(w http.ResponseWriter, r *http.Request) {
 	}
 
 	b, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
 	if err != nil {
 		httpStatusError(w, 400)
 		return
+	}
 
+	defer func() {
+		err = r.Body.Close()
+	}()
+	if err != nil {
+		httpStatusError(w, 400)
+		return
 	}
 
 	err = json.Unmarshal(b, &request)

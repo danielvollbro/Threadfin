@@ -192,7 +192,12 @@ func compressGZIPFile(sourcePath, targetPath string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		err = out.Close()
+	}()
+	if err != nil {
+		return err
+	}
 
 	gw := gzip.NewWriter(out)
 	defer func() {

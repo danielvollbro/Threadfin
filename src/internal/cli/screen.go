@@ -106,7 +106,10 @@ func ShowHighlight(str string) {
 		notification.Message = str
 	}
 
-	addNotification(notification)
+	err := addNotification(notification)
+	if err != nil {
+		ShowError(err, 0)
+	}
 }
 
 func ShowWarning(errCode int) {
