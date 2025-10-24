@@ -1197,7 +1197,10 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(mapToJSON(response)))
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
 		w.WriteHeader(405)
 		return
 	}
@@ -1214,7 +1217,10 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(mapToJSON(response)))
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
 	}
 
 	for _, c := range xepg {
@@ -1232,7 +1238,10 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(mapToJSON(response)))
+		if err != nil {
+			cli.ShowError(err, 000)
+		}
 	}
 	buildXEPG(false)
 

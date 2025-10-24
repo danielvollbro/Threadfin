@@ -1090,8 +1090,10 @@ func setProviderCompatibility(id, fileType string, compatibility map[string]int)
 			config.Settings.Files.XMLTV = dataMap
 		}
 
-		saveSettings(config.Settings)
-
+		err := saveSettings(config.Settings)
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
 	}
 
 }
