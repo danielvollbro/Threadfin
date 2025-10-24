@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -46,9 +47,9 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				// Leerzeichen aus den Werten entfernen und Formatierung der Uhrzeit überprüfen (0000 - 2359)
 				var newUpdateTimes = make([]string, 0)
 
-				for _, v := range value.([]interface{}) {
+				for _, v := range value.([]any) {
 
-					v = strings.Replace(v.(string), " ", "", -1)
+					v = strings.ReplaceAll(v.(string), " ", "")
 
 					_, err := time.Parse("1504", v.(string))
 					if err != nil {
@@ -604,7 +605,11 @@ func saveUserData(request structs.RequestStruct) (err error) {
 
 		if _, ok := newUserData.(map[string]interface{})["delete"]; ok {
 
-			authentication.RemoveUser(userID)
+			err = authentication.RemoveUser(userID)
+			if err != nil {
+				log.Println("failed to remove user: ", err)
+				return
+			}
 
 		} else {
 

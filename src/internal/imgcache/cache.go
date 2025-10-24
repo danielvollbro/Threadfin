@@ -110,7 +110,12 @@ func New(path, cacheURL string, caching bool) (c *Cache, err error) {
 			if err != nil {
 				continue
 			}
-			defer resp.Body.Close()
+			defer func() {
+				err = resp.Body.Close()
+			}()
+			if err != nil {
+				continue
+			}
 
 			if resp.StatusCode != http.StatusOK {
 				continue
@@ -124,7 +129,12 @@ func New(path, cacheURL string, caching bool) (c *Cache, err error) {
 				continue
 			}
 
-			defer file.Close()
+			defer func() {
+				err = file.Close()
+			}()
+			if err != nil {
+				continue
+			}
 
 			_, err = io.Copy(file, resp.Body)
 			if err != nil {
@@ -162,11 +172,17 @@ func New(path, cacheURL string, caching bool) (c *Cache, err error) {
 
 			case true:
 				if _, ok := c.images[file.Name()]; !ok {
-					os.RemoveAll(c.path + file.Name())
+					err = os.RemoveAll(c.path + file.Name())
+					if err != nil {
+						continue
+					}
 				}
 
 			case false:
-				os.RemoveAll(c.path + file.Name())
+				err = os.RemoveAll(c.path + file.Name())
+				if err != nil {
+					continue
+				}
 			}
 
 		}

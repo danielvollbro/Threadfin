@@ -110,7 +110,12 @@ func serverRequest() (err error) {
 		}
 
 		Updater.CMD = ""
-		defer resp.Body.Close()
+		defer func() {
+			err = resp.Body.Close()
+		}()
+		if err != nil {
+			return err
+		}
 
 		body, _ := io.ReadAll(resp.Body)
 

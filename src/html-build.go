@@ -89,7 +89,11 @@ func readFilesToMap(path string, info os.FileInfo, err error) error {
 func fileToBase64(file string) string {
 
 	imgFile, _ := os.Open(file)
-	defer imgFile.Close()
+	var err error
+	defer func() {
+		err = imgFile.Close()
+	}()
+	checkErr(err)
 
 	// create a new buffer base on file size
 	fInfo, _ := imgFile.Stat()

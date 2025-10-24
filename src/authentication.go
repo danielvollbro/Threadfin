@@ -157,12 +157,14 @@ func checkAuthorizationLevel(token, level string) (err error) {
 
 		} else {
 			userData[level] = false
-			authentication.WriteUserData(userID, userData)
+			err = authentication.WriteUserData(userID, userData)
+			authenticationErr(err)
 			err = errors.New("no authorization")
 		}
 
 	} else {
-		authentication.WriteUserData(userID, userData)
+		err = authentication.WriteUserData(userID, userData)
+		authenticationErr(err)
 		err = errors.New("no authorization")
 	}
 

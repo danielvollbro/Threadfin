@@ -18,7 +18,6 @@ func getProviderData(fileType, fileID string) (err error) {
 
 	var fileExtension, serverFileName string
 	var body = make([]byte, 0)
-	var newProvider = false
 	var dataMap = make(map[string]interface{})
 
 	var saveDateFromProvider = func(fileSource, serverFileName, id string, body []byte) (err error) {
@@ -190,7 +189,7 @@ func getProviderData(fileType, fileID string) (err error) {
 			httpProxyUrl = fmt.Sprintf("http://%s:%s", httpProxyIp, httpProxyPort)
 		}
 
-		newProvider = false
+		var newProvider = false
 
 		if _, ok := data["new"]; ok {
 			newProvider = true
@@ -266,19 +265,14 @@ func getProviderData(fileType, fileID string) (err error) {
 				}
 
 				// Fehler Counter um 1 erhöhen
-				data = make(map[string]interface{})
 				if value, ok := dataMap[dataID].(map[string]interface{}); ok {
-
 					data = value
 					data["counter.error"] = data["counter.error"].(float64) + 1
 					data["counter.download"] = data["counter.download"].(float64) + 1
-
 				}
-
 			} else {
 				return downloadErr
 			}
-
 		}
 
 		// Berechnen der Fehlerquote
