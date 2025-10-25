@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"threadfin/src/internal/cli"
+	"threadfin/src/internal/compression"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/storage"
 	"time"
@@ -87,7 +88,7 @@ func ThreadfinAutoBackup() (err error) {
 
 		sourceFiles = append(sourceFiles, config.System.Folder.ImagesUpload)
 
-		err = zipFiles(sourceFiles, target)
+		err = compression.ZipFiles(sourceFiles, target)
 
 		if err == nil {
 
@@ -121,7 +122,7 @@ func ThreadfinBackup() (archiv string, err error) {
 
 	sourceFiles = append(sourceFiles, config.System.Folder.Data)
 
-	err = zipFiles(sourceFiles, target)
+	err = compression.ZipFiles(sourceFiles, target)
 	if err != nil {
 		cli.ShowError(err, 0)
 		return
