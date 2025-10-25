@@ -110,7 +110,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		config.SystemMutex.Lock()
 		if config.Settings.AuthenticationPMS {
 			config.SystemMutex.Unlock()
-			_, err := basicAuth(r, "authentication.pms")
+			_, err := authentication.BasicAuth(r, "authentication.pms")
 			if err != nil {
 				cli.ShowError(err, 000)
 				web.HttpStatusError(w, 403)
@@ -282,7 +282,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 		requestType = "xml"
 
-		err = urlAuth(r, requestType)
+		err = authentication.UrlAuth(r, requestType)
 		if err != nil {
 			cli.ShowError(err, 000)
 			web.HttpStatusError(w, 403)
@@ -306,7 +306,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 		requestType = "m3u"
 
-		err = urlAuth(r, requestType)
+		err = authentication.UrlAuth(r, requestType)
 		if err != nil {
 			cli.ShowError(err, 000)
 			web.HttpStatusError(w, 403)
@@ -794,7 +794,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 
-				err = checkAuthorizationLevel(token, "authentication.web")
+				err = authentication.CheckAuthorizationLevel(token, "authentication.web")
 				if err != nil {
 					file = requestFile + "login.html"
 					break
@@ -1013,7 +1013,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}
-		err = checkAuthorizationLevel(token, "authentication.api")
+		err = authentication.CheckAuthorizationLevel(token, "authentication.api")
 		if err != nil {
 			responseAPIError(err)
 			return
