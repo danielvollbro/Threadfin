@@ -15,6 +15,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/system"
 	"threadfin/src/internal/update"
 )
 
@@ -72,14 +73,14 @@ func Run() {
 	// Build-Nummer von der Versionsnummer trennen
 	var build = strings.Split(Version, ".")
 
-	var system = &config.System
-	system.APIVersion = APIVersion
-	system.Branch = strings.ToTitle(GitHub.Branch)
-	system.Build = build[len(build)-1:][0]
-	system.DBVersion = DBVersion
-	system.GitHub = GitHub
-	system.Name = Name
-	system.Version = strings.Join(build[0:len(build)-1], ".")
+	var systemConfig = &config.System
+	systemConfig.APIVersion = APIVersion
+	systemConfig.Branch = strings.ToTitle(GitHub.Branch)
+	systemConfig.Build = build[len(build)-1:][0]
+	systemConfig.DBVersion = DBVersion
+	systemConfig.GitHub = GitHub
+	systemConfig.Name = Name
+	systemConfig.Version = strings.Join(build[0:len(build)-1], ".")
 
 	// Panic !!!
 	defer func() {
@@ -125,12 +126,12 @@ func Run() {
 		return
 	}
 
-	system.Dev = *dev
+	systemConfig.Dev = *dev
 
 	// Systeminformationen anzeigen
 	if *info {
 
-		system.Flag.Info = true
+		systemConfig.Flag.Info = true
 
 		err := Init()
 		if err != nil {
@@ -138,42 +139,42 @@ func Run() {
 			os.Exit(0)
 		}
 
-		ShowSystemInfo()
+		system.ShowSystemInfo()
 		return
 
 	}
 
 	// Webserver Port
 	if len(*port) > 0 {
-		system.Flag.Port = *port
+		systemConfig.Flag.Port = *port
 	}
 
 	if bindIpAddress != nil && len(*bindIpAddress) > 0 {
-		system.IPAddress = *bindIpAddress
+		systemConfig.IPAddress = *bindIpAddress
 	}
 
 	// Branch
-	system.Flag.Branch = *gitBranch
-	if len(system.Flag.Branch) > 0 {
-		fmt.Println("Git Branch is now:", system.Flag.Branch)
+	systemConfig.Flag.Branch = *gitBranch
+	if len(systemConfig.Flag.Branch) > 0 {
+		fmt.Println("Git Branch is now:", systemConfig.Flag.Branch)
 	}
 
 	// Debug Level
-	system.Flag.Debug = *debug
-	if system.Flag.Debug > 3 {
+	systemConfig.Flag.Debug = *debug
+	if systemConfig.Flag.Debug > 3 {
 		flag.Usage()
 		return
 	}
 
 	// Speicherort für die Konfigurationsdateien
 	if len(*configFolder) > 0 {
-		system.Folder.Config = *configFolder
+		systemConfig.Folder.Config = *configFolder
 	}
 
 	// Backup wiederherstellen
 	if len(*restore) > 0 {
 
-		system.Flag.Restore = *restore
+		systemConfig.Flag.Restore = *restore
 
 		err := Init()
 		if err != nil {
