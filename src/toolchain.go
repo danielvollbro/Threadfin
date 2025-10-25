@@ -3,33 +3,10 @@ package src
 import (
 	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"text/template"
 	"threadfin/src/internal/cli"
 )
-
-// --- System Tools ---
-
-func removeChildItems(dir string) error {
-
-	files, err := filepath.Glob(filepath.Join(dir, "*"))
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-
-		err = os.RemoveAll(file)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
 
 func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {
 

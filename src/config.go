@@ -150,7 +150,7 @@ func Init() (err error) {
 		return
 	}
 
-	err = removeChildItems(storage.GetPlatformPath(config.System.Folder.Temp))
+	err = storage.RemoveChildItems(storage.GetPlatformPath(config.System.Folder.Temp))
 	if err != nil {
 		return
 	}

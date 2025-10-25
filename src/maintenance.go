@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 	"time"
 )
 
@@ -66,7 +67,7 @@ func maintenance() {
 					config.SystemMutex.Lock()
 					if !config.Settings.CacheImages && config.System.ImageCachingInProgress == 0 {
 						config.SystemMutex.Unlock()
-						err = removeChildItems(config.System.Folder.ImagesCache)
+						err = storage.RemoveChildItems(config.System.Folder.ImagesCache)
 						if err != nil {
 							cli.ShowError(err, 000)
 						}
