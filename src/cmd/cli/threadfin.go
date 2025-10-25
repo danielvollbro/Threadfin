@@ -3,7 +3,7 @@
 // LICENSE file.
 // GitHub: https://github.com/Threadfin/Threadfin
 
-package src
+package cli
 
 import (
 	"flag"
@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"threadfin/src/cmd/server"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/maintenance"
@@ -214,7 +215,7 @@ func Run() {
 		os.Exit(0)
 	}
 
-	err = StartWebserver()
+	err = server.StartWebserver()
 	if err != nil {
 		cli.ShowError(err, 0)
 		os.Exit(0)

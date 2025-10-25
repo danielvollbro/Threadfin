@@ -6,9 +6,9 @@
 package main
 
 import (
-	"threadfin/src"
+	"threadfin/src/cmd/cli"
 )
 
 func main() {
-	src.Run()
+	cli.Run()
 }
