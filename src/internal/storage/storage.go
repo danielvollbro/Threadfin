@@ -126,3 +126,24 @@ func FSIsNotExistErr(err error) bool {
 
 	return false
 }
+
+func ReadStringFromFile(file string) (str string, err error) {
+
+	var content []byte
+	var filename = GetPlatformFile(file)
+
+	err = CheckFile(filename)
+	if err != nil {
+		return
+	}
+
+	content, err = os.ReadFile(filename)
+	if err != nil {
+		cli.ShowError(err, 0)
+		return
+	}
+
+	str = string(content)
+
+	return
+}

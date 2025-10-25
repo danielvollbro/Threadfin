@@ -282,7 +282,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 		file = config.System.Folder.Data + getFilenameFromPath(path)
 		config.SystemMutex.Unlock()
 
-		content, err = readStringFromFile(file)
+		content, err = storage.ReadStringFromFile(file)
 		if err != nil {
 			web.HttpStatusError(w, 404)
 			return
@@ -838,7 +838,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 	config.SystemMutex.Lock()
 	if config.System.Dev {
 		// Lokale Webserver Dateien werden geladen, nur für die Entwicklung
-		content, _ = readStringFromFile(requestFile)
+		content, _ = storage.ReadStringFromFile(requestFile)
 	}
 	config.SystemMutex.Unlock()
 
@@ -1073,7 +1073,7 @@ func Download(w http.ResponseWriter, r *http.Request) {
 	var file = config.System.Folder.Temp + getFilenameFromPath(path)
 	w.Header().Set("Content-Disposition", "attachment; filename="+getFilenameFromPath(file))
 
-	content, err := readStringFromFile(file)
+	content, err := storage.ReadStringFromFile(file)
 	if err != nil {
 		w.WriteHeader(404)
 		return

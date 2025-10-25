@@ -192,27 +192,6 @@ func readByteFromFile(file string) (content []byte, err error) {
 	return
 }
 
-func readStringFromFile(file string) (str string, err error) {
-
-	var content []byte
-	var filename = storage.GetPlatformFile(file)
-
-	err = storage.CheckFile(filename)
-	if err != nil {
-		return
-	}
-
-	content, err = os.ReadFile(filename)
-	if err != nil {
-		cli.ShowError(err, 0)
-		return
-	}
-
-	str = string(content)
-
-	return
-}
-
 func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {
 
 	t := template.Must(template.New("template").Parse(content))
