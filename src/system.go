@@ -10,6 +10,9 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	jsonserializer "threadfin/src/internal/json-serializer"
+	systemSettings "threadfin/src/internal/settings"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	"time"
 )
@@ -52,7 +55,7 @@ func createSystemFiles() (err error) {
 	var debug string
 	for _, file := range config.SystemFiles {
 
-		var filename = getPlatformFile(config.System.Folder.Config + file)
+		var filename = storage.GetPlatformFile(config.System.Folder.Config + file)
 
 		err = checkFile(filename)
 		if err != nil {
@@ -187,7 +190,7 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 			settingsMap[key] = value
 		}
 	}
-	err = json.Unmarshal([]byte(mapToJSON(settingsMap)), &settings)
+	err = json.Unmarshal([]byte(jsonserializer.MapToJSON(settingsMap)), &settings)
 	if err != nil {
 		return structs.SettingsStruct{}, err
 	}
@@ -215,7 +218,7 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 
 	settings.Version = config.System.DBVersion
 
-	err = saveSettings(settings)
+	err = systemSettings.SaveSettings(settings)
 	if err != nil {
 		return structs.SettingsStruct{}, err
 	}
@@ -230,39 +233,6 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 	}
 
 	return settings, nil
-}
-
-// Einstellungen speichern (Threadfin)
-func saveSettings(settings structs.SettingsStruct) (err error) {
-
-	if settings.BackupKeep == 0 {
-		settings.BackupKeep = 10
-	}
-
-	if len(settings.BackupPath) == 0 {
-		settings.BackupPath = config.System.Folder.Backup
-	}
-
-	if settings.BufferTimeout < 0 {
-		settings.BufferTimeout = 0
-	}
-
-	config.System.Folder.Temp = settings.TempPath + settings.UUID + string(os.PathSeparator)
-
-	err = writeByteToFile(config.System.File.Settings, []byte(mapToJSON(settings)))
-	if err != nil {
-		return
-	}
-
-	config.Settings = settings
-
-	if config.System.Dev {
-		config.Settings.UUID = "2019-01-DEV-Threadfin!"
-	}
-
-	setDeviceID()
-
-	return
 }
 
 // Zugriff über die Domain ermöglichen
@@ -302,19 +272,6 @@ func setGlobalDomain(domain string) {
 func createUUID() (uuid string) {
 	uuid = time.Now().Format("2006-01") + "-" + randomString(4) + "-" + randomString(6)
 	return
-}
-
-// Eindeutige Geräte ID für Plex generieren
-func setDeviceID() {
-	var id = config.Settings.UUID
-
-	switch config.Settings.Tuner {
-	case 1:
-		config.System.DeviceID = id
-
-	default:
-		config.System.DeviceID = fmt.Sprintf("%s:%d", id, config.Settings.Tuner)
-	}
 }
 
 // Provider Streaming-URL zu Threadfin Streaming-URL konvertieren
@@ -376,7 +333,7 @@ func getStreamInfo(urlID string) (streamInfo structs.StreamInfo, err error) {
 			return streamInfo, err
 		}
 
-		err = json.Unmarshal([]byte(mapToJSON(tmp)), &config.Data.Cache.StreamingURLS)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(tmp)), &config.Data.Cache.StreamingURLS)
 		if err != nil {
 			return streamInfo, err
 		}

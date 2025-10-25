@@ -9,6 +9,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 	"time"
 )
 
@@ -176,11 +177,6 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	oldPort = config.Settings.Port
 
 	if newPort == oldPort {
-
-		if err != nil {
-			cli.ShowError(err, 0)
-		}
-
 		_, err = loadSettings()
 		if err != nil {
 			cli.ShowError(err, 0)
@@ -224,7 +220,7 @@ func ThreadfinRestoreFromWeb(input string) (newWebURL string, err error) {
 
 	var archive = config.System.Folder.Temp + "restore.zip"
 
-	err = writeByteToFile(archive, sDec)
+	err = storage.WriteByteToFile(archive, sDec)
 	if err != nil {
 		return
 	}

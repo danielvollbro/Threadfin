@@ -16,14 +16,16 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
+	jsonserializer "threadfin/src/internal/json-serializer"
+	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/structs"
 )
 
 // Einstellungen ändern (WebUI)
 func updateServerSettings(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
 
-	var oldSettings = jsonToMap(mapToJSON(config.Settings))
-	var newSettings = jsonToMap(mapToJSON(request.Settings))
+	var oldSettings = jsonToMap(jsonserializer.MapToJSON(config.Settings))
+	var newSettings = jsonToMap(jsonserializer.MapToJSON(request.Settings))
 	var reloadData = false
 	var cacheImages = false
 	var createXEPGFiles = false
@@ -145,7 +147,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 	}
 
 	// Einstellungen aktualisieren
-	err = json.Unmarshal([]byte(mapToJSON(oldSettings)), &config.Settings)
+	err = json.Unmarshal([]byte(jsonserializer.MapToJSON(oldSettings)), &config.Settings)
 	if err != nil {
 		return
 	}
@@ -187,7 +189,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 	}
 
-	err = saveSettings(config.Settings)
+	err = systemSettings.SaveSettings(config.Settings)
 	if err == nil {
 
 		settings = config.Settings
@@ -349,7 +351,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 
 		}
 
-		err = saveSettings(config.Settings)
+		err = systemSettings.SaveSettings(config.Settings)
 		if err != nil {
 			return
 		}
@@ -460,7 +462,7 @@ func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct,
 			// New Filter
 			newFilter = true
 			dataID = createNewID()
-			filterMap[dataID] = jsonToMap(mapToJSON(newData))
+			filterMap[dataID] = jsonToMap(jsonserializer.MapToJSON(newData))
 		}
 
 		// Update / delete filters
@@ -494,7 +496,7 @@ func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct,
 
 	}
 
-	err = saveSettings(config.Settings)
+	err = systemSettings.SaveSettings(config.Settings)
 	if err != nil {
 		return
 	}
@@ -523,7 +525,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 		cli.ShowError(err, 0)
 	}
 
-	err = json.Unmarshal([]byte(mapToJSON(request.EpgMapping)), &tmp)
+	err = json.Unmarshal([]byte(jsonserializer.MapToJSON(request.EpgMapping)), &tmp)
 	if err != nil {
 		return
 	}
@@ -665,7 +667,7 @@ func saveNewUser(request structs.RequestStruct) (err error) {
 // Wizard (WebUI)
 func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 
-	var wizard = jsonToMap(mapToJSON(request.Wizard))
+	var wizard = jsonToMap(jsonserializer.MapToJSON(request.Wizard))
 
 	for key, value := range wizard {
 
@@ -754,7 +756,7 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 
 	}
 
-	err = saveSettings(config.Settings)
+	err = systemSettings.SaveSettings(config.Settings)
 	if err != nil {
 		return
 	}
@@ -774,7 +776,7 @@ func createFilterRules() (err error) {
 
 		var exclude, include string
 
-		err = json.Unmarshal([]byte(mapToJSON(f)), &filter)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(f)), &filter)
 		if err != nil {
 			return
 		}
@@ -1090,7 +1092,7 @@ func setProviderCompatibility(id, fileType string, compatibility map[string]int)
 			config.Settings.Files.XMLTV = dataMap
 		}
 
-		err := saveSettings(config.Settings)
+		err := systemSettings.SaveSettings(config.Settings)
 		if err != nil {
 			cli.ShowError(err, 0)
 		}

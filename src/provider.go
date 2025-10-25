@@ -11,6 +11,8 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	m3u "threadfin/src/internal/m3u-parser"
+	systemSettings "threadfin/src/internal/settings"
+	"threadfin/src/internal/storage"
 )
 
 // fileType: Welcher Dateityp soll aktualisiert werden (m3u, hdhr, xml) | fileID: Update einer bestimmten Datei (Provider ID)
@@ -145,7 +147,7 @@ func getProviderData(fileType, fileID string) (err error) {
 
 		var filePath = config.System.Folder.Data + data["file."+config.System.AppName].(string)
 
-		err = writeByteToFile(filePath, body)
+		err = storage.WriteByteToFile(filePath, body)
 
 		if err == nil {
 			data["last.update"] = time.Now().Format("2006-01-02 15:04:05")
@@ -300,7 +302,7 @@ func getProviderData(fileType, fileID string) (err error) {
 
 		}
 
-		err = saveSettings(config.Settings)
+		err = systemSettings.SaveSettings(config.Settings)
 		if err != nil {
 			return
 		}

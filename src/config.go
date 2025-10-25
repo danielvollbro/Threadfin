@@ -7,6 +7,8 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/plex"
+	"threadfin/src/internal/storage"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -77,10 +79,10 @@ func Init() (err error) {
 		return
 	}
 
-	config.System.File.XML = getPlatformFile(fmt.Sprintf("%s%s.xml", config.System.Folder.Data, config.System.AppName))
-	config.System.File.M3U = getPlatformFile(fmt.Sprintf("%s%s.m3u", config.System.Folder.Data, config.System.AppName))
+	config.System.File.XML = storage.GetPlatformFile(fmt.Sprintf("%s%s.xml", config.System.Folder.Data, config.System.AppName))
+	config.System.File.M3U = storage.GetPlatformFile(fmt.Sprintf("%s%s.m3u", config.System.Folder.Data, config.System.AppName))
 
-	config.System.Compressed.GZxml = getPlatformFile(fmt.Sprintf("%s%s.xml.gz", config.System.Folder.Data, config.System.AppName))
+	config.System.Compressed.GZxml = storage.GetPlatformFile(fmt.Sprintf("%s%s.xml.gz", config.System.Folder.Data, config.System.AppName))
 
 	err = activatedSystemAuthentication()
 	if err != nil {
@@ -95,7 +97,7 @@ func Init() (err error) {
 	// Menü für das Webinterface
 	config.System.WEB.Menu = []string{"playlist", "xmltv", "filter", "mapping", "users", "settings", "log", "logout"}
 
-	fmt.Println("For help run: " + getPlatformFile(os.Args[0]) + " -h")
+	fmt.Println("For help run: " + storage.GetPlatformFile(os.Args[0]) + " -h")
 	fmt.Println()
 
 	// Überprüfen ob Threadfin als root läuft
@@ -200,7 +202,7 @@ func Init() (err error) {
 // StartSystem : System wird gestartet
 func StartSystem(updateProviderFiles bool) (err error) {
 
-	setDeviceID()
+	plex.SetDeviceID()
 
 	if config.System.ScanInProgress == 1 {
 		return

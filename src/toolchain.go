@@ -21,6 +21,7 @@ import (
 	"text/template"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 
 	"github.com/avfs/avfs"
 )
@@ -103,7 +104,7 @@ func fsIsNotExistErr(err error) bool {
 // Prüft ob die Datei im Dateisystem existiert
 func checkFile(filename string) (err error) {
 
-	var file = getPlatformFile(filename)
+	var file = storage.GetPlatformFile(filename)
 
 	if _, err = os.Stat(file); os.IsNotExist(err) {
 		return err
@@ -163,16 +164,6 @@ func getPlatformPath(path string) string {
 	return filepath.Dir(path) + string(os.PathSeparator)
 }
 
-// Dateipfad für das laufende OS generieren
-func getPlatformFile(filename string) (osFilePath string) {
-
-	path, file := filepath.Split(filename)
-	var newPath = filepath.Dir(path)
-	osFilePath = newPath + string(os.PathSeparator) + file
-
-	return
-}
-
 // Dateinamen aus dem Dateipfad ausgeben
 func getFilenameFromPath(path string) (file string) {
 	return filepath.Base(path)
@@ -225,17 +216,6 @@ func removeChildItems(dir string) error {
 	return nil
 }
 
-// JSON
-func mapToJSON(tmpMap interface{}) string {
-
-	jsonString, err := json.MarshalIndent(tmpMap, "", "  ")
-	if err != nil {
-		return "{}"
-	}
-
-	return string(jsonString)
-}
-
 func jsonToMap(content string) map[string]interface{} {
 
 	var tmpMap = make(map[string]interface{})
@@ -256,7 +236,7 @@ func jsonToInterface(content string) (tmpMap interface{}, err error) {
 
 func saveMapToJSONFile(file string, tmpMap interface{}) error {
 
-	var filename = getPlatformFile(file)
+	var filename = storage.GetPlatformFile(file)
 	jsonString, err := json.MarshalIndent(tmpMap, "", "  ")
 
 	if err != nil {
@@ -277,7 +257,7 @@ func saveMapToJSONFile(file string, tmpMap interface{}) error {
 }
 
 func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
-	f, err := os.Open(getPlatformFile(file))
+	f, err := os.Open(storage.GetPlatformFile(file))
 	if err != nil {
 		return
 	}
@@ -303,7 +283,7 @@ func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
 // Binary
 func readByteFromFile(file string) (content []byte, err error) {
 
-	f, err := os.Open(getPlatformFile(file))
+	f, err := os.Open(storage.GetPlatformFile(file))
 	if err != nil {
 		return
 	}
@@ -321,18 +301,10 @@ func readByteFromFile(file string) (content []byte, err error) {
 	return
 }
 
-func writeByteToFile(file string, data []byte) (err error) {
-
-	var filename = getPlatformFile(file)
-	err = os.WriteFile(filename, data, 0644)
-
-	return
-}
-
 func readStringFromFile(file string) (str string, err error) {
 
 	var content []byte
-	var filename = getPlatformFile(file)
+	var filename = storage.GetPlatformFile(file)
 
 	err = checkFile(filename)
 	if err != nil {

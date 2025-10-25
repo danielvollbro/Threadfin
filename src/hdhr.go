@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/structs"
 )
 
@@ -116,7 +117,7 @@ func getLineup() (jsonContent []byte, err error) {
 
 			var m3uChannel structs.M3UChannelStructXEPG
 
-			err = json.Unmarshal([]byte(mapToJSON(dsa)), &m3uChannel)
+			err = json.Unmarshal([]byte(jsonserializer.MapToJSON(dsa)), &m3uChannel)
 			if err != nil {
 				return
 			}
@@ -152,7 +153,7 @@ func getLineup() (jsonContent []byte, err error) {
 		for _, dxc := range config.Data.XEPG.Channels {
 
 			var xepgChannel structs.XEPGChannelStruct
-			err = json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+			err = json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 			if err != nil {
 				return
 			}

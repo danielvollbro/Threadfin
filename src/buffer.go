@@ -19,6 +19,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	"time"
 
@@ -280,9 +281,9 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 				// If there are backup URLs, use them
 				if backupStream1 != nil {
 					bufferingStream(backupStream1.PlaylistID, backupStream1.URL, nil, backupStream2, backupStream3, channelName, w, r)
-				} else if backupStream2 != nil && backupStream1 == nil {
+				} else if backupStream2 != nil {
 					bufferingStream(backupStream2.PlaylistID, backupStream2.URL, nil, nil, backupStream3, channelName, w, r)
-				} else if backupStream3 != nil && backupStream1 == nil && backupStream2 == nil {
+				} else if backupStream3 != nil {
 					bufferingStream(backupStream3.PlaylistID, backupStream3.URL, nil, nil, nil, channelName, w, r)
 				}
 
@@ -540,7 +541,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 							if n > 20 {
 
 								var fileToRemove = stream.Folder + oldSegments[0]
-								if err = config.BufferVFS.RemoveAll(getPlatformFile(fileToRemove)); err != nil {
+								if err = config.BufferVFS.RemoveAll(storage.GetPlatformFile(fileToRemove)); err != nil {
 									cli.ShowError(err, 4007)
 								}
 								oldSegments = append(oldSegments[:0], oldSegments[0+1:]...)

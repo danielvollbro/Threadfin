@@ -22,6 +22,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
+	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/structs"
 	_ "time/tzdata"
 )
@@ -434,7 +435,7 @@ func createXEPGDatabase() (err error) {
 	m3uChannels := make(map[string]structs.M3UChannelStructXEPG)
 	for _, dsa := range config.Data.Streams.Active {
 		var m3uChannel structs.M3UChannelStructXEPG
-		err = json.Unmarshal([]byte(mapToJSON(dsa)), &m3uChannel)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(dsa)), &m3uChannel)
 		if err == nil {
 			// Use tvg-id as the key for matching channels
 			key := m3uChannel.TvgID
@@ -448,7 +449,7 @@ func createXEPGDatabase() (err error) {
 	// Update URLs in XEPG database
 	for id, dxc := range config.Data.XEPG.Channels {
 		var xepgChannel structs.XEPGChannelStruct
-		err = json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 		if err == nil {
 			// Find matching M3U channel using tvg-id or tvg-name
 			key := xepgChannel.TvgID
@@ -510,7 +511,7 @@ func createXEPGDatabase() (err error) {
 	for id, dxc := range config.Data.XEPG.Channels {
 
 		var xepgChannel structs.XEPGChannelStruct
-		err = json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 		if err != nil {
 			return
 		}
@@ -529,7 +530,7 @@ func createXEPGDatabase() (err error) {
 	var xepgChannelsValuesMap = make(map[string]structs.XEPGChannelStruct, config.System.UnfilteredChannelLimit)
 	for _, v := range config.Data.XEPG.Channels {
 		var channel structs.XEPGChannelStruct
-		err = json.Unmarshal([]byte(mapToJSON(v)), &channel)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(v)), &channel)
 		if err != nil {
 			return
 		}
@@ -560,7 +561,7 @@ func createXEPGDatabase() (err error) {
 
 		var m3uChannel structs.M3UChannelStructXEPG
 
-		err = json.Unmarshal([]byte(mapToJSON(dsa)), &m3uChannel)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(dsa)), &m3uChannel)
 		if err != nil {
 			return
 		}
@@ -620,7 +621,7 @@ func createXEPGDatabase() (err error) {
 		case true:
 			// Bereits vorhandener Kanal
 			var xepgChannel structs.XEPGChannelStruct
-			err = json.Unmarshal([]byte(mapToJSON(config.Data.XEPG.Channels[currentXEPGID])), &xepgChannel)
+			err = json.Unmarshal([]byte(jsonserializer.MapToJSON(config.Data.XEPG.Channels[currentXEPGID])), &xepgChannel)
 			if err != nil {
 				return
 			}
@@ -834,7 +835,7 @@ func mapping() (err error) {
 	for xepg, dxc := range config.Data.XEPG.Channels {
 
 		var xepgChannel structs.XEPGChannelStruct
-		err = json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 		if err != nil {
 			return
 		}
@@ -847,7 +848,7 @@ func mapping() (err error) {
 			for _, stream := range config.Data.Streams.Active {
 				var m3uChannel structs.M3UChannelStructXEPG
 
-				err = json.Unmarshal([]byte(mapToJSON(stream)), &m3uChannel)
+				err = json.Unmarshal([]byte(jsonserializer.MapToJSON(stream)), &m3uChannel)
 				if err != nil {
 					return err
 				}
@@ -1109,7 +1110,7 @@ func createXMLTVFile() (err error) {
 
 	for _, dxc := range config.Data.XEPG.Channels {
 		var xepgChannel structs.XEPGChannelStruct
-		err := json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+		err := json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 		if err == nil {
 			entries = append(entries, channelEntry{idx: len(entries), ch: xepgChannel})
 		}
@@ -1869,7 +1870,7 @@ func cleanupXEPG() {
 	for id, dxc := range config.Data.XEPG.Channels {
 
 		var xepgChannel structs.XEPGChannelStruct
-		err := json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+		err := json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 		if err == nil {
 
 			if xepgChannel.TvgName == "" {
@@ -1929,7 +1930,7 @@ func removeDuplicateChannels() {
 
 	for id, dxc := range config.Data.XEPG.Channels {
 		var xepgChannel structs.XEPGChannelStruct
-		err := json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+		err := json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 		if err != nil {
 			continue
 		}
@@ -1987,7 +1988,7 @@ func removeDuplicateChannels() {
 func getChannelByID(id string) *structs.XEPGChannelStruct {
 	if dxc, exists := config.Data.XEPG.Channels[id]; exists {
 		var channel structs.XEPGChannelStruct
-		if err := json.Unmarshal([]byte(mapToJSON(dxc)), &channel); err == nil {
+		if err := json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &channel); err == nil {
 			return &channel
 		}
 	}

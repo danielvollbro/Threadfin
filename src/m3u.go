@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"threadfin/src/internal/config"
+	jsonserializer "threadfin/src/internal/json-serializer"
 	m3u "threadfin/src/internal/m3u-parser"
 	"threadfin/src/internal/structs"
 )
@@ -218,7 +219,7 @@ func buildM3U(groups []string) (m3u string, err error) {
 	deactivatedPerGroup := make(map[string]int)
 	for _, dxc := range config.Data.XEPG.Channels {
 		var ch structs.XEPGChannelStruct
-		if err := json.Unmarshal([]byte(mapToJSON(dxc)), &ch); err == nil {
+		if err := json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &ch); err == nil {
 			group := ch.XGroupTitle
 			if ch.XCategory != "" {
 				group = ch.XCategory
@@ -234,7 +235,7 @@ func buildM3U(groups []string) (m3u string, err error) {
 
 	for _, dxc := range config.Data.XEPG.Channels {
 		var xepgChannel structs.XEPGChannelStruct
-		err := json.Unmarshal([]byte(mapToJSON(dxc)), &xepgChannel)
+		err := json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
 		if err == nil {
 			if xepgChannel.TvgName == "" {
 				xepgChannel.TvgName = xepgChannel.Name

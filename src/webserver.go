@@ -16,6 +16,8 @@ import (
 	"threadfin/src/internal/authentication"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 
 	"github.com/gorilla/websocket"
@@ -496,7 +498,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 
 		case "saveFilesM3U":
 			// Reset cache for urls.json
-			var filename = getPlatformFile(config.System.Folder.Config + "urls.json")
+			var filename = storage.GetPlatformFile(config.System.Folder.Config + "urls.json")
 			err = saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
 			if err != nil {
 				cli.ShowError(err, 000)
@@ -512,7 +514,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 
 		case "updateFileM3U":
 			// Reset cache for urls.json
-			var filename = getPlatformFile(config.System.Folder.Config + "urls.json")
+			var filename = storage.GetPlatformFile(config.System.Folder.Config + "urls.json")
 			err = saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
 			if err != nil {
 				cli.ShowError(err, 000)
@@ -695,7 +697,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = json.Unmarshal([]byte(mapToJSON(lang)), &language)
+	err = json.Unmarshal([]byte(jsonserializer.MapToJSON(lang)), &language)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
@@ -910,7 +912,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		_, err = w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(jsonserializer.MapToJSON(response)))
 		if err != nil {
 			cli.ShowError(err, 000)
 		}
@@ -1051,7 +1053,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		responseAPIError(err)
 	}
 
-	_, err = w.Write([]byte(mapToJSON(response)))
+	_, err = w.Write([]byte(jsonserializer.MapToJSON(response)))
 	if err != nil {
 		cli.ShowError(err, 000)
 	}
@@ -1183,7 +1185,7 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		_, err = w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(jsonserializer.MapToJSON(response)))
 		if err != nil {
 			cli.ShowError(err, 000)
 		}
@@ -1205,7 +1207,7 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		_, err = w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(jsonserializer.MapToJSON(response)))
 		if err != nil {
 			cli.ShowError(err, 000)
 		}
@@ -1225,7 +1227,7 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		_, err = w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(jsonserializer.MapToJSON(response)))
 		if err != nil {
 			cli.ShowError(err, 000)
 		}
@@ -1246,7 +1248,7 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 
 		response.Status = false
 		response.Error = err.Error()
-		_, err = w.Write([]byte(mapToJSON(response)))
+		_, err = w.Write([]byte(jsonserializer.MapToJSON(response)))
 		if err != nil {
 			cli.ShowError(err, 000)
 		}

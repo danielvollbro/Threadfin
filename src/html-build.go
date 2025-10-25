@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"threadfin/src/internal/storage"
 )
 
 var htmlFolder string
@@ -125,7 +126,7 @@ func getLocalPath(filename string) string {
 
 func writeStringToFile(filename, content string) error {
 
-	err := os.WriteFile(getPlatformFile(filename), []byte(content), 0644)
+	err := os.WriteFile(storage.GetPlatformFile(filename), []byte(content), 0644)
 	if err != nil {
 		checkErr(err)
 		return err

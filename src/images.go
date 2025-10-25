@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 )
 
 func uploadLogo(input, filename string) (logoURL string, err error) {
@@ -19,7 +20,7 @@ func uploadLogo(input, filename string) (logoURL string, err error) {
 
 	var file = fmt.Sprintf("%s%s", config.System.Folder.ImagesUpload, filename)
 
-	err = writeByteToFile(file, sDec)
+	err = storage.WriteByteToFile(file, sDec)
 	if err != nil {
 		return
 	}
