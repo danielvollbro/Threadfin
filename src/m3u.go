@@ -28,7 +28,7 @@ import (
 func parsePlaylist(filename, fileType string) (channels []interface{}, err error) {
 
 	content, err := storage.ReadByteFromFile(filename)
-	var id = strings.TrimSuffix(getFilenameFromPath(filename), path.Ext(getFilenameFromPath(filename)))
+	var id = strings.TrimSuffix(storage.GetFilenameFromPath(filename), path.Ext(storage.GetFilenameFromPath(filename)))
 	var playlistName = provider.GetProviderParameter(id, fileType, "name")
 
 	if err == nil {

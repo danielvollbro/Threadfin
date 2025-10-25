@@ -14,11 +14,6 @@ import (
 
 // --- System Tools ---
 
-// Dateinamen aus dem Dateipfad ausgeben
-func getFilenameFromPath(path string) (file string) {
-	return filepath.Base(path)
-}
-
 // Sucht eine Datei im OS
 func searchFileInOS(file string) (path string) {
 

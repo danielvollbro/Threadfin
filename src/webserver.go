@@ -279,7 +279,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		config.SystemMutex.Lock()
-		file = config.System.Folder.Data + getFilenameFromPath(path)
+		file = config.System.Folder.Data + storage.GetFilenameFromPath(path)
 		config.SystemMutex.Unlock()
 
 		content, err = storage.ReadStringFromFile(file)
@@ -324,7 +324,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 		if !config.System.Dev {
 			// false: Dateiname wird im Header gesetzt
 			// true: M3U wird direkt im Browser angezeigt
-			w.Header().Set("Content-Disposition", "attachment; filename="+getFilenameFromPath(path))
+			w.Header().Set("Content-Disposition", "attachment; filename="+storage.GetFilenameFromPath(path))
 		}
 		config.SystemMutex.Unlock()
 
@@ -359,7 +359,7 @@ func Images(w http.ResponseWriter, r *http.Request) {
 
 	var path = strings.TrimPrefix(r.URL.Path, "/")
 	config.SystemMutex.Lock()
-	filePath := config.System.Folder.ImagesCache + getFilenameFromPath(path)
+	filePath := config.System.Folder.ImagesCache + storage.GetFilenameFromPath(path)
 	config.SystemMutex.Unlock()
 
 	content, err := storage.ReadByteFromFile(filePath)
@@ -382,7 +382,7 @@ func DataImages(w http.ResponseWriter, r *http.Request) {
 
 	var path = strings.TrimPrefix(r.URL.Path, "/")
 	config.SystemMutex.Lock()
-	filePath := config.System.Folder.ImagesUpload + getFilenameFromPath(path)
+	filePath := config.System.Folder.ImagesUpload + storage.GetFilenameFromPath(path)
 	config.SystemMutex.Unlock()
 
 	content, err := storage.ReadByteFromFile(filePath)
@@ -710,7 +710,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if getFilenameFromPath(requestFile) == "html" {
+	if storage.GetFilenameFromPath(requestFile) == "html" {
 
 		config.SystemMutex.Lock()
 		if config.System.ConfigurationWizard {
@@ -809,7 +809,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 		if _, ok := web.WebUI[requestFile]; ok {
 			if contentType == "text/plain" {
-				w.Header().Set("Content-Disposition", "attachment; filename="+getFilenameFromPath(requestFile))
+				w.Header().Set("Content-Disposition", "attachment; filename="+storage.GetFilenameFromPath(requestFile))
 			}
 
 		} else {
@@ -825,7 +825,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		contentType = getContentType(requestFile)
 
 		if contentType == "text/plain" {
-			w.Header().Set("Content-Disposition", "attachment; filename="+getFilenameFromPath(requestFile))
+			w.Header().Set("Content-Disposition", "attachment; filename="+storage.GetFilenameFromPath(requestFile))
 		}
 
 	} else {
@@ -1070,8 +1070,8 @@ func API(w http.ResponseWriter, r *http.Request) {
 func Download(w http.ResponseWriter, r *http.Request) {
 
 	var path = r.URL.Path
-	var file = config.System.Folder.Temp + getFilenameFromPath(path)
-	w.Header().Set("Content-Disposition", "attachment; filename="+getFilenameFromPath(file))
+	var file = config.System.Folder.Temp + storage.GetFilenameFromPath(path)
+	w.Header().Set("Content-Disposition", "attachment; filename="+storage.GetFilenameFromPath(file))
 
 	content, err := storage.ReadStringFromFile(file)
 	if err != nil {
@@ -1079,7 +1079,7 @@ func Download(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.RemoveAll(config.System.Folder.Temp + getFilenameFromPath(path))
+	err = os.RemoveAll(config.System.Folder.Temp + storage.GetFilenameFromPath(path))
 	if err != nil {
 		cli.ShowError(err, 000)
 	}

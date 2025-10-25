@@ -322,7 +322,7 @@ func createXEPGMapping() {
 			var file = config.Data.XMLTV.Files[i]
 
 			var err error
-			var fileID = strings.TrimSuffix(getFilenameFromPath(file), path.Ext(getFilenameFromPath(file)))
+			var fileID = strings.TrimSuffix(storage.GetFilenameFromPath(file), path.Ext(storage.GetFilenameFromPath(file)))
 			cli.ShowInfo("XEPG:" + "Parse XMLTV file: " + provider.GetProviderParameter(fileID, "xmltv", "name"))
 
 			//xmltv, err = getLocalXMLTV(file)
@@ -353,8 +353,8 @@ func createXEPGMapping() {
 
 				}
 
-				tmpMap[getFilenameFromPath(file)] = xmltvMap
-				config.Data.XMLTV.Mapping[getFilenameFromPath(file)] = xmltvMap
+				tmpMap[storage.GetFilenameFromPath(file)] = xmltvMap
+				config.Data.XMLTV.Mapping[storage.GetFilenameFromPath(file)] = xmltvMap
 
 			}
 

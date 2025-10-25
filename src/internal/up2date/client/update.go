@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -57,7 +56,7 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 
 		// Change binary filename to .filename
 		binary, _ := osext.Executable()
-		var filename = getFilenameFromPath(binary)
+		var filename = storage.GetFilenameFromPath(binary)
 		var path = storage.GetPlatformPath(binary)
 		var oldBinary = path + "_old_" + filename
 		var newBinary = binary
@@ -240,13 +239,6 @@ func restorOldBinary(oldBinary, newBinary string) {
 	if err != nil {
 		log.Println("[UPDATE]", "Restor old binary...ERROR")
 	}
-}
-
-func getFilenameFromPath(path string) string {
-
-	file := filepath.Base(path)
-
-	return file
 }
 
 func copyFile(src, dst string) (err error) {

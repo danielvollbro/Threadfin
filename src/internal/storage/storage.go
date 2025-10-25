@@ -241,3 +241,7 @@ func CheckFilePermission(dir string) (err error) {
 
 	return
 }
+
+func GetFilenameFromPath(path string) (file string) {
+	return filepath.Base(path)
+}

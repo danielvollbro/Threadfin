@@ -847,7 +847,7 @@ func buildDatabaseDVR() (err error) {
 			var keys = []string{"group-title", "tvg-id", "uuid"}
 			var compatibility = make(map[string]int)
 
-			var id = strings.TrimSuffix(getFilenameFromPath(i), path.Ext(getFilenameFromPath(i)))
+			var id = strings.TrimSuffix(storage.GetFilenameFromPath(i), path.Ext(storage.GetFilenameFromPath(i)))
 			var playlistName = provider.GetProviderParameter(id, fileType, "name")
 
 			switch fileType {

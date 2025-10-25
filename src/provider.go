@@ -232,7 +232,7 @@ func getProviderData(fileType, fileID string) (err error) {
 				err = storage.CheckFile(fileSource)
 				if err == nil {
 					body, err = storage.ReadByteFromFile(fileSource)
-					serverFileName = getFilenameFromPath(fileSource)
+					serverFileName = storage.GetFilenameFromPath(fileSource)
 				}
 
 			}
@@ -378,7 +378,7 @@ func downloadFileFromServer(providerURL string, proxyUrl string) (filename strin
 		filename = f
 		cli.ShowInfo("Header filename:" + filename)
 	} else {
-		var cleanFilename = strings.SplitN(getFilenameFromPath(providerURL), "?", 2)
+		var cleanFilename = strings.SplitN(storage.GetFilenameFromPath(providerURL), "?", 2)
 		filename = cleanFilename[0]
 	}
 
