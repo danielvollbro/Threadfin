@@ -14,6 +14,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/maintenance"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
 	"threadfin/src/internal/update"
@@ -133,7 +134,7 @@ func Run() {
 
 		systemConfig.Flag.Info = true
 
-		err := Init()
+		err := system.Init()
 		if err != nil {
 			cli.ShowError(err, 0)
 			os.Exit(0)
@@ -176,13 +177,13 @@ func Run() {
 
 		systemConfig.Flag.Restore = *restore
 
-		err := Init()
+		err := system.Init()
 		if err != nil {
 			cli.ShowError(err, 0)
 			os.Exit(0)
 		}
 
-		err = ThreadfinRestoreFromCLI(*restore)
+		err = system.ThreadfinRestoreFromCLI(*restore)
 		if err != nil {
 			cli.ShowError(err, 0)
 		}
@@ -190,7 +191,7 @@ func Run() {
 		os.Exit(0)
 	}
 
-	err := Init()
+	err := system.Init()
 	if err != nil {
 		cli.ShowError(err, 0)
 		os.Exit(0)
@@ -201,13 +202,13 @@ func Run() {
 		cli.ShowError(err, 0)
 	}
 
-	err = StartSystem(false)
+	err = system.StartSystem(false)
 	if err != nil {
 		cli.ShowError(err, 0)
 		os.Exit(0)
 	}
 
-	err = InitMaintenance()
+	err = maintenance.InitMaintenance()
 	if err != nil {
 		cli.ShowError(err, 0)
 		os.Exit(0)

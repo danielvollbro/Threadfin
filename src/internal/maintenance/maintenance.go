@@ -1,14 +1,14 @@
-package src
+package maintenance
 
 import (
 	"fmt"
 	"math/rand"
-	"threadfin/src/internal/backup"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/dvr"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/system"
 	"threadfin/src/internal/update"
 	"threadfin/src/internal/xepg"
 	"time"
@@ -40,7 +40,7 @@ func maintenance() {
 					cli.ShowInfo("Update:" + schedule)
 
 					// Backup erstellen
-					err := backup.ThreadfinAutoBackup()
+					err := system.ThreadfinAutoBackup()
 					if err != nil {
 						cli.ShowError(err, 000)
 					}

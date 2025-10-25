@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"threadfin/src/internal/config"
 
 	"crypto/hmac"
 	"crypto/rand"
@@ -616,6 +617,52 @@ func ActivatedSystemAuthentication(config string) (err error) {
 	defaults["authentication.xml"] = false
 	defaults["authentication.api"] = false
 	err = SetDefaultUserData(defaults)
+
+	return
+}
+
+func CreateFirstUserForAuthentication(username, password string) (token string, err error) {
+
+	var authenticationErr = func(err error) {
+		if err != nil {
+			return
+		}
+	}
+
+	err = CreateDefaultUser(username, password)
+	authenticationErr(err)
+
+	token, err = UserAuthentication(username, password)
+	authenticationErr(err)
+
+	token, err = CheckTheValidityOfTheToken(token)
+	authenticationErr(err)
+
+	var userData = make(map[string]interface{})
+	userData["username"] = username
+	userData["authentication.web"] = true
+	userData["authentication.pms"] = true
+	userData["authentication.m3u"] = true
+	userData["authentication.xml"] = true
+	userData["authentication.api"] = false
+	userData["defaultUser"] = true
+
+	userID, err := GetUserID(token)
+	authenticationErr(err)
+
+	err = WriteUserData(userID, userData)
+	authenticationErr(err)
+
+	return
+}
+
+func TokenAuthentication(token string) (newToken string, err error) {
+
+	if config.System.ConfigurationWizard {
+		return
+	}
+
+	newToken, err = CheckTheValidityOfTheToken(token)
 
 	return
 }

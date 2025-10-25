@@ -470,7 +470,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 					token = tokens[0]
 				}
 
-				newToken, err = tokenAuthentication(token)
+				newToken, err = authentication.TokenAuthentication(token)
 				if err != nil {
 					response.Status = false
 					response.Reload = true
@@ -598,7 +598,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			response.OpenMenu = strconv.Itoa(utilities.IndexOfString("log", config.System.WEB.Menu))
 
 		case "ThreadfinBackup":
-			file, errNew := ThreadfinBackup()
+			file, errNew := system.ThreadfinBackup()
 			err = errNew
 			if err == nil {
 				response.OpenLink = fmt.Sprintf("%s://%s/download/%s", config.System.ServerProtocol.WEB, config.System.Domain, file)
@@ -610,7 +610,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			config.WebScreenLog.Warnings = 0
 
 			if len(request.Base64) > 0 {
-				newWebURL, err := ThreadfinRestoreFromWeb(request.Base64)
+				newWebURL, err := system.ThreadfinRestoreFromWeb(request.Base64)
 				if err != nil {
 					cli.ShowError(err, 000)
 					response.Alert = err.Error()
@@ -753,7 +753,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 				// Erster Benutzer wird angelegt (Passwortbestätigung ist vorhanden)
 				if len(confirm) > 0 {
 
-					var token, err = createFirstUserForAuthentication(username, password)
+					var token, err = authentication.CreateFirstUserForAuthentication(username, password)
 					if err != nil {
 						web.HttpStatusError(w, 429)
 						return
@@ -1005,7 +1005,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 			}
 
 		default:
-			token, err = tokenAuthentication(request.Token)
+			token, err = authentication.TokenAuthentication(request.Token)
 			fmt.Println(err)
 			if err != nil {
 				responseAPIError(err)

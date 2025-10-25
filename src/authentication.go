@@ -10,52 +10,6 @@ import (
 	"threadfin/src/internal/config"
 )
 
-func createFirstUserForAuthentication(username, password string) (token string, err error) {
-
-	var authenticationErr = func(err error) {
-		if err != nil {
-			return
-		}
-	}
-
-	err = authentication.CreateDefaultUser(username, password)
-	authenticationErr(err)
-
-	token, err = authentication.UserAuthentication(username, password)
-	authenticationErr(err)
-
-	token, err = authentication.CheckTheValidityOfTheToken(token)
-	authenticationErr(err)
-
-	var userData = make(map[string]interface{})
-	userData["username"] = username
-	userData["authentication.web"] = true
-	userData["authentication.pms"] = true
-	userData["authentication.m3u"] = true
-	userData["authentication.xml"] = true
-	userData["authentication.api"] = false
-	userData["defaultUser"] = true
-
-	userID, err := authentication.GetUserID(token)
-	authenticationErr(err)
-
-	err = authentication.WriteUserData(userID, userData)
-	authenticationErr(err)
-
-	return
-}
-
-func tokenAuthentication(token string) (newToken string, err error) {
-
-	if config.System.ConfigurationWizard {
-		return
-	}
-
-	newToken, err = authentication.CheckTheValidityOfTheToken(token)
-
-	return
-}
-
 func basicAuth(r *http.Request, level string) (username string, err error) {
 
 	err = errors.New("user authentication failed")
