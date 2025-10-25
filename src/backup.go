@@ -266,7 +266,7 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 
 	if len(config.System.Folder.Config) > 0 {
 
-		err = checkFilePermission(config.System.Folder.Config)
+		err = storage.CheckFilePermission(config.System.Folder.Config)
 		if err != nil {
 			return
 		}

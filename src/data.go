@@ -80,7 +80,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				err = storage.CheckFolder(value.(string))
 				if err == nil {
 
-					err = checkFilePermission(value.(string))
+					err = storage.CheckFilePermission(value.(string))
 					if err != nil {
 						return
 					}
@@ -96,7 +96,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				err = storage.CheckFolder(value.(string))
 				if err == nil {
 
-					err = checkFilePermission(value.(string))
+					err = storage.CheckFilePermission(value.(string))
 					if err != nil {
 						return
 					}

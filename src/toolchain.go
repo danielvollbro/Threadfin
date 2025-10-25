@@ -14,19 +14,6 @@ import (
 
 // --- System Tools ---
 
-// Prüft Dateiberechtigung
-func checkFilePermission(dir string) (err error) {
-
-	var filename = dir + "permission.test"
-
-	err = os.WriteFile(filename, []byte(""), 0644)
-	if err == nil {
-		err = os.RemoveAll(filename)
-	}
-
-	return
-}
-
 // Dateinamen aus dem Dateipfad ausgeben
 func getFilenameFromPath(path string) (file string) {
 	return filepath.Base(path)
