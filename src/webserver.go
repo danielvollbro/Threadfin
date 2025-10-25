@@ -1310,3 +1310,33 @@ func getContentType(filename string) (contentType string) {
 	}
 	return "text/plain"
 }
+
+func updateUrlsJson() {
+
+	err := provider.GetData("m3u", "")
+	if err != nil {
+		cli.ShowError(err, 0)
+		return
+	}
+
+	err = provider.GetData("hdhr", "")
+	if err != nil {
+		cli.ShowError(err, 0)
+		return
+	}
+
+	if config.Settings.EpgSource == "XEPG" {
+		err = provider.GetData("xmltv", "")
+		if err != nil {
+			cli.ShowError(err, 0)
+			return
+		}
+	}
+	err = buildDatabaseDVR()
+	if err != nil {
+		cli.ShowError(err, 0)
+		return
+	}
+
+	buildXEPG(false)
+}
