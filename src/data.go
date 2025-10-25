@@ -27,8 +27,8 @@ import (
 // Einstellungen ändern (WebUI)
 func updateServerSettings(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
 
-	var oldSettings = jsonToMap(jsonserializer.MapToJSON(config.Settings))
-	var newSettings = jsonToMap(jsonserializer.MapToJSON(request.Settings))
+	var oldSettings = jsonserializer.JSONToMap(jsonserializer.MapToJSON(config.Settings))
+	var newSettings = jsonserializer.JSONToMap(jsonserializer.MapToJSON(request.Settings))
 	var reloadData = false
 	var cacheImages = false
 	var createXEPGFiles = false
@@ -465,7 +465,7 @@ func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct,
 			// New Filter
 			newFilter = true
 			dataID = createNewID()
-			filterMap[dataID] = jsonToMap(jsonserializer.MapToJSON(newData))
+			filterMap[dataID] = jsonserializer.JSONToMap(jsonserializer.MapToJSON(newData))
 		}
 
 		// Update / delete filters
@@ -669,8 +669,7 @@ func saveNewUser(request structs.RequestStruct) (err error) {
 
 // Wizard (WebUI)
 func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
-
-	var wizard = jsonToMap(jsonserializer.MapToJSON(request.Wizard))
+	var wizard = jsonserializer.JSONToMap(jsonserializer.MapToJSON(request.Wizard))
 
 	for key, value := range wizard {
 

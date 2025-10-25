@@ -2,7 +2,6 @@ package src
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -128,17 +127,6 @@ func removeChildItems(dir string) error {
 	}
 
 	return nil
-}
-
-func jsonToMap(content string) map[string]interface{} {
-
-	var tmpMap = make(map[string]interface{})
-	err := json.Unmarshal([]byte(content), &tmpMap)
-	if err != nil {
-		return make(map[string]interface{})
-	}
-
-	return (tmpMap)
 }
 
 func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {

@@ -16,3 +16,13 @@ func JSONToInterface(content string) (tmpMap interface{}, err error) {
 	err = json.Unmarshal([]byte(content), &tmpMap)
 	return
 }
+
+func JSONToMap(content string) map[string]interface{} {
+	var tmpMap = make(map[string]interface{})
+	err := json.Unmarshal([]byte(content), &tmpMap)
+	if err != nil {
+		return make(map[string]interface{})
+	}
+
+	return (tmpMap)
+}

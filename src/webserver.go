@@ -700,7 +700,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 		if value, ok := web.WebUI[languageFile].(string); ok {
 			content = web.GetHTMLString(value)
-			lang = jsonToMap(content)
+			lang = jsonserializer.JSONToMap(content)
 		}
 	}
 
