@@ -9,11 +9,14 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/m3u"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/xmltv"
+	"time"
 )
 
 // Mapping Menü für die XMLTV Dateien erstellen
@@ -310,6 +313,78 @@ func mapping() (err error) {
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
+	}
+
+	return
+}
+
+// XEPG Mapping speichern
+func SaveXEpgMapping(request structs.RequestStruct) (err error) {
+
+	var tmp = config.Data.XEPG
+
+	config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
+
+	config.Data.Cache.Images, err = imgcache.New(config.System.Folder.ImagesCache, fmt.Sprintf("%s://%s/images/", config.System.ServerProtocol.WEB, config.System.Domain), config.Settings.CacheImages)
+	if err != nil {
+		cli.ShowError(err, 0)
+	}
+
+	err = json.Unmarshal([]byte(jsonserializer.MapToJSON(request.EpgMapping)), &tmp)
+	if err != nil {
+		return
+	}
+
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, request.EpgMapping)
+	if err != nil {
+		return err
+	}
+
+	config.Data.XEPG.Channels = request.EpgMapping
+
+	if config.System.ScanInProgress == 0 {
+
+		config.System.ScanInProgress = 1
+		err = xmltv.CreateFile()
+		if err != nil {
+			cli.ShowError(err, 0)
+		}
+		m3u.CreateFile()
+		config.System.ScanInProgress = 0
+		cli.ShowInfo("XEPG: Ready to use")
+
+	} else {
+
+		// Wenn während des erstellen der Datanbank das Mapping erneut gespeichert wird, wird die Datenbank erst später erneut aktualisiert.
+		go func() {
+
+			if config.System.BackgroundProcess {
+				return
+			}
+
+			config.System.BackgroundProcess = true
+
+			for {
+				time.Sleep(time.Duration(1) * time.Second)
+				if config.System.ScanInProgress == 0 {
+					break
+				}
+
+			}
+
+			config.System.ScanInProgress = 1
+			err = xmltv.CreateFile()
+			if err != nil {
+				cli.ShowError(err, 0)
+			}
+			m3u.CreateFile()
+			config.System.ScanInProgress = 0
+			cli.ShowInfo("XEPG: Ready to use")
+
+			config.System.BackgroundProcess = false
+
+		}()
+
 	}
 
 	return

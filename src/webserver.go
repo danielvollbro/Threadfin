@@ -576,7 +576,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "saveEpgMapping":
-			err = saveXEpgMapping(request)
+			err = xepg.SaveXEpgMapping(request)
 
 		case "saveUserData":
 			err = users.SaveUserData(request)
