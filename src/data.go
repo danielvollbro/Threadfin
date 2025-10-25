@@ -19,6 +19,7 @@ import (
 	jsonserializer "threadfin/src/internal/json-serializer"
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/structs"
+	"threadfin/src/internal/utilities"
 )
 
 // Einstellungen ändern (WebUI)
@@ -301,7 +302,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 		if dataID == "-" {
 
 			// Neue Providerdatei
-			dataID = indicator + randomString(19)
+			dataID = indicator + utilities.RandomString(19)
 			data.(map[string]interface{})["new"] = true
 			filesMap[dataID] = data
 
@@ -704,7 +705,7 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 
 			}
 
-			dataID = indicator + randomString(19)
+			dataID = indicator + utilities.RandomString(19)
 			data["file.source"] = value.(string)
 
 			filesMap[dataID] = data

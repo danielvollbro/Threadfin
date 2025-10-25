@@ -12,7 +12,7 @@ import (
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
-	"time"
+	"threadfin/src/internal/utilities"
 )
 
 // Alle Systemordner erstellen
@@ -160,7 +160,7 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 	defaults["tuner"] = 1
 	defaults["update"] = []string{"0000"}
 	defaults["user.agent"] = config.System.Name
-	defaults["uuid"] = createUUID()
+	defaults["uuid"] = utilities.CreateUUID()
 	defaults["udpxy"] = ""
 	defaults["version"] = config.System.DBVersion
 	defaults["ThreadfinAutoUpdate"] = true
@@ -251,12 +251,6 @@ func setGlobalDomain(domain string) {
 		config.System.Addresses.M3U = cli.GetErrMsg(2106)
 		config.System.Addresses.XML = cli.GetErrMsg(2106)
 	}
-}
-
-// UUID generieren
-func createUUID() (uuid string) {
-	uuid = time.Now().Format("2006-01") + "-" + randomString(4) + "-" + randomString(6)
-	return
 }
 
 // Provider Streaming-URL zu Threadfin Streaming-URL konvertieren

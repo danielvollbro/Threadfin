@@ -3,14 +3,12 @@ package src
 import (
 	"bytes"
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -345,26 +343,6 @@ func resolveHostIP() error {
 	}
 
 	return nil
-}
-
-// Sonstiges
-func randomString(n int) string {
-
-	const alphanum = "AB1CD2EF3GH4IJ5KL6MN7OP8QR9ST0UVWXYZ"
-
-	var bytes = make([]byte, n)
-
-	_, err := rand.Read(bytes)
-	if err != nil {
-		log.Fatal(err)
-		return ""
-	}
-
-	for i, b := range bytes {
-		bytes[i] = alphanum[b%byte(len(alphanum))]
-	}
-
-	return string(bytes)
 }
 
 func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {
