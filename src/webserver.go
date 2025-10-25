@@ -98,7 +98,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			_, err := basicAuth(r, "authentication.pms")
 			if err != nil {
 				cli.ShowError(err, 000)
-				httpStatusError(w, 403)
+				web.HttpStatusError(w, 403)
 				return
 			}
 		} else {
@@ -123,7 +123,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpStatusError(w, 500)
+	web.HttpStatusError(w, 500)
 }
 
 // Stream : Web Server /stream/
@@ -132,7 +132,7 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 	streamInfo, err := stream.GetStreamInfo(path)
 	if err != nil {
 		cli.ShowError(err, 1203)
-		httpStatusError(w, 404)
+		web.HttpStatusError(w, 404)
 		return
 	}
 
@@ -165,13 +165,13 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 		req, err := http.NewRequest("HEAD", streamInfo.URL, nil)
 		if err != nil {
 			cli.ShowError(err, 1501)
-			httpStatusError(w, 405)
+			web.HttpStatusError(w, 405)
 			return
 		}
 		resp, err := client.Do(req)
 		if err != nil {
 			cli.ShowError(err, 1502)
-			httpStatusError(w, 405)
+			web.HttpStatusError(w, 405)
 			return
 		}
 
@@ -180,7 +180,7 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 		}()
 		if err != nil {
 			cli.ShowError(err, 1503)
-			httpStatusError(w, 405)
+			web.HttpStatusError(w, 405)
 			return
 		}
 
@@ -270,7 +270,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 		err = urlAuth(r, requestType)
 		if err != nil {
 			cli.ShowError(err, 000)
-			httpStatusError(w, 403)
+			web.HttpStatusError(w, 403)
 			return
 		}
 
@@ -280,7 +280,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 		content, err = readStringFromFile(file)
 		if err != nil {
-			httpStatusError(w, 404)
+			web.HttpStatusError(w, 404)
 			return
 		}
 
@@ -294,7 +294,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 		err = urlAuth(r, requestType)
 		if err != nil {
 			cli.ShowError(err, 000)
-			httpStatusError(w, 403)
+			web.HttpStatusError(w, 403)
 			return
 		}
 
@@ -360,7 +360,7 @@ func Images(w http.ResponseWriter, r *http.Request) {
 
 	content, err := readByteFromFile(filePath)
 	if err != nil {
-		httpStatusError(w, 404)
+		web.HttpStatusError(w, 404)
 		return
 	}
 
@@ -383,7 +383,7 @@ func DataImages(w http.ResponseWriter, r *http.Request) {
 
 	content, err := readByteFromFile(filePath)
 	if err != nil {
-		httpStatusError(w, 404)
+		web.HttpStatusError(w, 404)
 		return
 	}
 
@@ -740,7 +740,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 					var token, err = createFirstUserForAuthentication(username, password)
 					if err != nil {
-						httpStatusError(w, 429)
+						web.HttpStatusError(w, 429)
 						return
 					}
 					// Redirect, damit die Daten aus dem Browser gelöscht werden.
@@ -790,7 +790,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 			allUserData, err := authentication.GetAllUserData()
 			if err != nil {
 				cli.ShowError(err, 000)
-				httpStatusError(w, 403)
+				web.HttpStatusError(w, 403)
 				return
 			}
 
@@ -809,7 +809,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else {
-			httpStatusError(w, 404)
+			web.HttpStatusError(w, 404)
 			return
 		}
 
@@ -825,7 +825,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		httpStatusError(w, 404)
+		web.HttpStatusError(w, 404)
 		return
 	}
 
@@ -924,18 +924,18 @@ func API(w http.ResponseWriter, r *http.Request) {
 	response.Status = true
 
 	if config.Settings.API {
-		httpStatusError(w, 423)
+		web.HttpStatusError(w, 423)
 		return
 	}
 
 	if r.Method == "GET" {
-		httpStatusError(w, 404)
+		web.HttpStatusError(w, 404)
 		return
 	}
 
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		httpStatusError(w, 400)
+		web.HttpStatusError(w, 400)
 		return
 	}
 
@@ -943,13 +943,13 @@ func API(w http.ResponseWriter, r *http.Request) {
 		err = r.Body.Close()
 	}()
 	if err != nil {
-		httpStatusError(w, 400)
+		web.HttpStatusError(w, 400)
 		return
 	}
 
 	err = json.Unmarshal(b, &request)
 	if err != nil {
-		httpStatusError(w, 400)
+		web.HttpStatusError(w, 400)
 		return
 	}
 
@@ -1260,10 +1260,6 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-}
-
-func httpStatusError(w http.ResponseWriter, httpStatusCode int) {
-	http.Error(w, fmt.Sprintf("%s [%d]", http.StatusText(httpStatusCode), httpStatusCode), httpStatusCode)
 }
 
 func getContentType(filename string) (contentType string) {
