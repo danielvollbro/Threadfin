@@ -59,12 +59,6 @@ func BuildGoFile() error {
 	return nil
 }
 
-// GetHTMLString : base64 -> string
-func GetHTMLString(base string) string {
-	content, _ := base64.StdEncoding.DecodeString(base)
-	return string(content)
-}
-
 func createMapFromFiles(folder string) string {
 
 	var path = getLocalPath(folder)
