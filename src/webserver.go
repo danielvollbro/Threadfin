@@ -21,6 +21,7 @@ import (
 	"threadfin/src/internal/client"
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/m3u"
 	"threadfin/src/internal/media"
 	"threadfin/src/internal/playlist"
 	"threadfin/src/internal/provider"
@@ -336,7 +337,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 			groups = strings.Split(groupTitle, ",")
 		}
 
-		content, err = buildM3U(groups)
+		content, err = m3u.Build(groups)
 		if err != nil {
 			cli.ShowError(err, 000)
 		}

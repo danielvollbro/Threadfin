@@ -25,6 +25,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/m3u"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
@@ -88,7 +89,7 @@ func buildXEPG(background bool) {
 					return
 				}
 
-				createM3UFile()
+				m3u.CreateFile()
 
 				cli.ShowInfo("XEPG: Ready to use")
 
@@ -111,7 +112,7 @@ func buildXEPG(background bool) {
 							cli.ShowError(err, 000)
 							return
 						}
-						createM3UFile()
+						m3u.CreateFile()
 
 						config.SystemMutex.Lock()
 						config.System.ImageCachingInProgress = 0
@@ -154,7 +155,7 @@ func buildXEPG(background bool) {
 				return
 			}
 
-			createM3UFile()
+			m3u.CreateFile()
 
 			// Exit maintenance before long file generation to keep UI responsive
 			config.System.ScanInProgress = 0
@@ -180,7 +181,7 @@ func buildXEPG(background bool) {
 							cli.ShowError(err, 000)
 							return
 						}
-						createM3UFile()
+						m3u.CreateFile()
 
 						config.SystemMutex.Lock()
 						config.System.ImageCachingInProgress = 0
@@ -252,7 +253,7 @@ func updateXEPG(background bool) {
 					cli.ShowError(err, 000)
 					return
 				}
-				createM3UFile()
+				m3u.CreateFile()
 				cli.ShowInfo("XEPG: Ready to use")
 
 			}()
@@ -1821,19 +1822,4 @@ func isInInactiveList(channelURL string) bool {
 		}
 	}
 	return false
-}
-
-// M3U Datei erstellen
-func createM3UFile() {
-
-	cli.ShowInfo("XEPG:" + fmt.Sprintf("Create M3U file (%s)", config.System.File.M3U))
-	_, err := buildM3U([]string{})
-	if err != nil {
-		cli.ShowError(err, 000)
-	}
-
-	err = storage.SaveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
-	if err != nil {
-		cli.ShowError(err, 000)
-	}
 }

@@ -17,6 +17,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/m3u"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/settings"
 	systemSettings "threadfin/src/internal/settings"
@@ -225,7 +226,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 					if err != nil {
 						cli.ShowError(err, 0)
 					}
-					createM3UFile()
+					m3u.CreateFile()
 
 				case true:
 					go func() {
@@ -234,7 +235,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 						if err != nil {
 							cli.ShowError(err, 0)
 						}
-						createM3UFile()
+						m3u.CreateFile()
 
 						config.System.ImageCachingInProgress = 1
 						cli.ShowInfo("Image Caching:Images are cached")
@@ -261,7 +262,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				if err != nil {
 					cli.ShowError(err, 0)
 				}
-				createM3UFile()
+				m3u.CreateFile()
 			}()
 
 		}
@@ -547,7 +548,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 		if err != nil {
 			cli.ShowError(err, 0)
 		}
-		createM3UFile()
+		m3u.CreateFile()
 		config.System.ScanInProgress = 0
 		cli.ShowInfo("XEPG: Ready to use")
 
@@ -575,7 +576,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 			if err != nil {
 				cli.ShowError(err, 0)
 			}
-			createM3UFile()
+			m3u.CreateFile()
 			config.System.ScanInProgress = 0
 			cli.ShowInfo("XEPG: Ready to use")
 
