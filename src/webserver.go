@@ -20,6 +20,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/client"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/dvr"
 	"threadfin/src/internal/hdhr"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/m3u"
@@ -1040,7 +1041,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		err = buildDatabaseDVR()
+		err = dvr.BuildDatabase()
 		if err != nil {
 			break
 		}
@@ -1054,7 +1055,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		err = buildDatabaseDVR()
+		err = dvr.BuildDatabase()
 		if err != nil {
 			break
 		}
@@ -1336,7 +1337,7 @@ func updateUrlsJson() {
 			return
 		}
 	}
-	err = buildDatabaseDVR()
+	err = dvr.BuildDatabase()
 	if err != nil {
 		cli.ShowError(err, 0)
 		return

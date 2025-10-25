@@ -5,6 +5,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/dvr"
 	"threadfin/src/internal/xepg"
 )
 
@@ -12,7 +13,7 @@ import (
 func ShowSystemInfo() {
 
 	fmt.Print("Creating the information takes a moment...")
-	err := buildDatabaseDVR()
+	err := dvr.BuildDatabase()
 	if err != nil {
 		cli.ShowError(err, 0)
 		return

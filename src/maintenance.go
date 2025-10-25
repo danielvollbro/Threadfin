@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/dvr"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/update"
@@ -62,7 +63,7 @@ func maintenance() {
 					}
 
 					// Datenbank für DVR erstellen
-					err = buildDatabaseDVR()
+					err = dvr.BuildDatabase()
 					if err != nil {
 						cli.ShowError(err, 000)
 					}
