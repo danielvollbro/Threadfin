@@ -21,6 +21,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
+	"threadfin/src/web"
 	"time"
 
 	"github.com/avfs/avfs/vfs/memfs"
@@ -289,7 +290,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 
 				cli.ShowInfo(fmt.Sprintf("Streaming Status:Playlist: %s - No new connections available. Tuner = %d", playlist.PlaylistName, playlist.Tuner))
 
-				if value, ok := webUI["html/video/stream-limit.ts"]; ok {
+				if value, ok := web.WebUI["html/video/stream-limit.ts"]; ok {
 
 					content := GetHTMLString(value.(string))
 

@@ -10,6 +10,7 @@ import (
 	"threadfin/src/internal/plex"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
+	"threadfin/src/web"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -195,7 +196,7 @@ func Init() (err error) {
 	}
 
 	// HTML Datein laden
-	loadHTMLMap()
+	web.LoadHTMLMap()
 
 	return
 }

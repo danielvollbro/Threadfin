@@ -21,6 +21,7 @@ import (
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
+	"threadfin/src/web"
 
 	"github.com/gorilla/websocket"
 )
@@ -693,7 +694,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 		config.SystemMutex.Unlock()
 		var languageFile = "html/lang/en.json"
 
-		if value, ok := webUI[languageFile].(string); ok {
+		if value, ok := web.WebUI[languageFile].(string); ok {
 			content = GetHTMLString(value)
 			lang = jsonToMap(content)
 		}
@@ -802,7 +803,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 		requestFile = file
 
-		if _, ok := webUI[requestFile]; ok {
+		if _, ok := web.WebUI[requestFile]; ok {
 			if contentType == "text/plain" {
 				w.Header().Set("Content-Disposition", "attachment; filename="+getFilenameFromPath(requestFile))
 			}
@@ -814,7 +815,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	if value, ok := webUI[requestFile].(string); ok {
+	if value, ok := web.WebUI[requestFile].(string); ok {
 
 		content = GetHTMLString(value)
 		contentType = getContentType(requestFile)
