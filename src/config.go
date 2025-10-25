@@ -11,6 +11,7 @@ import (
 	htmlbuilder "threadfin/src/internal/html-builder"
 	"threadfin/src/internal/plex"
 	"threadfin/src/internal/provider"
+	"threadfin/src/internal/ssdp"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
 	"threadfin/src/internal/utilities"
@@ -193,7 +194,7 @@ func Init() (err error) {
 
 	// DLNA Server starten
 	if config.Settings.SSDP {
-		err = SSDP()
+		err = ssdp.Start()
 		if err != nil {
 			return
 		}

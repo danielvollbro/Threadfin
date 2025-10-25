@@ -1,4 +1,4 @@
-package src
+package ssdp
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 )
 
 // SSDP : SSPD / DLNA Server
-func SSDP() (err error) {
+func Start() (err error) {
 	if !config.Settings.SSDP || config.System.Flag.Info {
 		return
 	}
