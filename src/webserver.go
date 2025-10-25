@@ -84,7 +84,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	config.SystemMutex.Lock()
 	if config.Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(getBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
+		setGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
 		setGlobalDomain(r.Host)
 	}
@@ -262,7 +262,7 @@ func Threadfin(w http.ResponseWriter, r *http.Request) {
 
 	config.SystemMutex.Lock()
 	if config.Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(getBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
+		setGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
 		setGlobalDomain(r.Host)
 	}
@@ -430,7 +430,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 
 	config.SystemMutex.Lock()
 	if config.Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(getBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
+		setGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
 		setGlobalDomain(r.Host)
 	}
@@ -683,7 +683,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 	config.SystemMutex.Lock()
 	if config.Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(getBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
+		setGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
 		setGlobalDomain(r.Host)
 	}
@@ -922,7 +922,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 	*/
 
 	if config.Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(getBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
+		setGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
 		setGlobalDomain(r.Host)
 	}

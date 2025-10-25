@@ -12,6 +12,7 @@ import (
 	"threadfin/src/internal/plex"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
+	"threadfin/src/internal/utilities"
 	"threadfin/src/web"
 
 	"golang.org/x/text/cases"
@@ -171,7 +172,7 @@ func Init() (err error) {
 
 	// Set base URI
 	if config.Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(getBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
+		setGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
 		setGlobalDomain(fmt.Sprintf("%s:%s", config.System.IPAddress, config.Settings.Port))
 	}

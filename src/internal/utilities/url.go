@@ -1,11 +1,11 @@
-package src
+package utilities
 
 import (
 	"fmt"
 	"strings"
 )
 
-func getBaseUrl(host string, port string) string {
+func GetBaseUrl(host string, port string) string {
 	if strings.Contains(host, ":") {
 		return host
 	} else {
