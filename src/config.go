@@ -175,9 +175,9 @@ func Init() (err error) {
 
 	// Set base URI
 	if config.Settings.HttpThreadfinDomain != "" {
-		setGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
+		system.SetGlobalDomain(utilities.GetBaseUrl(config.Settings.HttpThreadfinDomain, config.Settings.Port))
 	} else {
-		setGlobalDomain(fmt.Sprintf("%s:%s", config.System.IPAddress, config.Settings.Port))
+		system.SetGlobalDomain(fmt.Sprintf("%s:%s", config.System.IPAddress, config.Settings.Port))
 	}
 
 	config.System.URLBase = fmt.Sprintf("%s://%s:%s", config.System.ServerProtocol.WEB, config.System.IPAddress, config.Settings.Port)
