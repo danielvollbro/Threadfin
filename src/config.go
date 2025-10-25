@@ -145,7 +145,7 @@ func Init() (err error) {
 	//System.Folder.Temp = System.Folder.Temp + Settings.UUID + string(os.PathSeparator)
 	cli.ShowInfo(fmt.Sprintf("Temporary Folder:%s", storage.GetPlatformPath(config.System.Folder.Temp)))
 
-	err = checkFolder(config.System.Folder.Temp)
+	err = storage.CheckFolder(config.System.Folder.Temp)
 	if err != nil {
 		return
 	}

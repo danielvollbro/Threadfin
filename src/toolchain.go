@@ -11,35 +11,9 @@ import (
 	"strings"
 	"text/template"
 	"threadfin/src/internal/cli"
-	"threadfin/src/internal/storage"
 )
 
 // --- System Tools ---
-
-// Checks if the folder exists, if not, the folder is created
-func checkFolder(path string) (err error) {
-
-	var debug string
-	_, err = os.Stat(filepath.Dir(path))
-
-	if os.IsNotExist(err) {
-		// Ordner existiert nicht, wird jetzt erstellt
-
-		err = os.MkdirAll(storage.GetPlatformPath(path), 0755)
-		if err == nil {
-
-			debug = fmt.Sprintf("Create Folder:%s", path)
-			cli.ShowDebug(debug, 1)
-
-		} else {
-			return err
-		}
-
-		return nil
-	}
-
-	return nil
-}
 
 // GetUserHomeDirectory : Benutzer Homer Verzeichnis
 func GetUserHomeDirectory() (userHomeDirectory string) {

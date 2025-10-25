@@ -77,7 +77,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 			case "backup.path":
 				value = strings.TrimRight(value.(string), string(os.PathSeparator)) + string(os.PathSeparator)
-				err = checkFolder(value.(string))
+				err = storage.CheckFolder(value.(string))
 				if err == nil {
 
 					err = checkFilePermission(value.(string))
@@ -93,7 +93,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 			case "temp.path":
 				value = strings.TrimRight(value.(string), string(os.PathSeparator)) + string(os.PathSeparator)
-				err = checkFolder(value.(string))
+				err = storage.CheckFolder(value.(string))
 				if err == nil {
 
 					err = checkFilePermission(value.(string))

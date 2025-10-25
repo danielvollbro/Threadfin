@@ -28,7 +28,7 @@ func ThreadfinAutoBackup() (err error) {
 
 	cli.ShowInfo("Backup Path:" + config.System.Folder.Backup)
 
-	err = checkFolder(config.System.Folder.Backup)
+	err = storage.CheckFolder(config.System.Folder.Backup)
 	if err != nil {
 		cli.ShowError(err, 1070)
 		return
@@ -106,7 +106,7 @@ func ThreadfinAutoBackup() (err error) {
 
 func ThreadfinBackup() (archiv string, err error) {
 
-	err = checkFolder(config.System.Folder.Temp)
+	err = storage.CheckFolder(config.System.Folder.Temp)
 	if err != nil {
 		return
 	}
@@ -137,7 +137,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 
 	tmpRestore = config.System.Folder.Temp + "restore" + string(os.PathSeparator)
 
-	err = checkFolder(tmpRestore)
+	err = storage.CheckFolder(tmpRestore)
 	if err != nil {
 		return
 	}

@@ -26,7 +26,7 @@ func createSystemFolders() (err error) {
 
 		var folder = e.Field(i).Interface().(string)
 
-		err = checkFolder(folder)
+		err = storage.CheckFolder(folder)
 
 		if err != nil {
 			return

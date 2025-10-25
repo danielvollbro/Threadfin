@@ -187,3 +187,27 @@ func SaveMapToJSONFile(file string, tmpMap interface{}) error {
 
 	return nil
 }
+
+// Checks if the folder exists, if not, the folder is created
+func CheckFolder(path string) (err error) {
+	var debug string
+	_, err = os.Stat(filepath.Dir(path))
+
+	if os.IsNotExist(err) {
+		// Ordner existiert nicht, wird jetzt erstellt
+
+		err = os.MkdirAll(GetPlatformPath(path), 0755)
+		if err == nil {
+
+			debug = fmt.Sprintf("Create Folder:%s", path)
+			cli.ShowDebug(debug, 1)
+
+		} else {
+			return err
+		}
+
+		return nil
+	}
+
+	return nil
+}
