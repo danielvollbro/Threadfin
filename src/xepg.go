@@ -311,8 +311,8 @@ func createXEPGMapping() {
 			cli.ShowInfo("XEPG:" + "Parse XMLTV file: " + provider.GetProviderParameter(fileID, "xmltv", "name"))
 
 			//xmltv, err = getLocalXMLTV(file)
-			var xmltv structs.XMLTV
-			err = getLocalXMLTV(file, &xmltv)
+			var xmltvStruct structs.XMLTV
+			err = xmltv.GetLocal(file, &xmltvStruct)
 			if err != nil {
 				config.Data.XMLTV.Files = append(config.Data.XMLTV.Files, config.Data.XMLTV.Files[i+1:]...)
 				var errMsg = err.Error()
@@ -324,9 +324,9 @@ func createXEPGMapping() {
 			if err == nil {
 				var imgc = config.Data.Cache.Images
 				// Daten aus der XML Datei in eine temporäre Map schreiben
-				var xmltvMap = make(map[string]interface{}, len(xmltv.Channel)) // Pre-allocate
+				var xmltvMap = make(map[string]interface{}, len(xmltvStruct.Channel)) // Pre-allocate
 
-				for _, c := range xmltv.Channel {
+				for _, c := range xmltvStruct.Channel {
 					var channel = make(map[string]interface{}, 4) // Pre-allocate
 
 					channel["id"] = c.ID
@@ -1192,25 +1192,25 @@ func createXMLTVFile() (err error) {
 	return
 }
 
-// Programmdaten erstellen (createXMLTVFile)
+// Create program data (createXMLTVFile)
 func getProgramData(xepgChannel structs.XEPGChannelStruct) (xepgXML structs.XMLTV, err error) {
 	var xmltvFile = config.System.Folder.Data + xepgChannel.XmltvFile
 	var channelID = xepgChannel.XMapping
 
-	var xmltv structs.XMLTV
+	var xmltvStruct structs.XMLTV
 
 	if strings.Contains(xmltvFile, "Threadfin Dummy") {
-		xmltv = createDummyProgram(xepgChannel)
+		xmltvStruct = createDummyProgram(xepgChannel)
 	} else {
 		if xepgChannel.XmltvFile != "" {
-			err = getLocalXMLTV(xmltvFile, &xmltv)
+			err = xmltv.GetLocal(xmltvFile, &xmltvStruct)
 			if err != nil {
 				return
 			}
 		}
 	}
 
-	for _, xmltvProgram := range xmltv.Program {
+	for _, xmltvProgram := range xmltvStruct.Program {
 		if xmltvProgram.Channel == channelID {
 			var program = &structs.Program{}
 
@@ -1671,55 +1671,6 @@ func getVideo(program *structs.Program, xmltvProgram *structs.Program, xepgChann
 	}
 
 	program.Video = video
-}
-
-// Lokale Provider XMLTV Datei laden
-func getLocalXMLTV(file string, xmltvStruct *structs.XMLTV) (err error) {
-
-	if _, ok := config.Data.Cache.XMLTV[file]; !ok {
-
-		// Cache initialisieren
-		if len(config.Data.Cache.XMLTV) == 0 {
-			config.Data.Cache.XMLTV = make(map[string]structs.XMLTV)
-		}
-
-		// Check file size to determine parsing strategy
-		fileInfo, err := os.Stat(file)
-		if err != nil {
-			err = errors.New("local copy of the file no longer exists")
-			return err
-		}
-
-		// For large files (>50MB), use streaming parser
-		if fileInfo.Size() > 50*1024*1024 {
-			cli.ShowInfo("XEPG:" + "Using streaming parser for large XMLTV file: " + file)
-			err = xmltv.ParseStream(file, xmltvStruct)
-		} else {
-			// Use original method for smaller files
-			content, err := storage.ReadByteFromFile(file)
-			if err != nil {
-				err = errors.New("local copy of the file no longer exists")
-				return err
-			}
-
-			// XML Datei parsen
-			err = xml.Unmarshal(content, &xmltvStruct)
-			if err != nil {
-				return err
-			}
-		}
-
-		if err != nil {
-			return err
-		}
-
-		config.Data.Cache.XMLTV[file] = *xmltvStruct
-
-	} else {
-		*xmltvStruct = config.Data.Cache.XMLTV[file]
-	}
-
-	return
 }
 
 func isInInactiveList(channelURL string) bool {

@@ -2,14 +2,66 @@ package xmltv
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 	"threadfin/src/internal/cli"
+	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 )
 
-// ParseStream : Streaming XML parser for large XMLTV files
-func ParseStream(file string, xmltv *structs.XMLTV) error {
+// Load local provider XMLTV file
+func GetLocal(file string, xmltvStruct *structs.XMLTV) (err error) {
+
+	if _, ok := config.Data.Cache.XMLTV[file]; !ok {
+
+		// Initialize cache
+		if len(config.Data.Cache.XMLTV) == 0 {
+			config.Data.Cache.XMLTV = make(map[string]structs.XMLTV)
+		}
+
+		// Check file size to determine parsing strategy
+		fileInfo, err := os.Stat(file)
+		if err != nil {
+			err = errors.New("local copy of the file no longer exists")
+			return err
+		}
+
+		// For large files (>50MB), use streaming parser
+		if fileInfo.Size() > 50*1024*1024 {
+			cli.ShowInfo("XEPG:" + "Using streaming parser for large XMLTV file: " + file)
+			err = parseStream(file, xmltvStruct)
+		} else {
+			// Use original method for smaller files
+			content, err := storage.ReadByteFromFile(file)
+			if err != nil {
+				err = errors.New("local copy of the file no longer exists")
+				return err
+			}
+
+			// Parse XML file
+			err = xml.Unmarshal(content, &xmltvStruct)
+			if err != nil {
+				return err
+			}
+		}
+
+		if err != nil {
+			return err
+		}
+
+		config.Data.Cache.XMLTV[file] = *xmltvStruct
+
+	} else {
+		*xmltvStruct = config.Data.Cache.XMLTV[file]
+	}
+
+	return
+}
+
+// parseStream : Streaming XML parser for large XMLTV files
+func parseStream(file string, xmltv *structs.XMLTV) error {
 	xmlFile, err := os.Open(file)
 	if err != nil {
 		return err
