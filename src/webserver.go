@@ -571,7 +571,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "saveFilter":
-			response.Settings, err = saveFilter(request)
+			response.Settings, err = webui.SaveFilter(request)
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("filter", config.System.WEB.Menu))
 			}
