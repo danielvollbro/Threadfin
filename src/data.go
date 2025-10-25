@@ -916,7 +916,7 @@ func buildDatabaseDVR() (err error) {
 					status = true
 				} else {
 					var liveEvent bool
-					status, liveEvent = filterThisStream(stream)
+					status, liveEvent = m3u.FilterThisStream(stream)
 					s["liveEvent"] = strconv.FormatBool(liveEvent)
 				}
 
