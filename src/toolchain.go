@@ -4,43 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"text/template"
 	"threadfin/src/internal/cli"
 )
 
 // --- System Tools ---
-
-// Sucht eine Datei im OS
-func searchFileInOS(file string) (path string) {
-
-	switch runtime.GOOS {
-
-	case "linux", "darwin", "freebsd":
-		var args = file
-		var cmd = exec.Command("which", strings.Split(args, " ")...)
-
-		out, err := cmd.CombinedOutput()
-		if err == nil {
-
-			var slice = strings.Split(strings.ReplaceAll(string(out), "\r\n", "\n"), "\n")
-
-			if len(slice) > 0 {
-				path = strings.Trim(slice[0], "\r\n")
-			}
-
-		}
-
-	default:
-		return
-
-	}
-
-	return
-}
 
 func removeChildItems(dir string) error {
 

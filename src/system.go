@@ -193,11 +193,11 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 	}
 
 	if len(settings.FFmpegPath) == 0 {
-		settings.FFmpegPath = searchFileInOS("ffmpeg")
+		settings.FFmpegPath = storage.SearchFileInOS("ffmpeg")
 	}
 
 	if len(settings.VLCPath) == 0 {
-		settings.VLCPath = searchFileInOS("cvlc")
+		settings.VLCPath = storage.SearchFileInOS("cvlc")
 	}
 
 	// Initialze virutal filesystem for the Buffer

@@ -7,8 +7,11 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"threadfin/src/internal/cli"
 
 	"github.com/avfs/avfs"
@@ -244,4 +247,30 @@ func CheckFilePermission(dir string) (err error) {
 
 func GetFilenameFromPath(path string) (file string) {
 	return filepath.Base(path)
+}
+
+func SearchFileInOS(file string) (path string) {
+	switch runtime.GOOS {
+
+	case "linux", "darwin", "freebsd":
+		var args = file
+		var cmd = exec.Command("which", strings.Split(args, " ")...)
+
+		out, err := cmd.CombinedOutput()
+		if err == nil {
+
+			var slice = strings.Split(strings.ReplaceAll(string(out), "\r\n", "\n"), "\n")
+
+			if len(slice) > 0 {
+				path = strings.Trim(slice[0], "\r\n")
+			}
+
+		}
+
+	default:
+		return
+
+	}
+
+	return
 }
