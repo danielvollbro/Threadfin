@@ -2,6 +2,8 @@ package client
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/structs"
@@ -108,4 +110,29 @@ func KillConnection(streamID int, playlistID string, force bool) {
 			}
 		}
 	}
+}
+
+func GetIP(r *http.Request) string {
+	// Check the X-Forwarded-For header first
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		// X-Forwarded-For may contain multiple IP addresses; return the first one
+		ips := strings.Split(forwarded, ",")
+		return strings.TrimSpace(ips[0])
+	}
+
+	// Check the X-Real-IP header next
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+
+	// Fallback to RemoteAddr
+	ip := r.RemoteAddr
+	if strings.Contains(ip, ":") {
+		// Remove port if present
+		ip = strings.Split(ip, ":")[0]
+	}
+
+	return ip
 }

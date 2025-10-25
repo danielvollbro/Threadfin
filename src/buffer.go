@@ -88,31 +88,6 @@ func cleanUpStaleClients() {
 	})
 }
 
-func getClientIP(r *http.Request) string {
-	// Check the X-Forwarded-For header first
-	forwarded := r.Header.Get("X-Forwarded-For")
-	if forwarded != "" {
-		// X-Forwarded-For may contain multiple IP addresses; return the first one
-		ips := strings.Split(forwarded, ",")
-		return strings.TrimSpace(ips[0])
-	}
-
-	// Check the X-Real-IP header next
-	realIP := r.Header.Get("X-Real-IP")
-	if realIP != "" {
-		return realIP
-	}
-
-	// Fallback to RemoteAddr
-	ip := r.RemoteAddr
-	if strings.Contains(ip, ":") {
-		// Remove port if present
-		ip = strings.Split(ip, ":")[0]
-	}
-
-	return ip
-}
-
 func createStreamID(stream map[int]structs.ThisStream, ip, userAgent string) (streamID int) {
 	streamID = 0
 	uniqueIdentifier := fmt.Sprintf("%s-%s", ip, userAgent)
@@ -206,7 +181,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 		playlist.HttpUserReferer = provider.GetProviderParameter(playlist.PlaylistID, playlistType, "http_headers.referer")
 
 		// Create default values for the stream
-		streamID = createStreamID(playlist.Streams, getClientIP(r), r.UserAgent())
+		streamID = createStreamID(playlist.Streams, client.GetIP(r), r.UserAgent())
 
 		currentClient.Connection += 1
 
@@ -319,7 +294,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 			stream = structs.ThisStream{}
 			currentClient = structs.ThisClient{}
 
-			streamID = createStreamID(playlist.Streams, getClientIP(r), r.UserAgent())
+			streamID = createStreamID(playlist.Streams, client.GetIP(r), r.UserAgent())
 
 			currentClient.Connection = 1
 			stream.URL = streamingURL
