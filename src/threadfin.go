@@ -15,6 +15,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/update"
 )
 
 // GitHubStruct : GitHub Account. Über diesen Account werden die Updates veröffentlicht
@@ -194,7 +195,7 @@ func Run() {
 		os.Exit(0)
 	}
 
-	err = BinaryUpdate()
+	err = update.BinaryUpdate()
 	if err != nil {
 		cli.ShowError(err, 0)
 	}

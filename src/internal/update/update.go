@@ -1,4 +1,4 @@
-package src
+package update
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-
+	"reflect"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/storage"
@@ -15,8 +15,6 @@ import (
 	up2date "threadfin/src/internal/up2date/client"
 
 	"github.com/hashicorp/go-version"
-
-	"reflect"
 )
 
 // BinaryUpdate : Binary Update Prozess. Git Branch master und beta wird von GitHub geladen.
@@ -183,7 +181,7 @@ func BinaryUpdate() (err error) {
 	return nil
 }
 
-func conditionalUpdateChanges() (err error) {
+func ConditionalUpdateChanges() (err error) {
 
 checkVersion:
 	settingsMap, err := storage.LoadJSONFileToMap(config.System.File.Settings)

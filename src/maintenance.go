@@ -7,6 +7,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/update"
 	"time"
 )
 
@@ -87,7 +88,7 @@ func maintenance() {
 			config.SystemMutex.Lock()
 			if config.System.TimeForAutoUpdate == t.Format("1504") {
 				config.SystemMutex.Unlock()
-				err := BinaryUpdate()
+				err := update.BinaryUpdate()
 				if err != nil {
 					cli.ShowError(err, 0)
 				}

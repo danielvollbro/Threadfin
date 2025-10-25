@@ -15,6 +15,7 @@ import (
 	"threadfin/src/internal/ssdp"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
+	"threadfin/src/internal/update"
 	"threadfin/src/internal/utilities"
 	"threadfin/src/web"
 
@@ -131,7 +132,7 @@ func Init() (err error) {
 		return
 	}
 
-	err = conditionalUpdateChanges()
+	err = update.ConditionalUpdateChanges()
 	if err != nil {
 		return
 	}
