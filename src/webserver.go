@@ -31,6 +31,7 @@ import (
 	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/system"
+	"threadfin/src/internal/users"
 	"threadfin/src/internal/utilities"
 	"threadfin/src/internal/wizard"
 	"threadfin/src/internal/xepg"
@@ -584,7 +585,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "saveNewUser":
-			err = saveNewUser(request)
+			err = users.SaveNewUser(request)
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("users", config.System.WEB.Menu))
 			}

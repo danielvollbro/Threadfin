@@ -647,22 +647,3 @@ func saveUserData(request structs.RequestStruct) (err error) {
 
 	return
 }
-
-// Neuen Benutzer anlegen (WebUI)
-func saveNewUser(request structs.RequestStruct) (err error) {
-
-	var data = request.UserData
-	var username = data["username"].(string)
-	var password = data["password"].(string)
-
-	delete(data, "password")
-	delete(data, "confirm")
-
-	userID, err := authentication.CreateNewUser(username, password)
-	if err != nil {
-		return
-	}
-
-	err = authentication.WriteUserData(userID, data)
-	return
-}
