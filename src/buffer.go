@@ -7,6 +7,7 @@ package src
 
 import (
 	"fmt"
+	"threadfin/src/internal/client"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/structs"
 
@@ -15,7 +16,7 @@ import (
 
 func getActiveClientCount() (count int) {
 	count = 0
-	cleanUpStaleClients() // Ensure stale clients are removed first
+	client.CleanUpStale() // Ensure stale clients are removed first
 
 	config.BufferInformation.Range(func(key, value interface{}) bool {
 		playlist, ok := value.(structs.Playlist)
@@ -54,25 +55,6 @@ func getActivePlaylistCount() (count int) {
 		return true
 	})
 	return count
-}
-
-func cleanUpStaleClients() {
-	config.BufferInformation.Range(func(key, value interface{}) bool {
-		playlist, ok := value.(structs.Playlist)
-		if !ok {
-			fmt.Printf("Invalid type assertion for playlist: %v\n", value)
-			return true
-		}
-
-		for clientID, client := range playlist.Clients {
-			if client.Connection <= 0 {
-				fmt.Printf("Removing stale client ID %d from playlist %s\n", clientID, playlist.PlaylistID)
-				delete(playlist.Clients, clientID)
-			}
-		}
-		config.BufferInformation.Store(key, playlist)
-		return true
-	})
 }
 
 func initBufferVFS() {

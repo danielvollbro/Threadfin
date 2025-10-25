@@ -136,3 +136,22 @@ func GetIP(r *http.Request) string {
 
 	return ip
 }
+
+func CleanUpStale() {
+	config.BufferInformation.Range(func(key, value interface{}) bool {
+		playlist, ok := value.(structs.Playlist)
+		if !ok {
+			fmt.Printf("Invalid type assertion for playlist: %v\n", value)
+			return true
+		}
+
+		for clientID, client := range playlist.Clients {
+			if client.Connection <= 0 {
+				fmt.Printf("Removing stale client ID %d from playlist %s\n", clientID, playlist.PlaylistID)
+				delete(playlist.Clients, clientID)
+			}
+		}
+		config.BufferInformation.Store(key, playlist)
+		return true
+	})
+}
