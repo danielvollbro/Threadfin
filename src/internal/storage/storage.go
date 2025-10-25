@@ -2,11 +2,15 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"threadfin/src/internal/cli"
+
+	"github.com/avfs/avfs"
 )
 
 func WriteByteToFile(file string, data []byte) (err error) {
@@ -74,4 +78,51 @@ func CheckFile(filename string) (err error) {
 // Generate folder path for the running OS
 func GetPlatformPath(path string) string {
 	return filepath.Dir(path) + string(os.PathSeparator)
+}
+
+// CheckVFSFolder : Checks whether the Folder exists in provided virtual filesystem, if not, the Folder is created
+func CheckVFSFolder(path string, vfs avfs.VFS) (err error) {
+	var debug string
+	_, err = vfs.Stat(filepath.Dir(path))
+
+	if FSIsNotExistErr(err) {
+		// Folder does not exist, will now be created
+
+		// If we are on Windows and the cache location path is NOT on C:\ we need to create the volume it is located on
+		// Failure to do so here will result in a panic error and the stream not playing
+		vm := vfs.(avfs.VolumeManager)
+		if vfs.OSType() == avfs.OsWindows && avfs.VolumeName(vfs, path) != "C:" {
+			err = vm.VolumeAdd(path)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = vfs.MkdirAll(GetPlatformPath(path), 0755)
+		if err == nil {
+
+			debug = fmt.Sprintf("Create virtual filesystem Folder:%s", path)
+			cli.ShowDebug(debug, 1)
+
+		} else {
+			return err
+		}
+
+		return nil
+	}
+
+	return nil
+}
+
+// FSIsNotExistErr : Returns true whether the <err> is known to report that a file or directory does not exist,
+// including virtual file system errors
+func FSIsNotExistErr(err error) bool {
+	if errors.Is(err, fs.ErrNotExist) ||
+		errors.Is(err, avfs.ErrWinPathNotFound) ||
+		errors.Is(err, avfs.ErrNoSuchFileOrDir) ||
+		errors.Is(err, avfs.ErrWinFileNotFound) {
+		return true
+	}
+
+	return false
 }
