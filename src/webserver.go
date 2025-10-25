@@ -237,7 +237,7 @@ func Stream(w http.ResponseWriter, r *http.Request) {
 		cli.ShowInfo("Streaming Info:URL was passed to the client.")
 		cli.ShowInfo("Streaming Info:Threadfin is no longer involved, the client connects directly to the streaming server.")
 	default:
-		bufferingStream(streamInfo.PlaylistID, streamInfo.URL, streamInfo.BackupChannel1, streamInfo.BackupChannel2, streamInfo.BackupChannel3, streamInfo.Name, w, r)
+		stream.Buffering(streamInfo.PlaylistID, streamInfo.URL, streamInfo.BackupChannel1, streamInfo.BackupChannel2, streamInfo.BackupChannel3, streamInfo.Name, w, r)
 	}
 }
 
