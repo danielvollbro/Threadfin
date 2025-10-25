@@ -48,3 +48,64 @@ func Connection(stream structs.ThisStream) (status bool) {
 
 	return
 }
+
+func KillConnection(streamID int, playlistID string, force bool) {
+	config.Lock.Lock()
+	defer config.Lock.Unlock()
+
+	if p, ok := config.BufferInformation.Load(playlistID); ok {
+		var playlist = p.(structs.Playlist)
+
+		if force {
+			delete(playlist.Streams, streamID)
+			if len(playlist.Streams) == 0 {
+				config.BufferInformation.Delete(playlistID)
+			} else {
+				config.BufferInformation.Store(playlistID, playlist)
+			}
+			cli.ShowInfo(fmt.Sprintf("Streaming Status: Playlist: %s - Tuner: %d / %d", playlist.PlaylistName, len(playlist.Streams), playlist.Tuner))
+			return
+		}
+
+		if stream, ok := playlist.Streams[streamID]; ok {
+			client := playlist.Clients[streamID]
+
+			if c, ok := config.BufferClients.Load(playlistID + stream.MD5); ok {
+				var clients = c.(structs.ClientConnection)
+				clients.Connection--
+				client.Connection--
+
+				// Ensure client connections cannot go below zero
+				if client.Connection < 0 {
+					client.Connection = 0
+				}
+				if clients.Connection < 0 {
+					clients.Connection = 0
+				}
+
+				playlist.Clients[streamID] = client
+				config.BufferClients.Store(playlistID+stream.MD5, clients)
+
+				cli.ShowInfo(fmt.Sprintf("Streaming Status: Channel: %s (Clients: %d)", stream.ChannelName, clients.Connection))
+
+				if clients.Connection <= 0 {
+					config.BufferClients.Delete(playlistID + stream.MD5)
+					delete(playlist.Streams, streamID)
+					delete(playlist.Clients, streamID)
+
+					if len(playlist.Streams) == 0 {
+						config.BufferInformation.Delete(playlistID)
+					} else {
+						config.BufferInformation.Store(playlistID, playlist)
+					}
+				} else {
+					config.BufferInformation.Store(playlistID, playlist)
+				}
+
+				if len(playlist.Streams) > 0 {
+					cli.ShowInfo(fmt.Sprintf("Streaming Status: Playlist: %s - Tuner: %d / %d", playlist.PlaylistName, len(playlist.Streams), playlist.Tuner))
+				}
+			}
+		}
+	}
+}

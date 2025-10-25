@@ -141,7 +141,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 	time.Sleep(time.Duration(config.Settings.BufferTimeout) * time.Millisecond)
 
 	var playlist structs.Playlist
-	var client structs.ThisClient
+	var currentClient structs.ThisClient
 	var stream structs.ThisStream
 	var streaming = false
 	var streamID int
@@ -212,7 +212,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 		// Create default values for the stream
 		streamID = createStreamID(playlist.Streams, getClientIP(r), r.UserAgent())
 
-		client.Connection += 1
+		currentClient.Connection += 1
 
 		stream.URL = streamingURL
 		stream.BackupChannel1 = backupStream1
@@ -222,7 +222,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 		stream.Status = false
 
 		playlist.Streams[streamID] = stream
-		playlist.Clients[streamID] = client
+		playlist.Clients[streamID] = currentClient
 
 		config.Lock.Lock()
 		config.BufferInformation.Store(playlistID, playlist)
@@ -237,7 +237,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 		for id := range playlist.Streams {
 
 			stream = playlist.Streams[id]
-			client = playlist.Clients[id]
+			currentClient = playlist.Clients[id]
 
 			stream.BackupChannel1 = backupStream1
 			stream.BackupChannel2 = backupStream2
@@ -249,9 +249,9 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 
 				streamID = id
 				newStream = false
-				client.Connection += 1
+				currentClient.Connection += 1
 
-				playlist.Clients[streamID] = client
+				playlist.Clients[streamID] = currentClient
 
 				config.Lock.Lock()
 				config.BufferInformation.Store(playlistID, playlist)
@@ -264,7 +264,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 				if c, ok := config.BufferClients.Load(playlistID + stream.MD5); ok {
 
 					var clients = c.(structs.ClientConnection)
-					clients.Connection = client.Connection
+					clients.Connection = currentClient.Connection
 
 					cli.ShowInfo(fmt.Sprintf("Streaming Status:Channel: %s (Clients: %d)", stream.ChannelName, clients.Connection))
 
@@ -321,11 +321,11 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 			// Playlist allows another stream (Tuner limit not yet reached)
 			// Create default values for the stream
 			stream = structs.ThisStream{}
-			client = structs.ThisClient{}
+			currentClient = structs.ThisClient{}
 
 			streamID = createStreamID(playlist.Streams, getClientIP(r), r.UserAgent())
 
-			client.Connection = 1
+			currentClient.Connection = 1
 			stream.URL = streamingURL
 			stream.ChannelName = channelName
 			stream.Status = false
@@ -334,7 +334,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 			stream.BackupChannel3 = backupStream3
 
 			playlist.Streams[streamID] = stream
-			playlist.Clients[streamID] = client
+			playlist.Clients[streamID] = currentClient
 
 			config.Lock.Lock()
 			config.BufferInformation.Store(playlistID, playlist)
@@ -402,7 +402,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 						var clients = c.(structs.ClientConnection)
 
 						if clients.Error != nil || (timeOut > 200 && (playlist.Streams[streamID].BackupChannel1 == nil && playlist.Streams[streamID].BackupChannel2 == nil && playlist.Streams[streamID].BackupChannel3 == nil)) {
-							killClientConnection(streamID, stream.PlaylistID, false)
+							client.KillConnection(streamID, stream.PlaylistID, false)
 							return
 						}
 
@@ -423,7 +423,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 						select {
 
 						case <-ctx.Done():
-							killClientConnection(streamID, playlistID, false)
+							client.KillConnection(streamID, playlistID, false)
 							return
 
 						default:
@@ -432,7 +432,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 								var clients = c.(structs.ClientConnection)
 								if clients.Error != nil {
 									cli.ShowError(clients.Error, 0)
-									killClientConnection(streamID, playlistID, false)
+									client.KillConnection(streamID, playlistID, false)
 									return
 								}
 
@@ -447,7 +447,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 					}
 
 					if _, err := config.BufferVFS.Stat(stream.Folder); fsIsNotExistErr(err) {
-						killClientConnection(streamID, playlistID, false)
+						client.KillConnection(streamID, playlistID, false)
 						return
 					}
 
@@ -457,7 +457,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 					for _, f := range tmpFiles {
 
 						if _, err := config.BufferVFS.Stat(stream.Folder); fsIsNotExistErr(err) {
-							killClientConnection(streamID, playlistID, false)
+							client.KillConnection(streamID, playlistID, false)
 							return
 						}
 
@@ -490,7 +490,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 									_, err = file.Seek(0, 0)
 									if err != nil {
 										cli.ShowError(err, 0)
-										killClientConnection(streamID, playlistID, false)
+										client.KillConnection(streamID, playlistID, false)
 										return
 									}
 
@@ -518,14 +518,14 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 										if err != nil {
 											cli.ShowError(err, 0)
 										}
-										killClientConnection(streamID, playlistID, false)
+										client.KillConnection(streamID, playlistID, false)
 										return
 									}
 
 									err = file.Close()
 									if err != nil {
 										cli.ShowError(err, 0)
-										killClientConnection(streamID, playlistID, false)
+										client.KillConnection(streamID, playlistID, false)
 										return
 									}
 									streaming = true
@@ -535,7 +535,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 								err = file.Close()
 								if err != nil {
 									cli.ShowError(err, 0)
-									killClientConnection(streamID, playlistID, false)
+									client.KillConnection(streamID, playlistID, false)
 									return
 								}
 							}
@@ -557,7 +557,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 						err = file.Close()
 						if err != nil {
 							cli.ShowError(err, 0)
-							killClientConnection(streamID, playlistID, false)
+							client.KillConnection(streamID, playlistID, false)
 							return
 						}
 					}
@@ -572,7 +572,7 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 
 				// Stream not found
 				cli.ShowDebug("Streaming Status:Stream not found. Killing Connection", 3)
-				killClientConnection(streamID, stream.PlaylistID, false)
+				client.KillConnection(streamID, stream.PlaylistID, false)
 				cli.ShowInfo(fmt.Sprintf("Streaming Status:Playlist: %s - Tuner: %d / %d", playlist.PlaylistName, len(playlist.Streams), playlist.Tuner))
 				return
 
@@ -629,67 +629,6 @@ func getBufTmpFiles(stream *structs.ThisStream) (tmpFiles []string) {
 	}
 
 	return
-}
-
-func killClientConnection(streamID int, playlistID string, force bool) {
-	config.Lock.Lock()
-	defer config.Lock.Unlock()
-
-	if p, ok := config.BufferInformation.Load(playlistID); ok {
-		var playlist = p.(structs.Playlist)
-
-		if force {
-			delete(playlist.Streams, streamID)
-			if len(playlist.Streams) == 0 {
-				config.BufferInformation.Delete(playlistID)
-			} else {
-				config.BufferInformation.Store(playlistID, playlist)
-			}
-			cli.ShowInfo(fmt.Sprintf("Streaming Status: Playlist: %s - Tuner: %d / %d", playlist.PlaylistName, len(playlist.Streams), playlist.Tuner))
-			return
-		}
-
-		if stream, ok := playlist.Streams[streamID]; ok {
-			client := playlist.Clients[streamID]
-
-			if c, ok := config.BufferClients.Load(playlistID + stream.MD5); ok {
-				var clients = c.(structs.ClientConnection)
-				clients.Connection--
-				client.Connection--
-
-				// Ensure client connections cannot go below zero
-				if client.Connection < 0 {
-					client.Connection = 0
-				}
-				if clients.Connection < 0 {
-					clients.Connection = 0
-				}
-
-				playlist.Clients[streamID] = client
-				config.BufferClients.Store(playlistID+stream.MD5, clients)
-
-				cli.ShowInfo(fmt.Sprintf("Streaming Status: Channel: %s (Clients: %d)", stream.ChannelName, clients.Connection))
-
-				if clients.Connection <= 0 {
-					config.BufferClients.Delete(playlistID + stream.MD5)
-					delete(playlist.Streams, streamID)
-					delete(playlist.Clients, streamID)
-
-					if len(playlist.Streams) == 0 {
-						config.BufferInformation.Delete(playlistID)
-					} else {
-						config.BufferInformation.Store(playlistID, playlist)
-					}
-				} else {
-					config.BufferInformation.Store(playlistID, playlist)
-				}
-
-				if len(playlist.Streams) > 0 {
-					cli.ShowInfo(fmt.Sprintf("Streaming Status: Playlist: %s - Tuner: %d / %d", playlist.PlaylistName, len(playlist.Streams), playlist.Tuner))
-				}
-			}
-		}
-	}
 }
 
 // Buffer with FFMPEG
@@ -785,7 +724,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		err := checkVFSFolder(tmpFolder, config.BufferVFS)
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -793,7 +732,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		err = checkFile(path)
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -806,7 +745,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		f, err := config.BufferVFS.Create(tmpFile)
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -816,7 +755,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		}()
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -888,7 +827,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		stdOut, err := cmd.StdoutPipe()
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -897,7 +836,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		logOut, err := cmd.StderrPipe()
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -909,7 +848,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		err = cmd.Start()
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -919,7 +858,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		}()
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -956,7 +895,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 		}()
 		if err != nil {
 			cli.ShowError(err, 0)
-			killClientConnection(streamID, playlistID, false)
+			client.KillConnection(streamID, playlistID, false)
 			addErrorToStream(err)
 			return
 		}
@@ -1000,7 +939,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 					}
 					err = errors.New("Timeout")
 					cli.ShowError(err, 4006)
-					killClientConnection(streamID, playlistID, false)
+					client.KillConnection(streamID, playlistID, false)
 					addErrorToStream(err)
 					err = cmd.Wait()
 					if err != nil {
@@ -1052,7 +991,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 				if err != nil {
 					cli.ShowError(err, 0)
 				}
-				killClientConnection(streamID, playlistID, false)
+				client.KillConnection(streamID, playlistID, false)
 				addErrorToStream(err)
 				err = cmd.Wait()
 				if err != nil {
@@ -1100,7 +1039,7 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 						cli.ShowError(err, 0)
 					}
 
-					killClientConnection(streamID, playlistID, false)
+					client.KillConnection(streamID, playlistID, false)
 					addErrorToStream(err)
 					err = cmd.Wait()
 					if err != nil {
