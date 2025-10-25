@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/crypt"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
@@ -263,7 +264,7 @@ func createStreamingURL(streamingType, playlistID, channelNumber, channelName, u
 		config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
 	}
 
-	var urlID = getMD5(fmt.Sprintf("%s-%s", playlistID, url))
+	var urlID = crypt.GetMD5(fmt.Sprintf("%s-%s", playlistID, url))
 
 	if s, ok := config.Data.Cache.StreamingURLS[urlID]; ok {
 		streamInfo = s

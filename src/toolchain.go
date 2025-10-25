@@ -2,8 +2,6 @@ package src
 
 import (
 	"bytes"
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -300,14 +298,6 @@ func indexOfFloat64(element float64, data []float64) int {
 	}
 
 	return -1
-}
-
-func getMD5(str string) string {
-
-	md5Hasher := md5.New()
-	md5Hasher.Write([]byte(str))
-
-	return hex.EncodeToString(md5Hasher.Sum(nil))
 }
 
 func getBaseUrl(host string, port string) string {
