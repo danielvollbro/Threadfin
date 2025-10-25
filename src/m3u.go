@@ -20,6 +20,7 @@ import (
 	m3u "threadfin/src/internal/m3u-parser"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/structs"
+	"threadfin/src/internal/utilities"
 )
 
 // Playlisten parsen
@@ -244,7 +245,7 @@ func buildM3U(groups []string) (m3u string, err error) {
 			if xepgChannel.XActive && !xepgChannel.XHideChannel {
 				if len(groups) > 0 {
 
-					if indexOfString(xepgChannel.XGroupTitle, groups) == -1 {
+					if utilities.IndexOfString(xepgChannel.XGroupTitle, groups) == -1 {
 						goto Done
 					}
 

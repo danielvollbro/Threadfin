@@ -10,6 +10,7 @@ import (
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
+	"threadfin/src/internal/utilities"
 )
 
 func makeInteraceFromHDHR(content []byte, playlistName, id string) (channels []interface{}, err error) {
@@ -219,7 +220,7 @@ func getGuideNumberPMS(channelName string) (pmsID string, err error) {
 			ids = append(ids, v)
 		}
 
-		if indexOfString(id, ids) != -1 {
+		if utilities.IndexOfString(id, ids) != -1 {
 			i++
 			goto newID
 		}

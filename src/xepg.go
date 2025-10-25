@@ -26,6 +26,7 @@ import (
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
+	"threadfin/src/internal/utilities"
 	_ "time/tzdata"
 )
 
@@ -1042,7 +1043,7 @@ func createXMLTVFile() (err error) {
 
 		for _, file := range files {
 
-			if indexOfString(file.Name(), config.Data.Cache.ImagesCache) == -1 {
+			if utilities.IndexOfString(file.Name(), config.Data.Cache.ImagesCache) == -1 {
 				config.Data.Cache.ImagesCache = append(config.Data.Cache.ImagesCache, file.Name())
 			}
 
@@ -1892,7 +1893,7 @@ func cleanupXEPG() {
 			hash := md5.Sum([]byte(hashInput))
 			m3uChannelHash := hex.EncodeToString(hash[:])
 
-			if indexOfString(m3uChannelHash, config.Data.Cache.Streams.Active) == -1 {
+			if utilities.IndexOfString(m3uChannelHash, config.Data.Cache.Streams.Active) == -1 {
 				delete(config.Data.XEPG.Channels, id)
 			} else {
 				if xepgChannel.XActive && !xepgChannel.XHideChannel {
@@ -1900,7 +1901,7 @@ func cleanupXEPG() {
 				}
 			}
 
-			if indexOfString(xepgChannel.FileM3UID, sourceIDs) == -1 {
+			if utilities.IndexOfString(xepgChannel.FileM3UID, sourceIDs) == -1 {
 				delete(config.Data.XEPG.Channels, id)
 			}
 
