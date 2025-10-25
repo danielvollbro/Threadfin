@@ -7,6 +7,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/host"
 	htmlbuilder "threadfin/src/internal/html-builder"
 	"threadfin/src/internal/plex"
 	"threadfin/src/internal/storage"
@@ -92,7 +93,7 @@ func Init() (err error) {
 		return
 	}
 
-	err = resolveHostIP()
+	err = host.ResolveIP()
 	if err != nil {
 		cli.ShowError(err, 1002)
 	}
