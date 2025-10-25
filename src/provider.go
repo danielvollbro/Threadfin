@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"threadfin/src/internal/cli"
+	"threadfin/src/internal/compression"
 	"threadfin/src/internal/config"
 	m3u "threadfin/src/internal/m3u-parser"
 	systemSettings "threadfin/src/internal/settings"
@@ -95,7 +96,7 @@ func getProviderData(fileType, fileID string) (err error) {
 		}
 
 		// Datei extrahieren
-		body, err = extractGZIP(body, fileSource)
+		body, err = compression.ExtractGZIP(body, fileSource)
 		if err != nil {
 			cli.ShowError(err, 000)
 			return

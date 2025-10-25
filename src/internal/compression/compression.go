@@ -2,10 +2,13 @@ package compression
 
 import (
 	"archive/zip"
+	"bytes"
+	"compress/gzip"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 )
 
@@ -148,5 +151,31 @@ func ExtractZIP(archive, target string) (err error) {
 
 	}
 
+	return
+}
+
+func ExtractGZIP(gzipBody []byte, fileSource string) (body []byte, err error) {
+	var b = bytes.NewBuffer(gzipBody)
+
+	var r io.Reader
+	r, err = gzip.NewReader(b)
+	if err != nil {
+		// Keine gzip Datei
+		body = gzipBody
+		err = nil
+		return
+	}
+
+	cli.ShowInfo("Extract gzip:" + fileSource)
+
+	var resB bytes.Buffer
+	_, err = resB.ReadFrom(r)
+	if err != nil {
+		body = gzipBody
+		err = nil
+		return
+	}
+
+	body = resB.Bytes()
 	return
 }
