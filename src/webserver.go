@@ -19,6 +19,7 @@ import (
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/media"
+	"threadfin/src/internal/playlist"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
@@ -1129,7 +1130,7 @@ func setDefaultResponseData(response structs.ResponseStruct, data bool) (default
 	defaults.ClientInfo.Errors = config.WebScreenLog.Errors
 	defaults.ClientInfo.Warnings = config.WebScreenLog.Warnings
 	defaults.ClientInfo.ActiveClients = client.GetActiveCount()
-	defaults.ClientInfo.ActivePlaylist = getActivePlaylistCount()
+	defaults.ClientInfo.ActivePlaylist = playlist.GetActiveCount()
 	defaults.ClientInfo.TotalClients = config.Settings.Tuner
 	defaults.ClientInfo.TotalPlaylist = totalPlaylistCount
 	defaults.Notification = config.System.Notification

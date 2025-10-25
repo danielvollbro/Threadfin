@@ -11,15 +11,6 @@ import (
 	"github.com/avfs/avfs/vfs/memfs"
 )
 
-func getActivePlaylistCount() (count int) {
-	count = 0
-	config.BufferInformation.Range(func(key, value interface{}) bool {
-		count++
-		return true
-	})
-	return count
-}
-
 func initBufferVFS() {
 	config.BufferVFS = memfs.New()
 }
