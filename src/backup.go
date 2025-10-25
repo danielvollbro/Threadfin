@@ -143,7 +143,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	}
 
 	// Zip Archiv in tmp entpacken
-	err = extractZIP(archive, tmpRestore)
+	err = compression.ExtractZIP(archive, tmpRestore)
 	if err != nil {
 		return
 	}
@@ -162,7 +162,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	}
 
 	// Zip Archiv in den Config Ordner entpacken
-	err = extractZIP(archive, config.System.Folder.Config)
+	err = compression.ExtractZIP(archive, config.System.Folder.Config)
 	if err != nil {
 		return
 	}

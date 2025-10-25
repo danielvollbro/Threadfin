@@ -96,3 +96,57 @@ func ZipFiles(sourceFiles []string, target string) error {
 
 	return err
 }
+
+func ExtractZIP(archive, target string) (err error) {
+
+	reader, err := zip.OpenReader(archive)
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(target, 0755); err != nil {
+		return err
+	}
+
+	for _, file := range reader.File {
+
+		path := filepath.Join(target, file.Name)
+		if file.FileInfo().IsDir() {
+			err = os.MkdirAll(path, file.Mode())
+			if err != nil {
+				return err
+			}
+
+			continue
+		}
+
+		fileReader, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer func() {
+			err = fileReader.Close()
+		}()
+		if err != nil {
+			return err
+		}
+
+		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return err
+		}
+		defer func() {
+			err = targetFile.Close()
+		}()
+		if err != nil {
+			return err
+		}
+
+		if _, err := io.Copy(targetFile, fileReader); err != nil {
+			return err
+		}
+
+	}
+
+	return
+}
