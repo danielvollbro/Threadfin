@@ -17,6 +17,7 @@ import (
 	"threadfin/src/internal/system"
 	"threadfin/src/internal/update"
 	"threadfin/src/internal/utilities"
+	"threadfin/src/internal/xepg"
 	"threadfin/src/web"
 
 	"golang.org/x/text/cases"
@@ -260,7 +261,7 @@ func StartSystem(updateProviderFiles bool) (err error) {
 		return
 	}
 
-	buildXEPG(true)
+	xepg.BuildXEPG(true)
 
 	return
 }

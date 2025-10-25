@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/hdhr"
 	m3u "threadfin/src/internal/m3u-parser"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
@@ -30,7 +31,7 @@ func parsePlaylist(filename, fileType string) (channels []interface{}, err error
 		case "m3u":
 			channels, err = m3u.MakeInterfaceFromM3U(content)
 		case "hdhr":
-			channels, err = makeInteraceFromHDHR(content, playlistName, id)
+			channels, err = hdhr.MakeInteraceFromHDHR(content, playlistName, id)
 		}
 
 	}

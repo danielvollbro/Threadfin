@@ -8,6 +8,7 @@ import (
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/update"
+	"threadfin/src/internal/xepg"
 	"time"
 )
 
@@ -78,7 +79,7 @@ func maintenance() {
 					}
 
 					// XEPG Dateien erstellen
-					buildXEPG(true)
+					xepg.BuildXEPG(true)
 
 				}
 

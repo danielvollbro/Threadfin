@@ -5,6 +5,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/xepg"
 )
 
 // ShowSystemInfo : Systeminformationen anzeigen
@@ -17,7 +18,7 @@ func ShowSystemInfo() {
 		return
 	}
 
-	buildXEPG(false)
+	xepg.BuildXEPG(false)
 
 	fmt.Println("OK")
 	println()

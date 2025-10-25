@@ -20,6 +20,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/client"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/hdhr"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/m3u"
 	"threadfin/src/internal/media"
@@ -30,6 +31,7 @@ import (
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/system"
 	"threadfin/src/internal/utilities"
+	"threadfin/src/internal/xepg"
 	"threadfin/src/web"
 
 	"github.com/gorilla/websocket"
@@ -95,10 +97,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	switch path {
 	case "/discover.json":
-		response, err = getDiscover()
+		response, err = hdhr.GetDiscover()
 		w.Header().Set("Content-Type", "application/json")
 	case "/lineup_status.json":
-		response, err = getLineupStatus()
+		response, err = hdhr.GetLineupStatus()
 		w.Header().Set("Content-Type", "application/json")
 	case "/lineup.json":
 		config.SystemMutex.Lock()
@@ -113,13 +115,13 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		} else {
 			config.SystemMutex.Unlock()
 		}
-		response, err = getLineup()
+		response, err = hdhr.GetLineup()
 		w.Header().Set("Content-Type", "application/json")
 	case "/device.xml", "/capability":
-		response, err = getCapability()
+		response, err = hdhr.GetCapability()
 		w.Header().Set("Content-Type", "application/xml")
 	default:
-		response, err = getCapability()
+		response, err = hdhr.GetCapability()
 		w.Header().Set("Content-Type", "application/xml")
 	}
 
@@ -1043,7 +1045,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		buildXEPG(false)
+		xepg.BuildXEPG(false)
 
 	case "update.hdhr":
 
@@ -1057,7 +1059,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		buildXEPG(false)
+		xepg.BuildXEPG(false)
 
 	case "update.xmltv":
 		err = provider.GetData("xmltv", "")
@@ -1065,10 +1067,10 @@ func API(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		buildXEPG(false)
+		xepg.BuildXEPG(false)
 
 	case "update.xepg":
-		buildXEPG(false)
+		xepg.BuildXEPG(false)
 
 	default:
 		err = errors.New(cli.GetErrMsg(5000))
@@ -1205,7 +1207,7 @@ func setDefaultResponseData(response structs.ResponseStruct, data bool) (default
 }
 
 func enablePPV(w http.ResponseWriter, r *http.Request) {
-	xepg, err := storage.LoadJSONFileToMap(config.System.File.XEPG)
+	xepgMapping, err := storage.LoadJSONFileToMap(config.System.File.XEPG)
 	if err != nil {
 		var response structs.APIResponseStruct
 
@@ -1218,7 +1220,7 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, c := range xepg {
+	for _, c := range xepgMapping {
 
 		var xepgChannel = c.(map[string]interface{})
 
@@ -1227,7 +1229,7 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = storage.SaveMapToJSONFile(config.System.File.XEPG, xepg)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, xepgMapping)
 	if err != nil {
 		var response structs.APIResponseStruct
 
@@ -1240,14 +1242,14 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(405)
 		return
 	}
-	buildXEPG(false)
+	xepg.BuildXEPG(false)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 }
 
 func disablePPV(w http.ResponseWriter, r *http.Request) {
-	xepg, err := storage.LoadJSONFileToMap(config.System.File.XEPG)
+	xepgMapping, err := storage.LoadJSONFileToMap(config.System.File.XEPG)
 	if err != nil {
 		var response structs.APIResponseStruct
 
@@ -1259,7 +1261,7 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	for _, c := range xepg {
+	for _, c := range xepgMapping {
 
 		var xepgChannel = c.(map[string]interface{})
 
@@ -1268,7 +1270,7 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = storage.SaveMapToJSONFile(config.System.File.XEPG, xepg)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, xepgMapping)
 	if err != nil {
 		var response structs.APIResponseStruct
 
@@ -1279,7 +1281,7 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 			cli.ShowError(err, 000)
 		}
 	}
-	buildXEPG(false)
+	xepg.BuildXEPG(false)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
@@ -1340,5 +1342,5 @@ func updateUrlsJson() {
 		return
 	}
 
-	buildXEPG(false)
+	xepg.BuildXEPG(false)
 }

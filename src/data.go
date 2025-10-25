@@ -24,6 +24,7 @@ import (
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/utilities"
+	"threadfin/src/internal/xepg"
 	"threadfin/src/internal/xmltv"
 )
 
@@ -207,7 +208,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				return
 			}
 
-			buildXEPG(false)
+			xepg.BuildXEPG(false)
 
 		}
 
@@ -246,7 +247,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 						config.System.ImageCachingInProgress = 0
 
-						buildXEPG(false)
+						xepg.BuildXEPG(false)
 
 					}()
 
@@ -369,7 +370,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 				return err
 			}
 
-			buildXEPG(false)
+			xepg.BuildXEPG(false)
 
 		}
 
@@ -401,7 +402,7 @@ func updateFile(request structs.RequestStruct, fileType string) (err error) {
 		err = provider.GetData(fileType, dataID)
 		if err == nil {
 			// For playlist updates, just update EPG data and Live Event channel names
-			updateXEPG(false)
+			xepg.UpdateXEPG(false)
 		}
 
 	}
@@ -513,7 +514,7 @@ func saveFilter(request structs.RequestStruct) (settings structs.SettingsStruct,
 		return
 	}
 
-	buildXEPG(false)
+	xepg.BuildXEPG(false)
 
 	return
 }
@@ -751,7 +752,7 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 
 				}
 
-				buildXEPG(false)
+				xepg.BuildXEPG(false)
 				config.System.ScanInProgress = 0
 
 			}
@@ -840,7 +841,7 @@ func buildDatabaseDVR() (err error) {
 
 	for _, fileType := range availableFileTypes {
 
-		var playlistFile = getLocalProviderFiles(fileType)
+		var playlistFile = provider.GetLocalFiles(fileType)
 
 		for n, i := range playlistFile {
 
@@ -1003,35 +1004,6 @@ func buildDatabaseDVR() (err error) {
 
 	sort.Strings(config.Data.StreamPreviewUI.Active)
 	sort.Strings(config.Data.StreamPreviewUI.Inactive)
-
-	return
-}
-
-// Speicherort aller lokalen Providerdateien laden, immer für eine Dateityp (M3U, XMLTV usw.)
-func getLocalProviderFiles(fileType string) (localFiles []string) {
-
-	var fileExtension string
-	var dataMap = make(map[string]interface{})
-
-	switch fileType {
-
-	case "m3u":
-		fileExtension = ".m3u"
-		dataMap = config.Settings.Files.M3U
-
-	case "hdhr":
-		fileExtension = ".json"
-		dataMap = config.Settings.Files.HDHR
-
-	case "xmltv":
-		fileExtension = ".xml"
-		dataMap = config.Settings.Files.XMLTV
-
-	}
-
-	for dataID := range dataMap {
-		localFiles = append(localFiles, config.System.Folder.Data+dataID+fileExtension)
-	}
 
 	return
 }

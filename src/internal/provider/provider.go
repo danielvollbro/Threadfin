@@ -17,6 +17,35 @@ import (
 	"time"
 )
 
+// Load the location of all local provider files, always for one file type (M3U, XMLTV, etc.)
+func GetLocalFiles(fileType string) (localFiles []string) {
+
+	var fileExtension string
+	var dataMap = make(map[string]interface{})
+
+	switch fileType {
+
+	case "m3u":
+		fileExtension = ".m3u"
+		dataMap = config.Settings.Files.M3U
+
+	case "hdhr":
+		fileExtension = ".json"
+		dataMap = config.Settings.Files.HDHR
+
+	case "xmltv":
+		fileExtension = ".xml"
+		dataMap = config.Settings.Files.XMLTV
+
+	}
+
+	for dataID := range dataMap {
+		localFiles = append(localFiles, config.System.Folder.Data+dataID+fileExtension)
+	}
+
+	return
+}
+
 // fileType: Welcher Dateityp soll aktualisiert werden (m3u, hdhr, xml) | fileID: Update einer bestimmten Datei (Provider ID)
 func GetData(fileType, fileID string) (err error) {
 

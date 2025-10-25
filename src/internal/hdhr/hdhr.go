@@ -1,4 +1,4 @@
-package src
+package hdhr
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"threadfin/src/internal/utilities"
 )
 
-func makeInteraceFromHDHR(content []byte, playlistName, id string) (channels []interface{}, err error) {
+func MakeInteraceFromHDHR(content []byte, playlistName, id string) (channels []interface{}, err error) {
 
 	var hdhrData []interface{}
 
@@ -43,7 +43,7 @@ func makeInteraceFromHDHR(content []byte, playlistName, id string) (channels []i
 	return
 }
 
-func getCapability() (xmlContent []byte, err error) {
+func GetCapability() (xmlContent []byte, err error) {
 
 	var capability structs.Capability
 	var buffer bytes.Buffer
@@ -74,7 +74,7 @@ func getCapability() (xmlContent []byte, err error) {
 	return
 }
 
-func getDiscover() (jsonContent []byte, err error) {
+func GetDiscover() (jsonContent []byte, err error) {
 
 	var discover structs.Discover
 
@@ -95,7 +95,7 @@ func getDiscover() (jsonContent []byte, err error) {
 	return
 }
 
-func getLineupStatus() (jsonContent []byte, err error) {
+func GetLineupStatus() (jsonContent []byte, err error) {
 
 	var lineupStatus structs.LineupStatus
 
@@ -109,7 +109,7 @@ func getLineupStatus() (jsonContent []byte, err error) {
 	return
 }
 
-func getLineup() (jsonContent []byte, err error) {
+func GetLineup() (jsonContent []byte, err error) {
 
 	var lineup structs.Lineup
 
