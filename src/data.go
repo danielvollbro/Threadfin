@@ -24,6 +24,7 @@ import (
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/utilities"
+	"threadfin/src/internal/xmltv"
 )
 
 // Einstellungen ändern (WebUI)
@@ -222,7 +223,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				switch config.Settings.CacheImages {
 
 				case false:
-					err = createXMLTVFile()
+					err = xmltv.CreateFile()
 					if err != nil {
 						cli.ShowError(err, 0)
 					}
@@ -231,7 +232,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				case true:
 					go func() {
 
-						err := createXMLTVFile()
+						err := xmltv.CreateFile()
 						if err != nil {
 							cli.ShowError(err, 0)
 						}
@@ -258,7 +259,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 		if createXEPGFiles {
 
 			go func() {
-				err = createXMLTVFile()
+				err = xmltv.CreateFile()
 				if err != nil {
 					cli.ShowError(err, 0)
 				}
@@ -544,7 +545,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 	if config.System.ScanInProgress == 0 {
 
 		config.System.ScanInProgress = 1
-		err = createXMLTVFile()
+		err = xmltv.CreateFile()
 		if err != nil {
 			cli.ShowError(err, 0)
 		}
@@ -572,7 +573,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 			}
 
 			config.System.ScanInProgress = 1
-			err = createXMLTVFile()
+			err = xmltv.CreateFile()
 			if err != nil {
 				cli.ShowError(err, 0)
 			}

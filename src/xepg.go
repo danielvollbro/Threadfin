@@ -4,26 +4,21 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"path"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 
-	"bufio"
 	"threadfin/src/internal/channels"
 	"threadfin/src/internal/cli"
-	"threadfin/src/internal/compression"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/m3u"
-	"threadfin/src/internal/programs"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
@@ -82,7 +77,7 @@ func buildXEPG(background bool) {
 				}
 
 				xepg.Cleanup()
-				err = createXMLTVFile()
+				err = xmltv.CreateFile()
 				if err != nil {
 					cli.ShowError(err, 000)
 					return
@@ -106,7 +101,7 @@ func buildXEPG(background bool) {
 						config.Data.Cache.Images.Image.Remove()
 						cli.ShowInfo("Image Caching:Done")
 
-						err = createXMLTVFile()
+						err = xmltv.CreateFile()
 						if err != nil {
 							cli.ShowError(err, 000)
 							return
@@ -148,7 +143,7 @@ func buildXEPG(background bool) {
 			}
 
 			xepg.Cleanup()
-			err = createXMLTVFile()
+			err = xmltv.CreateFile()
 			if err != nil {
 				cli.ShowError(err, 000)
 				return
@@ -175,7 +170,7 @@ func buildXEPG(background bool) {
 						config.Data.Cache.Images.Image.Remove()
 						cli.ShowInfo("Image Caching:Done")
 
-						err = createXMLTVFile()
+						err = xmltv.CreateFile()
 						if err != nil {
 							cli.ShowError(err, 000)
 							return
@@ -247,7 +242,7 @@ func updateXEPG(background bool) {
 
 			go func() {
 
-				err = createXMLTVFile()
+				err = xmltv.CreateFile()
 				if err != nil {
 					cli.ShowError(err, 000)
 					return
@@ -642,7 +637,7 @@ func createXEPGDatabase() (err error) {
 
 			// Update channel name - for Live Events, allow name updates even without UUID
 			if channelHasUUID {
-				programData, _ := programs.GetData(xepgChannel)
+				programData, _ := xmltv.GetData(xepgChannel)
 				if xepgChannel.XUpdateChannelName || strings.Contains(xepgChannel.TvgID, "threadfin-") || (m3uChannel.LiveEvent == "true" && len(programData.Program) <= 3) {
 					xepgChannel.XName = m3uChannel.Name
 					xepgChannel.TvgName = m3uChannel.TvgName // Also update TvgName for Live Events
@@ -655,7 +650,7 @@ func createXEPGDatabase() (err error) {
 
 			// For Live Event channels, ensure they use Live Event EPG if they have insufficient program data
 			if m3uChannel.LiveEvent == "true" && xepgChannel.Live {
-				programData, _ := programs.GetData(xepgChannel)
+				programData, _ := xmltv.GetData(xepgChannel)
 				if len(programData.Program) <= 3 {
 					cli.ShowInfo(fmt.Sprintf("XEPG: Updating Live Event channel to use Live EPG: %s", xepgChannel.XName))
 					xepgChannel.XmltvFile = "Threadfin Dummy"
@@ -775,7 +770,7 @@ func createXEPGDatabase() (err error) {
 
 			}
 
-			programData, _ := programs.GetData(newChannel)
+			programData, _ := xmltv.GetData(newChannel)
 
 			if newChannel.Live && len(programData.Program) <= 3 {
 				newChannel.XmltvFile = "Threadfin Dummy"
@@ -1006,185 +1001,6 @@ func mapping() (err error) {
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
-	}
-
-	return
-}
-
-// XMLTV Datei erstellen
-func createXMLTVFile() (err error) {
-
-	// Image Cache
-	// 4edd81ab7c368208cc6448b615051b37.jpg
-	var imgc = config.Data.Cache.Images
-
-	config.Data.Cache.ImagesFiles = []string{}
-	config.Data.Cache.ImagesURLS = []string{}
-	config.Data.Cache.ImagesCache = []string{}
-
-	files, err := os.ReadDir(config.System.Folder.ImagesCache)
-	if err == nil {
-
-		for _, file := range files {
-
-			if utilities.IndexOfString(file.Name(), config.Data.Cache.ImagesCache) == -1 {
-				config.Data.Cache.ImagesCache = append(config.Data.Cache.ImagesCache, file.Name())
-			}
-
-		}
-
-	}
-
-	if len(config.Data.XMLTV.Files) == 0 && len(config.Data.Streams.Active) == 0 {
-		config.Data.XEPG.Channels = make(map[string]interface{})
-		return
-	}
-
-	cli.ShowInfo("XEPG:" + fmt.Sprintf("Create XMLTV file (%s)", config.System.File.XML))
-
-	// Stream XML to disk to avoid huge memory usage
-	xmlFile, err := os.Create(config.System.File.XML)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = xmlFile.Close()
-	}()
-	if err != nil {
-		return err
-	}
-
-	// Use buffered writer for performance
-	writer := bufio.NewWriterSize(xmlFile, 1<<20) // 1MB buffer
-	defer func() {
-		err = writer.Flush()
-	}()
-	if err != nil {
-		return err
-	}
-
-	var xepgXML structs.XMLTV
-
-	xepgXML.Generator = config.System.Name
-
-	if config.System.Branch == "main" {
-		xepgXML.Source = fmt.Sprintf("%s - %s", config.System.Name, config.System.Version)
-	} else {
-		xepgXML.Source = fmt.Sprintf("%s - %s.%s", config.System.Name, config.System.Version, config.System.Build)
-	}
-
-	var tmpProgram = &structs.XMLTV{}
-
-	if _, err = writer.WriteString(xml.Header); err != nil {
-		return err
-	}
-	if _, err = writer.WriteString("<tv>\n"); err != nil {
-		return err
-	}
-
-	if _, err = fmt.Fprintf(writer, "  <generator>%s</generator>\n", xepgXML.Generator); err != nil {
-		return err
-	}
-	if _, err = fmt.Fprintf(writer, "  <source>%s</source>\n", xepgXML.Source); err != nil {
-		return err
-	}
-
-	type channelEntry struct {
-		idx int
-		ch  structs.XEPGChannelStruct
-	}
-	var entries []channelEntry
-
-	for _, dxc := range config.Data.XEPG.Channels {
-		var xepgChannel structs.XEPGChannelStruct
-		err := json.Unmarshal([]byte(jsonserializer.MapToJSON(dxc)), &xepgChannel)
-		if err == nil {
-			entries = append(entries, channelEntry{idx: len(entries), ch: xepgChannel})
-		}
-	}
-
-	sort.Slice(entries, func(i, j int) bool {
-		chI := entries[i].ch.TvgChno
-		chJ := entries[j].ch.TvgChno
-
-		numI, errI := strconv.ParseFloat(chI, 64)
-		numJ, errJ := strconv.ParseFloat(chJ, 64)
-
-		if errI == nil && errJ == nil {
-			return numI < numJ
-		}
-
-		if errI == nil && errJ != nil {
-			return true
-		}
-		if errI != nil && errJ == nil {
-			return false
-		}
-
-		return chI < chJ
-	})
-
-	for _, e := range entries {
-		xepgChannel := e.ch
-		if xepgChannel.TvgName == "" {
-			xepgChannel.TvgName = xepgChannel.Name
-		}
-		if xepgChannel.XName == "" {
-			xepgChannel.XName = xepgChannel.TvgName
-		}
-
-		if xepgChannel.XActive && !xepgChannel.XHideChannel {
-			if (config.Settings.XepgReplaceChannelTitle && xepgChannel.XMapping == "PPV") || xepgChannel.XName != "" {
-				channel := structs.Channel{
-					ID: xepgChannel.XChannelID,
-					Icon: structs.Icon{
-						Src: imgc.Image.GetURL(xepgChannel.TvgLogo, config.Settings.HttpThreadfinDomain, config.Settings.Port, config.Settings.ForceHttps, config.Settings.HttpsPort, config.Settings.HttpsThreadfinDomain),
-					},
-					DisplayName: []structs.DisplayName{
-						{Value: xepgChannel.XName},
-					},
-					Active: xepgChannel.XActive,
-					Live:   xepgChannel.Live,
-				}
-				bytes, _ := xml.MarshalIndent(channel, "  ", "    ")
-				if _, err = writer.Write(bytes); err != nil {
-					return err
-				}
-				if _, err = writer.WriteString("\n"); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	for _, e := range entries {
-		xepgChannel := e.ch
-		if xepgChannel.XActive && !xepgChannel.XHideChannel {
-			*tmpProgram, err = programs.GetData(xepgChannel)
-			if err == nil {
-				for _, p := range tmpProgram.Program {
-					bytes, _ := xml.MarshalIndent(p, "  ", "    ")
-					if _, err = writer.Write(bytes); err != nil {
-						return err
-					}
-					if _, err = writer.WriteString("\n"); err != nil {
-						return err
-					}
-				}
-			} else {
-				cli.ShowDebug("XEPG:"+fmt.Sprintf("Error: %s", err), 3)
-			}
-		}
-	}
-
-	// Close tv root
-	if _, err = writer.WriteString("</tv>\n"); err != nil {
-		return err
-	}
-
-	cli.ShowInfo("XEPG:" + fmt.Sprintf("Compress XMLTV file (%s)", config.System.Compressed.GZxml))
-	if err = compression.CompressGZIPFile(config.System.File.XML, config.System.Compressed.GZxml); err != nil {
-		return err
 	}
 
 	return

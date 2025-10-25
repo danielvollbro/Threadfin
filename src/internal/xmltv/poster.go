@@ -1,4 +1,4 @@
-package programs
+package xmltv
 
 import (
 	"threadfin/src/internal/config"
