@@ -7,6 +7,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	htmlbuilder "threadfin/src/internal/html-builder"
 	"threadfin/src/internal/plex"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
@@ -179,8 +180,8 @@ func Init() (err error) {
 	// HTML Dateien erstellen, mit dev == true werden die lokalen HTML Dateien verwendet
 	if config.System.Dev {
 
-		HTMLInit("webUI", "src", "html"+string(os.PathSeparator), "src"+string(os.PathSeparator)+"webUI.go")
-		err = BuildGoFile()
+		htmlbuilder.HTMLInit("webUI", "src", "html"+string(os.PathSeparator), "src"+string(os.PathSeparator)+"webUI.go")
+		err = htmlbuilder.BuildGoFile()
 		if err != nil {
 			return
 		}
