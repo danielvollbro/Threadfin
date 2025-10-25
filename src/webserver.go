@@ -32,6 +32,7 @@ import (
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/system"
 	"threadfin/src/internal/utilities"
+	"threadfin/src/internal/wizard"
 	"threadfin/src/internal/xepg"
 	"threadfin/src/web"
 
@@ -637,7 +638,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "saveWizard":
-			nextStep, errNew := saveWizard(request)
+			nextStep, errNew := wizard.Save(request)
 			err = errNew
 			if err == nil {
 				if nextStep == 10 {
