@@ -230,7 +230,7 @@ func getProviderData(fileType, fileID string) (err error) {
 
 				err = storage.CheckFile(fileSource)
 				if err == nil {
-					body, err = readByteFromFile(fileSource)
+					body, err = storage.ReadByteFromFile(fileSource)
 					serverFileName = getFilenameFromPath(fileSource)
 				}
 

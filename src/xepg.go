@@ -1711,7 +1711,7 @@ func getLocalXMLTV(file string, xmltv *structs.XMLTV) (err error) {
 			err = parseXMLTVStream(file, xmltv)
 		} else {
 			// Use original method for smaller files
-			content, err := readByteFromFile(file)
+			content, err := storage.ReadByteFromFile(file)
 			if err != nil {
 				err = errors.New("local copy of the file no longer exists")
 				return err

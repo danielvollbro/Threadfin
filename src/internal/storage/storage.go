@@ -147,3 +147,22 @@ func ReadStringFromFile(file string) (str string, err error) {
 
 	return
 }
+
+func ReadByteFromFile(file string) (content []byte, err error) {
+	f, err := os.Open(GetPlatformFile(file))
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		err = f.Close()
+	}()
+	if err != nil {
+		return
+	}
+
+	content, err = io.ReadAll(f)
+	err = f.Close()
+
+	return
+}

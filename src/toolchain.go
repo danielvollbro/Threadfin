@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"os/user"
@@ -169,27 +168,6 @@ func saveMapToJSONFile(file string, tmpMap interface{}) error {
 	}
 
 	return nil
-}
-
-// Binary
-func readByteFromFile(file string) (content []byte, err error) {
-
-	f, err := os.Open(storage.GetPlatformFile(file))
-	if err != nil {
-		return
-	}
-
-	defer func() {
-		err = f.Close()
-	}()
-	if err != nil {
-		return
-	}
-
-	content, err = io.ReadAll(f)
-	err = f.Close()
-
-	return
 }
 
 func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {

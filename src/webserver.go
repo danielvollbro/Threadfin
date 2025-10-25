@@ -362,7 +362,7 @@ func Images(w http.ResponseWriter, r *http.Request) {
 	filePath := config.System.Folder.ImagesCache + getFilenameFromPath(path)
 	config.SystemMutex.Unlock()
 
-	content, err := readByteFromFile(filePath)
+	content, err := storage.ReadByteFromFile(filePath)
 	if err != nil {
 		web.HttpStatusError(w, 404)
 		return
@@ -385,7 +385,7 @@ func DataImages(w http.ResponseWriter, r *http.Request) {
 	filePath := config.System.Folder.ImagesUpload + getFilenameFromPath(path)
 	config.SystemMutex.Unlock()
 
-	content, err := readByteFromFile(filePath)
+	content, err := storage.ReadByteFromFile(filePath)
 	if err != nil {
 		web.HttpStatusError(w, 404)
 		return
