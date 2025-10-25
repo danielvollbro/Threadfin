@@ -3,6 +3,7 @@ package src
 import (
 	"fmt"
 	"math/rand"
+	"threadfin/src/internal/backup"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/dvr"
@@ -39,7 +40,7 @@ func maintenance() {
 					cli.ShowInfo("Update:" + schedule)
 
 					// Backup erstellen
-					err := ThreadfinAutoBackup()
+					err := backup.ThreadfinAutoBackup()
 					if err != nil {
 						cli.ShowError(err, 000)
 					}

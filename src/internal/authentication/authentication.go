@@ -603,3 +603,19 @@ func SetCookieToken(w http.ResponseWriter, token string) http.ResponseWriter {
 	http.SetCookie(w, &cookie)
 	return w
 }
+
+func ActivatedSystemAuthentication(config string) (err error) {
+	err = Init(config, 60)
+	if err != nil {
+		return
+	}
+
+	var defaults = make(map[string]interface{})
+	defaults["authentication.web"] = false
+	defaults["authentication.pms"] = false
+	defaults["authentication.xml"] = false
+	defaults["authentication.api"] = false
+	err = SetDefaultUserData(defaults)
+
+	return
+}

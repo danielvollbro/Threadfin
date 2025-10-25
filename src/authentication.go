@@ -10,23 +10,6 @@ import (
 	"threadfin/src/internal/config"
 )
 
-func activatedSystemAuthentication() (err error) {
-
-	err = authentication.Init(config.System.Folder.Config, 60)
-	if err != nil {
-		return
-	}
-
-	var defaults = make(map[string]interface{})
-	defaults["authentication.web"] = false
-	defaults["authentication.pms"] = false
-	defaults["authentication.xml"] = false
-	defaults["authentication.api"] = false
-	err = authentication.SetDefaultUserData(defaults)
-
-	return
-}
-
 func createFirstUserForAuthentication(username, password string) (token string, err error) {
 
 	var authenticationErr = func(err error) {

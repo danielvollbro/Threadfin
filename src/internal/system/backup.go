@@ -1,8 +1,7 @@
-package src
+package system
 
 import (
 	b64 "encoding/base64"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,10 +9,60 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/compression"
 	"threadfin/src/internal/config"
-	"threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
 	"time"
 )
+
+// ThreadfinRestoreFromCLI : Wiederherstellung über die Kommandozeile
+func ThreadfinRestoreFromCLI(archive string) (err error) {
+
+	var confirm string
+
+	println()
+	cli.ShowInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
+	cli.ShowInfo(fmt.Sprintf("Backup File:%s", archive))
+	cli.ShowInfo(fmt.Sprintf("System Folder:%s", storage.GetPlatformPath(config.System.Folder.Config)))
+	println()
+
+	fmt.Print("All data will be replaced with those from the backup. Should the files be restored? [yes|no]:")
+
+	_, err = fmt.Scanln(&confirm)
+	if err != nil {
+		cli.ShowError(err, 500)
+		return
+	}
+
+	switch strings.ToLower(confirm) {
+
+	case "yes":
+		break
+
+	case "no":
+		return
+
+	default:
+		fmt.Println("Invalid input")
+		return
+
+	}
+
+	if len(config.System.Folder.Config) > 0 {
+
+		err = storage.CheckFilePermission(config.System.Folder.Config)
+		if err != nil {
+			return
+		}
+
+		_, err = ThreadfinRestore(archive)
+		if err != nil {
+			return
+		}
+
+		cli.ShowHighlight(fmt.Sprintf("Restor:Backup was successfully restored. %s can now be started normally", config.System.Name))
+
+	}
+	return
+}
 
 func ThreadfinAutoBackup() (err error) {
 
@@ -132,82 +181,6 @@ func ThreadfinBackup() (archiv string, err error) {
 	return
 }
 
-func ThreadfinRestore(archive string) (newWebURL string, err error) {
-
-	var newPort, oldPort, backupVersion, tmpRestore string
-
-	tmpRestore = config.System.Folder.Temp + "restore" + string(os.PathSeparator)
-
-	err = storage.CheckFolder(tmpRestore)
-	if err != nil {
-		return
-	}
-
-	// Zip Archiv in tmp entpacken
-	err = compression.ExtractZIP(archive, tmpRestore)
-	if err != nil {
-		return
-	}
-
-	// Neue Config laden um den Port und die Version zu überprüfen
-	newConfig, err := storage.LoadJSONFileToMap(tmpRestore + "settings.json")
-	if err != nil {
-		cli.ShowError(err, 0)
-		return
-	}
-
-	backupVersion = newConfig["version"].(string)
-	if backupVersion < config.System.Compatibility {
-		err = errors.New(cli.GetErrMsg(1013))
-		return
-	}
-
-	// Zip Archiv in den Config Ordner entpacken
-	err = compression.ExtractZIP(archive, config.System.Folder.Config)
-	if err != nil {
-		return
-	}
-
-	// Neue Config laden um den Port und die Version zu überprüfen
-	newConfig, err = storage.LoadJSONFileToMap(config.System.Folder.Config + "settings.json")
-	if err != nil {
-		cli.ShowError(err, 0)
-		return
-	}
-
-	newPort = newConfig["port"].(string)
-	oldPort = config.Settings.Port
-
-	if newPort == oldPort {
-		_, err = settings.Load()
-		if err != nil {
-			cli.ShowError(err, 0)
-			return
-		}
-
-		err := Init()
-		if err != nil {
-			cli.ShowError(err, 0)
-			return "", err
-		}
-
-		err = StartSystem(true)
-		if err != nil {
-			cli.ShowError(err, 0)
-			return "", err
-		}
-
-		return "", err
-	}
-
-	var url = config.System.URLBase + "/web/"
-	newWebURL = strings.Replace(url, ":"+oldPort, ":"+newPort, 1)
-
-	err = os.RemoveAll(tmpRestore)
-
-	return
-}
-
 func ThreadfinRestoreFromWeb(input string) (newWebURL string, err error) {
 
 	// Base64 Json String in base64 umwandeln
@@ -229,56 +202,5 @@ func ThreadfinRestoreFromWeb(input string) (newWebURL string, err error) {
 
 	newWebURL, err = ThreadfinRestore(archive)
 
-	return
-}
-
-// ThreadfinRestoreFromCLI : Wiederherstellung über die Kommandozeile
-func ThreadfinRestoreFromCLI(archive string) (err error) {
-
-	var confirm string
-
-	println()
-	cli.ShowInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
-	cli.ShowInfo(fmt.Sprintf("Backup File:%s", archive))
-	cli.ShowInfo(fmt.Sprintf("System Folder:%s", storage.GetPlatformPath(config.System.Folder.Config)))
-	println()
-
-	fmt.Print("All data will be replaced with those from the backup. Should the files be restored? [yes|no]:")
-
-	_, err = fmt.Scanln(&confirm)
-	if err != nil {
-		cli.ShowError(err, 500)
-		return
-	}
-
-	switch strings.ToLower(confirm) {
-
-	case "yes":
-		break
-
-	case "no":
-		return
-
-	default:
-		fmt.Println("Invalid input")
-		return
-
-	}
-
-	if len(config.System.Folder.Config) > 0 {
-
-		err = storage.CheckFilePermission(config.System.Folder.Config)
-		if err != nil {
-			return
-		}
-
-		_, err = ThreadfinRestore(archive)
-		if err != nil {
-			return
-		}
-
-		cli.ShowHighlight(fmt.Sprintf("Restor:Backup was successfully restored. %s can now be started normally", config.System.Name))
-
-	}
 	return
 }
