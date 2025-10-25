@@ -18,6 +18,7 @@ import (
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/provider"
+	"threadfin/src/internal/settings"
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
@@ -370,8 +371,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 
 		}
 
-		config.Settings, _ = loadSettings()
-
+		config.Settings, _ = settings.Load()
 	}
 
 	return

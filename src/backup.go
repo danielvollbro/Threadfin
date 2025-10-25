@@ -10,6 +10,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/compression"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
 	"time"
 )
@@ -178,7 +179,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	oldPort = config.Settings.Port
 
 	if newPort == oldPort {
-		_, err = loadSettings()
+		_, err = settings.Load()
 		if err != nil {
 			cli.ShowError(err, 0)
 			return

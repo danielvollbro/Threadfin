@@ -11,6 +11,7 @@ import (
 	htmlbuilder "threadfin/src/internal/html-builder"
 	"threadfin/src/internal/plex"
 	"threadfin/src/internal/provider"
+	"threadfin/src/internal/settings"
 	"threadfin/src/internal/ssdp"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
@@ -138,7 +139,7 @@ func Init() (err error) {
 	// Einstellungen laden (settings.json)
 	cli.ShowInfo(fmt.Sprintf("Load Settings:%s", config.System.File.Settings))
 
-	_, err = loadSettings()
+	_, err = settings.Load()
 	if err != nil {
 		cli.ShowError(err, 0)
 		return
