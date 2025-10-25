@@ -3,6 +3,7 @@ package stream
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
@@ -30,6 +31,25 @@ func GetStreamInfo(urlID string) (streamInfo structs.StreamInfo, err error) {
 		streamInfo = s
 	} else {
 		err = errors.New("streaming error")
+	}
+
+	return
+}
+
+func CreateID(stream map[int]structs.ThisStream, ip, userAgent string) (streamID int) {
+	streamID = 0
+	uniqueIdentifier := fmt.Sprintf("%s-%s", ip, userAgent)
+
+	for i := 0; i <= len(stream); i++ {
+		if _, ok := stream[i]; !ok {
+			streamID = i
+			break
+		}
+	}
+
+	if _, ok := stream[streamID]; ok && stream[streamID].ClientID == uniqueIdentifier {
+		// Return the same ID if the combination already exists
+		return streamID
 	}
 
 	return
