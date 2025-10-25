@@ -17,6 +17,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/media"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
@@ -612,7 +613,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 
 		case "uploadLogo":
 			if len(request.Base64) > 0 {
-				response.LogoURL, err = uploadLogo(request.Base64, request.Filename)
+				response.LogoURL, err = media.UploadLogo(request.Base64, request.Filename)
 				if err == nil {
 					if err = conn.WriteJSON(response); err != nil {
 						cli.ShowError(err, 1022)

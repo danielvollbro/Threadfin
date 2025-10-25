@@ -1,4 +1,4 @@
-package src
+package media
 
 import (
 	b64 "encoding/base64"
@@ -8,8 +8,7 @@ import (
 	"threadfin/src/internal/storage"
 )
 
-func uploadLogo(input, filename string) (logoURL string, err error) {
-
+func UploadLogo(input, filename string) (logoURL string, err error) {
 	b64data := input[strings.IndexByte(input, ',')+1:]
 
 	// BAse64 in bytes umwandeln un speichern
