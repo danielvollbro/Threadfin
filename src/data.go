@@ -14,7 +14,6 @@ import (
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/m3u"
-	"threadfin/src/internal/provider"
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
@@ -261,36 +260,6 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				m3u.CreateFile()
 			}()
 
-		}
-
-	}
-
-	return
-}
-
-// Providerdaten manuell aktualisieren (WebUI)
-func updateFile(request structs.RequestStruct, fileType string) (err error) {
-
-	var updateData = make(map[string]interface{})
-
-	switch fileType {
-
-	case "m3u":
-		updateData = request.Files.M3U
-
-	case "hdhr":
-		updateData = request.Files.HDHR
-
-	case "xmltv":
-		updateData = request.Files.XMLTV
-	}
-
-	for dataID := range updateData {
-
-		err = provider.GetData(fileType, dataID)
-		if err == nil {
-			// For playlist updates, just update EPG data and Live Event channel names
-			xepg.UpdateXEPG(false)
 		}
 
 	}

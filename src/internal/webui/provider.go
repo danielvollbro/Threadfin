@@ -118,6 +118,36 @@ func SaveFiles(request structs.RequestStruct, fileType string) (err error) {
 	return
 }
 
+// Providerdaten manuell aktualisieren (WebUI)
+func UpdateFile(request structs.RequestStruct, fileType string) (err error) {
+
+	var updateData = make(map[string]interface{})
+
+	switch fileType {
+
+	case "m3u":
+		updateData = request.Files.M3U
+
+	case "hdhr":
+		updateData = request.Files.HDHR
+
+	case "xmltv":
+		updateData = request.Files.XMLTV
+	}
+
+	for dataID := range updateData {
+
+		err = provider.GetData(fileType, dataID)
+		if err == nil {
+			// For playlist updates, just update EPG data and Live Event channel names
+			xepg.UpdateXEPG(false)
+		}
+
+	}
+
+	return
+}
+
 // Providerdaten löschen (WebUI)
 func deleteLocalProviderFiles(dataID, fileType string) {
 	var removeData = make(map[string]interface{})

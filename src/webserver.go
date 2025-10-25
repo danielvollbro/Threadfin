@@ -540,7 +540,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 			config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
 
-			err = updateFile(request, "m3u")
+			err = webui.UpdateFile(request, "m3u")
 			if err == nil {
 				updateUrlsJson()
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("playlist", config.System.WEB.Menu))
@@ -553,7 +553,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "updateFileHDHR":
-			err = updateFile(request, "hdhr")
+			err = webui.UpdateFile(request, "hdhr")
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("playlist", config.System.WEB.Menu))
 			}
@@ -565,7 +565,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "updateFileXMLTV":
-			err = updateFile(request, "xmltv")
+			err = webui.UpdateFile(request, "xmltv")
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("xmltv", config.System.WEB.Menu))
 			}
