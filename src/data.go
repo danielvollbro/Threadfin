@@ -18,7 +18,6 @@ import (
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
-	"threadfin/src/internal/utilities"
 	"threadfin/src/internal/xepg"
 	"threadfin/src/internal/xmltv"
 )
@@ -264,112 +263,6 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 
 		}
 
-	}
-
-	return
-}
-
-// Providerdaten speichern (WebUI)
-func saveFiles(request structs.RequestStruct, fileType string) (err error) {
-
-	var filesMap = make(map[string]interface{})
-	var newData = make(map[string]interface{})
-	var indicator string
-	var reloadData = false
-
-	switch fileType {
-	case "m3u":
-		filesMap = config.Settings.Files.M3U
-		newData = request.Files.M3U
-		indicator = "M"
-
-	case "hdhr":
-		filesMap = config.Settings.Files.HDHR
-		newData = request.Files.HDHR
-		indicator = "H"
-
-	case "xmltv":
-		filesMap = config.Settings.Files.XMLTV
-		newData = request.Files.XMLTV
-		indicator = "X"
-	}
-
-	if len(filesMap) == 0 {
-		filesMap = make(map[string]interface{})
-	}
-
-	for dataID, data := range newData {
-
-		if dataID == "-" {
-
-			// Neue Providerdatei
-			dataID = indicator + utilities.RandomString(19)
-			data.(map[string]interface{})["new"] = true
-			filesMap[dataID] = data
-
-		} else {
-
-			// Bereits vorhandene Providerdatei
-			for key, value := range data.(map[string]interface{}) {
-
-				var oldData = filesMap[dataID].(map[string]interface{})
-				oldData[key] = value
-
-			}
-
-		}
-
-		switch fileType {
-
-		case "m3u":
-			config.Settings.Files.M3U = filesMap
-
-		case "hdhr":
-			config.Settings.Files.HDHR = filesMap
-
-		case "xmltv":
-			config.Settings.Files.XMLTV = filesMap
-
-		}
-
-		// Neue Providerdatei
-		if _, ok := data.(map[string]interface{})["new"]; ok {
-
-			reloadData = true
-			err = provider.GetData(fileType, dataID)
-			delete(data.(map[string]interface{}), "new")
-
-			if err != nil {
-				delete(filesMap, dataID)
-				return
-			}
-
-		}
-
-		if _, ok := data.(map[string]interface{})["delete"]; ok {
-
-			provider.DeleteLocalProviderFiles(dataID, fileType)
-			reloadData = true
-
-		}
-
-		err = systemSettings.SaveSettings(config.Settings)
-		if err != nil {
-			return
-		}
-
-		if reloadData {
-
-			err = dvr.BuildDatabase()
-			if err != nil {
-				return err
-			}
-
-			xepg.BuildXEPG(false)
-
-		}
-
-		config.Settings, _ = systemSettings.Load()
 	}
 
 	return

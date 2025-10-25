@@ -33,6 +33,7 @@ import (
 	"threadfin/src/internal/system"
 	"threadfin/src/internal/users"
 	"threadfin/src/internal/utilities"
+	"threadfin/src/internal/webui"
 	"threadfin/src/internal/wizard"
 	"threadfin/src/internal/xepg"
 	"threadfin/src/web"
@@ -523,7 +524,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 			config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
 
-			err = saveFiles(request, "m3u")
+			err = webui.SaveFiles(request, "m3u")
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("playlist", config.System.WEB.Menu))
 			}
@@ -546,7 +547,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "saveFilesHDHR":
-			err = saveFiles(request, "hdhr")
+			err = webui.SaveFiles(request, "hdhr")
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("playlist", config.System.WEB.Menu))
 			}
@@ -558,7 +559,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "saveFilesXMLTV":
-			err = saveFiles(request, "xmltv")
+			err = webui.SaveFiles(request, "xmltv")
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("xmltv", config.System.WEB.Menu))
 			}

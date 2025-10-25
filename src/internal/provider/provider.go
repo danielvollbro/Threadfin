@@ -3,7 +3,6 @@ package provider
 import (
 	"encoding/xml"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"threadfin/src/internal/cli"
@@ -427,33 +426,4 @@ func checkXMLCompatibility(id string, body []byte) (err error) {
 	SetCompatibility(id, "xmltv", compatibility)
 
 	return
-}
-
-// Providerdaten löschen (WebUI)
-func DeleteLocalProviderFiles(dataID, fileType string) {
-	var removeData = make(map[string]interface{})
-	var fileExtension string
-
-	switch fileType {
-
-	case "m3u":
-		removeData = config.Settings.Files.M3U
-		fileExtension = ".m3u"
-
-	case "hdhr":
-		removeData = config.Settings.Files.HDHR
-		fileExtension = ".json"
-
-	case "xmltv":
-		removeData = config.Settings.Files.XMLTV
-		fileExtension = ".xml"
-	}
-
-	if _, ok := removeData[dataID]; ok {
-		delete(removeData, dataID)
-		err := os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
-		if err != nil {
-			cli.ShowError(err, 0)
-		}
-	}
 }
