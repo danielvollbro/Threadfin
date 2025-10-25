@@ -2,7 +2,6 @@ package jsonserializer
 
 import "encoding/json"
 
-// JSON
 func MapToJSON(tmpMap interface{}) string {
 
 	jsonString, err := json.MarshalIndent(tmpMap, "", "  ")
@@ -11,4 +10,9 @@ func MapToJSON(tmpMap interface{}) string {
 	}
 
 	return string(jsonString)
+}
+
+func JSONToInterface(content string) (tmpMap interface{}, err error) {
+	err = json.Unmarshal([]byte(content), &tmpMap)
+	return
 }

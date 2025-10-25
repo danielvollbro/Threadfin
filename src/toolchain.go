@@ -141,13 +141,6 @@ func jsonToMap(content string) map[string]interface{} {
 	return (tmpMap)
 }
 
-func jsonToInterface(content string) (tmpMap interface{}, err error) {
-
-	err = json.Unmarshal([]byte(content), &tmpMap)
-	return
-
-}
-
 func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {
 
 	t := template.Must(template.New("template").Parse(content))

@@ -11,6 +11,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/compression"
 	"threadfin/src/internal/config"
+	jsonserializer "threadfin/src/internal/json-serializer"
 	m3u "threadfin/src/internal/m3u-parser"
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
@@ -135,7 +136,7 @@ func getProviderData(fileType, fileID string) (err error) {
 			body = m3uBytes
 
 		case "hdhr":
-			_, err = jsonToInterface(string(body))
+			_, err = jsonserializer.JSONToInterface(string(body))
 
 		case "xmltv":
 			err = checkXMLCompatibility(id, body)
