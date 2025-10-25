@@ -18,6 +18,7 @@ import (
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	m3u "threadfin/src/internal/m3u-parser"
+	"threadfin/src/internal/provider"
 	"threadfin/src/internal/structs"
 )
 
@@ -26,7 +27,7 @@ func parsePlaylist(filename, fileType string) (channels []interface{}, err error
 
 	content, err := readByteFromFile(filename)
 	var id = strings.TrimSuffix(getFilenameFromPath(filename), path.Ext(getFilenameFromPath(filename)))
-	var playlistName = getProviderParameter(id, fileType, "name")
+	var playlistName = provider.GetProviderParameter(id, fileType, "name")
 
 	if err == nil {
 

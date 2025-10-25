@@ -17,6 +17,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/provider"
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/utilities"
@@ -847,7 +848,7 @@ func buildDatabaseDVR() (err error) {
 			var compatibility = make(map[string]int)
 
 			var id = strings.TrimSuffix(getFilenameFromPath(i), path.Ext(getFilenameFromPath(i)))
-			var playlistName = getProviderParameter(id, fileType, "name")
+			var playlistName = provider.GetProviderParameter(id, fileType, "name")
 
 			switch fileType {
 
@@ -1028,37 +1029,6 @@ func getLocalProviderFiles(fileType string) (localFiles []string) {
 
 	for dataID := range dataMap {
 		localFiles = append(localFiles, config.System.Folder.Data+dataID+fileExtension)
-	}
-
-	return
-}
-
-// Providerparameter anhand von dem Key ausgeben
-func getProviderParameter(id, fileType, key string) (s string) {
-
-	var dataMap = make(map[string]interface{})
-
-	switch fileType {
-	case "m3u":
-		dataMap = config.Settings.Files.M3U
-
-	case "hdhr":
-		dataMap = config.Settings.Files.HDHR
-
-	case "xmltv":
-		dataMap = config.Settings.Files.XMLTV
-	}
-
-	if data, ok := dataMap[id].(map[string]interface{}); ok {
-
-		if v, ok := data[key].(string); ok {
-			s = v
-		}
-
-		if v, ok := data[key].(float64); ok {
-			s = strconv.Itoa(int(v))
-		}
-
 	}
 
 	return

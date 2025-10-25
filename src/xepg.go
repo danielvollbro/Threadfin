@@ -23,6 +23,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	_ "time/tzdata"
@@ -320,7 +321,7 @@ func createXEPGMapping() {
 
 			var err error
 			var fileID = strings.TrimSuffix(getFilenameFromPath(file), path.Ext(getFilenameFromPath(file)))
-			cli.ShowInfo("XEPG:" + "Parse XMLTV file: " + getProviderParameter(fileID, "xmltv", "name"))
+			cli.ShowInfo("XEPG:" + "Parse XMLTV file: " + provider.GetProviderParameter(fileID, "xmltv", "name"))
 
 			//xmltv, err = getLocalXMLTV(file)
 			var xmltv structs.XMLTV
@@ -328,7 +329,7 @@ func createXEPGMapping() {
 			if err != nil {
 				config.Data.XMLTV.Files = append(config.Data.XMLTV.Files, config.Data.XMLTV.Files[i+1:]...)
 				var errMsg = err.Error()
-				err = errors.New(getProviderParameter(fileID, "xmltv", "name") + ": " + errMsg)
+				err = errors.New(provider.GetProviderParameter(fileID, "xmltv", "name") + ": " + errMsg)
 				cli.ShowError(err, 000)
 			}
 

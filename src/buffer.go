@@ -19,8 +19,10 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
+	"threadfin/src/internal/tuner"
 	"threadfin/src/web"
 	"time"
 
@@ -196,15 +198,15 @@ func bufferingStream(playlistID string, streamingURL string, backupStream1 *stru
 
 		playlist.Buffer = playListBuffer
 
-		playlist.Tuner = getTuner(playlistID, playlistType)
+		playlist.Tuner = tuner.Get(playlistID, playlistType)
 
-		playlist.PlaylistName = getProviderParameter(playlist.PlaylistID, playlistType, "name")
+		playlist.PlaylistName = provider.GetProviderParameter(playlist.PlaylistID, playlistType, "name")
 
-		playlist.HttpProxyIP = getProviderParameter(playlist.PlaylistID, playlistType, "http_proxy.ip")
-		playlist.HttpProxyPort = getProviderParameter(playlist.PlaylistID, playlistType, "http_proxy.port")
+		playlist.HttpProxyIP = provider.GetProviderParameter(playlist.PlaylistID, playlistType, "http_proxy.ip")
+		playlist.HttpProxyPort = provider.GetProviderParameter(playlist.PlaylistID, playlistType, "http_proxy.port")
 
-		playlist.HttpUserOrigin = getProviderParameter(playlist.PlaylistID, playlistType, "http_headers.origin")
-		playlist.HttpUserReferer = getProviderParameter(playlist.PlaylistID, playlistType, "http_headers.referer")
+		playlist.HttpUserOrigin = provider.GetProviderParameter(playlist.PlaylistID, playlistType, "http_headers.origin")
+		playlist.HttpUserReferer = provider.GetProviderParameter(playlist.PlaylistID, playlistType, "http_headers.referer")
 
 		// Create default values for the stream
 		streamID = createStreamID(playlist.Streams, getClientIP(r), r.UserAgent())
@@ -1174,43 +1176,6 @@ func thirdPartyBuffer(streamID int, playlistID string, useBackup bool, backupNum
 
 	}
 
-}
-
-func getTuner(id, playlistType string) (tuner int) {
-
-	var playListBuffer string
-	config.SystemMutex.Lock()
-	playListInterface := config.Settings.Files.M3U[id]
-	if playListInterface == nil {
-		playListInterface = config.Settings.Files.HDHR[id]
-	}
-	if playListMap, ok := playListInterface.(map[string]interface{}); ok {
-		if buffer, ok := playListMap["buffer"].(string); ok {
-			playListBuffer = buffer
-		} else {
-			playListBuffer = "-"
-		}
-	}
-	config.SystemMutex.Unlock()
-
-	switch playListBuffer {
-
-	case "-":
-		tuner = config.Settings.Tuner
-
-	case "threadfin", "ffmpeg", "vlc":
-
-		i, err := strconv.Atoi(getProviderParameter(id, playlistType, "tuner"))
-		if err == nil {
-			tuner = i
-		} else {
-			cli.ShowError(err, 0)
-			tuner = 1
-		}
-
-	}
-
-	return
 }
 
 func initBufferVFS() {
