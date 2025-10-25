@@ -8,6 +8,7 @@ import (
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 )
 
@@ -193,7 +194,7 @@ func getGuideNumberPMS(channelName string) (pmsID string, err error) {
 
 		config.Data.Cache.PMS = make(map[string]string)
 
-		pms, err := loadJSONFileToMap(config.System.File.PMS)
+		pms, err := storage.LoadJSONFileToMap(config.System.File.PMS)
 
 		if err != nil {
 			return "", err

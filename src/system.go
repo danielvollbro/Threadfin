@@ -2,12 +2,10 @@ package src
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"reflect"
-	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
@@ -123,7 +121,7 @@ func updateUrlsJson() {
 // Einstellungen laden und default Werte setzen (Threadfin)
 func loadSettings() (settings structs.SettingsStruct, err error) {
 
-	settingsMap, err := loadJSONFileToMap(config.System.File.Settings)
+	settingsMap, err := storage.LoadJSONFileToMap(config.System.File.Settings)
 	if err != nil {
 		return structs.SettingsStruct{}, err
 	}
@@ -321,32 +319,6 @@ func createStreamingURL(streamingType, playlistID, channelNumber, channelName, u
 	}
 
 	streamingURL = fmt.Sprintf("%s://%s/stream/%s", serverProtocol, config.System.Domain, streamInfo.URLid)
-	return
-}
-
-func getStreamInfo(urlID string) (streamInfo structs.StreamInfo, err error) {
-
-	if len(config.Data.Cache.StreamingURLS) == 0 {
-
-		tmp, err := loadJSONFileToMap(config.System.File.URLS)
-		if err != nil {
-			return streamInfo, err
-		}
-
-		err = json.Unmarshal([]byte(jsonserializer.MapToJSON(tmp)), &config.Data.Cache.StreamingURLS)
-		if err != nil {
-			return streamInfo, err
-		}
-
-	}
-
-	if s, ok := config.Data.Cache.StreamingURLS[urlID]; ok {
-		s.URL = strings.Trim(s.URL, "\r\n")
-		streamInfo = s
-	} else {
-		err = errors.New("streaming error")
-	}
-
 	return
 }
 

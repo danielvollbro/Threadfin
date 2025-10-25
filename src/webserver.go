@@ -18,6 +18,7 @@ import (
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
 
 	"github.com/gorilla/websocket"
@@ -126,7 +127,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 // Stream : Web Server /stream/
 func Stream(w http.ResponseWriter, r *http.Request) {
 	var path = strings.Replace(r.RequestURI, "/stream/", "", 1)
-	streamInfo, err := getStreamInfo(path)
+	streamInfo, err := stream.GetStreamInfo(path)
 	if err != nil {
 		cli.ShowError(err, 1203)
 		httpStatusError(w, 404)
@@ -682,7 +683,7 @@ func Web(w http.ResponseWriter, r *http.Request) {
 
 	config.SystemMutex.Lock()
 	if config.System.Dev {
-		lang, err = loadJSONFileToMap(fmt.Sprintf("html/lang/%s.json", config.Settings.Language))
+		lang, err = storage.LoadJSONFileToMap(fmt.Sprintf("html/lang/%s.json", config.Settings.Language))
 		config.SystemMutex.Unlock()
 		if err != nil {
 			cli.ShowError(err, 000)
@@ -1179,7 +1180,7 @@ func setDefaultResponseData(response structs.ResponseStruct, data bool) (default
 }
 
 func enablePPV(w http.ResponseWriter, r *http.Request) {
-	xepg, err := loadJSONFileToMap(config.System.File.XEPG)
+	xepg, err := storage.LoadJSONFileToMap(config.System.File.XEPG)
 	if err != nil {
 		var response structs.APIResponseStruct
 
@@ -1221,7 +1222,7 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 }
 
 func disablePPV(w http.ResponseWriter, r *http.Request) {
-	xepg, err := loadJSONFileToMap(config.System.File.XEPG)
+	xepg, err := storage.LoadJSONFileToMap(config.System.File.XEPG)
 	if err != nil {
 		var response structs.APIResponseStruct
 

@@ -148,7 +148,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	}
 
 	// Neue Config laden um den Port und die Version zu überprüfen
-	newConfig, err := loadJSONFileToMap(tmpRestore + "settings.json")
+	newConfig, err := storage.LoadJSONFileToMap(tmpRestore + "settings.json")
 	if err != nil {
 		cli.ShowError(err, 0)
 		return
@@ -167,7 +167,7 @@ func ThreadfinRestore(archive string) (newWebURL string, err error) {
 	}
 
 	// Neue Config laden um den Port und die Version zu überprüfen
-	newConfig, err = loadJSONFileToMap(config.System.Folder.Config + "settings.json")
+	newConfig, err = storage.LoadJSONFileToMap(config.System.Folder.Config + "settings.json")
 	if err != nil {
 		cli.ShowError(err, 0)
 		return

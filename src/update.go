@@ -10,6 +10,7 @@ import (
 
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	up2date "threadfin/src/internal/up2date/client"
 
@@ -185,7 +186,7 @@ func BinaryUpdate() (err error) {
 func conditionalUpdateChanges() (err error) {
 
 checkVersion:
-	settingsMap, err := loadJSONFileToMap(config.System.File.Settings)
+	settingsMap, err := storage.LoadJSONFileToMap(config.System.File.Settings)
 	if err != nil || len(settingsMap) == 0 {
 		return
 	}
@@ -304,7 +305,7 @@ func convertToNewFilter(oldFilter []interface{}) (newFilterMap map[int]interface
 
 func setValueForUUID() (err error) {
 
-	xepg, _ := loadJSONFileToMap(config.System.File.XEPG)
+	xepg, _ := storage.LoadJSONFileToMap(config.System.File.XEPG)
 
 	for _, c := range xepg {
 

@@ -256,30 +256,6 @@ func saveMapToJSONFile(file string, tmpMap interface{}) error {
 	return nil
 }
 
-func loadJSONFileToMap(file string) (tmpMap map[string]interface{}, err error) {
-	f, err := os.Open(storage.GetPlatformFile(file))
-	if err != nil {
-		return
-	}
-
-	defer func() {
-		err = f.Close()
-	}()
-	if err != nil {
-		return
-	}
-
-	content, err := io.ReadAll(f)
-
-	if err == nil {
-		err = json.Unmarshal([]byte(content), &tmpMap)
-	}
-
-	err = f.Close()
-
-	return
-}
-
 // Binary
 func readByteFromFile(file string) (content []byte, err error) {
 

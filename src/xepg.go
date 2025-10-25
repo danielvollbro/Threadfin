@@ -23,6 +23,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	_ "time/tzdata"
 )
@@ -405,13 +406,13 @@ func createXEPGDatabase() (err error) {
 
 	config.Data.Cache.Streams.Active = make([]string, 0, config.System.UnfilteredChannelLimit)
 	config.Settings = structs.SettingsStruct{}
-	config.Data.XEPG.Channels, err = loadJSONFileToMap(config.System.File.XEPG)
+	config.Data.XEPG.Channels, err = storage.LoadJSONFileToMap(config.System.File.XEPG)
 	if err != nil {
 		cli.ShowError(err, 1004)
 		return err
 	}
 
-	settings, err := loadJSONFileToMap(config.System.File.Settings)
+	settings, err := storage.LoadJSONFileToMap(config.System.File.Settings)
 	if err != nil || len(settings) == 0 {
 		return
 	}
