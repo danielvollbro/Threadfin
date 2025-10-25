@@ -124,7 +124,7 @@ func Init() (err error) {
 	cli.ShowInfo(fmt.Sprintf("System Folder:%s", storage.GetPlatformPath(config.System.Folder.Config)))
 
 	// Systemdateien erstellen (Falls nicht vorhanden)
-	err = createSystemFiles()
+	err = system.CreateSystemFiles()
 	if err != nil {
 		cli.ShowError(err, 1071)
 		return
