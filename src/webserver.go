@@ -506,7 +506,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		// Data write commands
 		case "saveSettings":
 			var authenticationUpdate = config.Settings.AuthenticationWEB
-			response.Settings, err = updateServerSettings(request)
+			response.Settings, err = webui.UpdateServerSettings(request)
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("settings", config.System.WEB.Menu))
 				response.Reload = config.Settings.AuthenticationWEB && !authenticationUpdate

@@ -1,4 +1,4 @@
-package src
+package webui
 
 import (
 	"encoding/json"
@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
-
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/dvr"
@@ -19,10 +17,11 @@ import (
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/xepg"
 	"threadfin/src/internal/xmltv"
+	"time"
 )
 
 // Einstellungen ändern (WebUI)
-func updateServerSettings(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
+func UpdateServerSettings(request structs.RequestStruct) (settings structs.SettingsStruct, err error) {
 
 	var oldSettings = jsonserializer.JSONToMap(jsonserializer.MapToJSON(config.Settings))
 	var newSettings = jsonserializer.JSONToMap(jsonserializer.MapToJSON(request.Settings))
