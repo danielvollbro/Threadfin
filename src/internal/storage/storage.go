@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/user"
 	"path/filepath"
 	"threadfin/src/internal/cli"
 
@@ -210,4 +211,22 @@ func CheckFolder(path string) (err error) {
 	}
 
 	return nil
+}
+
+func GetUserHomeDirectory() (userHomeDirectory string) {
+	usr, err := user.Current()
+
+	if err == nil {
+		userHomeDirectory = usr.HomeDir
+		return
+	}
+
+	for _, name := range []string{"HOME", "USERPROFILE"} {
+		if dir := os.Getenv(name); dir != "" {
+			userHomeDirectory = dir
+			break
+		}
+	}
+
+	return
 }

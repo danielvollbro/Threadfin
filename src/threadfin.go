@@ -14,6 +14,7 @@ import (
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/storage"
 )
 
 // GitHubStruct : GitHub Account. Über diesen Account werden die Updates veröffentlicht
@@ -48,7 +49,7 @@ const DBVersion = "0.5.0"
 // APIVersion : API Version
 const APIVersion = "1.2.40"
 
-var homeDirectory = fmt.Sprintf("%s%s.%s%s", GetUserHomeDirectory(), string(os.PathSeparator), strings.ToLower(Name), string(os.PathSeparator))
+var homeDirectory = fmt.Sprintf("%s%s.%s%s", storage.GetUserHomeDirectory(), string(os.PathSeparator), strings.ToLower(Name), string(os.PathSeparator))
 var samplePath = fmt.Sprintf("%spath%sto%sthreadfin%s", string(os.PathSeparator), string(os.PathSeparator), string(os.PathSeparator), string(os.PathSeparator))
 var sampleRestore = fmt.Sprintf("%spath%sto%sfile%s", string(os.PathSeparator), string(os.PathSeparator), string(os.PathSeparator), string(os.PathSeparator))
 

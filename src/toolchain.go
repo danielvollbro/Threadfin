@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -14,29 +13,6 @@ import (
 )
 
 // --- System Tools ---
-
-// GetUserHomeDirectory : Benutzer Homer Verzeichnis
-func GetUserHomeDirectory() (userHomeDirectory string) {
-
-	usr, err := user.Current()
-
-	if err != nil {
-
-		for _, name := range []string{"HOME", "USERPROFILE"} {
-
-			if dir := os.Getenv(name); dir != "" {
-				userHomeDirectory = dir
-				break
-			}
-
-		}
-
-	} else {
-		userHomeDirectory = usr.HomeDir
-	}
-
-	return
-}
 
 // Prüft Dateiberechtigung
 func checkFilePermission(dir string) (err error) {

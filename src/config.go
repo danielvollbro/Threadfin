@@ -54,7 +54,7 @@ func Init() (err error) {
 	tempFolder = storage.GetPlatformPath(strings.ReplaceAll(tempFolder, "//", "/"))
 
 	if len(config.System.Folder.Config) == 0 {
-		config.System.Folder.Config = GetUserHomeDirectory() + string(os.PathSeparator) + "." + config.System.AppName + string(os.PathSeparator)
+		config.System.Folder.Config = storage.GetUserHomeDirectory() + string(os.PathSeparator) + "." + config.System.AppName + string(os.PathSeparator)
 	} else {
 		config.System.Folder.Config = strings.TrimRight(config.System.Folder.Config, string(os.PathSeparator)) + string(os.PathSeparator)
 	}
