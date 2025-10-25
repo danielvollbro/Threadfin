@@ -648,7 +648,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "probeChannel":
-			resolution, frameRate, audioChannels, _ := probeChannel(request)
+			resolution, frameRate, audioChannels, _ := m3u.ProbeChannel(request)
 			response.ProbeInfo = structs.ProbeInfoStruct{Resolution: resolution, FrameRate: frameRate, AudioChannel: audioChannels}
 
 		default:

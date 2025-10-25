@@ -1,4 +1,4 @@
-package src
+package m3u
 
 import (
 	"encoding/json"
@@ -7,12 +7,11 @@ import (
 	"math"
 	"os/exec"
 	"strings"
-
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/structs"
 )
 
-func probeChannel(request structs.RequestStruct) (string, string, string, error) {
+func ProbeChannel(request structs.RequestStruct) (string, string, string, error) {
 
 	ffmpegPath := config.Settings.FFmpegPath
 	ffprobePath := strings.Replace(ffmpegPath, "ffmpeg", "ffprobe", 1)
