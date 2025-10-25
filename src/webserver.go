@@ -1,6 +1,7 @@
 package src
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"threadfin/src/internal/authentication"
 	"threadfin/src/internal/buffer"
@@ -853,6 +855,20 @@ func Web(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		cli.ShowError(err, 000)
 	}
+}
+
+func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {
+
+	t := template.Must(template.New("template").Parse(content))
+
+	var tpl bytes.Buffer
+
+	if err := t.Execute(&tpl, tmpMap); err != nil {
+		cli.ShowError(err, 0)
+	}
+	result = tpl.String()
+
+	return
 }
 
 // API : API request /api/
