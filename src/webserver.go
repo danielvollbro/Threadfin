@@ -15,6 +15,7 @@ import (
 
 	"threadfin/src/internal/authentication"
 	"threadfin/src/internal/cli"
+	"threadfin/src/internal/client"
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/media"
@@ -1127,7 +1128,7 @@ func setDefaultResponseData(response structs.ResponseStruct, data bool) (default
 	defaults.ClientInfo.UUID = config.Settings.UUID
 	defaults.ClientInfo.Errors = config.WebScreenLog.Errors
 	defaults.ClientInfo.Warnings = config.WebScreenLog.Warnings
-	defaults.ClientInfo.ActiveClients = getActiveClientCount()
+	defaults.ClientInfo.ActiveClients = client.GetActiveCount()
 	defaults.ClientInfo.ActivePlaylist = getActivePlaylistCount()
 	defaults.ClientInfo.TotalClients = config.Settings.Tuner
 	defaults.ClientInfo.TotalPlaylist = totalPlaylistCount

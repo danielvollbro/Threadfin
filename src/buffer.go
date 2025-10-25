@@ -6,47 +6,10 @@ package src
 */
 
 import (
-	"fmt"
-	"threadfin/src/internal/client"
 	"threadfin/src/internal/config"
-	"threadfin/src/internal/structs"
 
 	"github.com/avfs/avfs/vfs/memfs"
 )
-
-func getActiveClientCount() (count int) {
-	count = 0
-	client.CleanUpStale() // Ensure stale clients are removed first
-
-	config.BufferInformation.Range(func(key, value interface{}) bool {
-		playlist, ok := value.(structs.Playlist)
-		if !ok {
-			fmt.Printf("Invalid type assertion for playlist: %v\n", value)
-			return true
-		}
-
-		for clientID, client := range playlist.Clients {
-			if client.Connection < 0 {
-				fmt.Printf("Client ID %d has negative connections: %d. Resetting to 0.\n", clientID, client.Connection)
-				client.Connection = 0
-				playlist.Clients[clientID] = client
-				config.BufferInformation.Store(key, playlist)
-			}
-			if client.Connection > 1 {
-				fmt.Printf("Client ID %d has suspiciously high connections: %d. Resetting to 1.\n", clientID, client.Connection)
-				client.Connection = 1
-				playlist.Clients[clientID] = client
-				config.BufferInformation.Store(key, playlist)
-			}
-			count += client.Connection
-		}
-
-		fmt.Printf("Playlist %s has %d active clients\n", playlist.PlaylistID, len(playlist.Clients))
-		return true
-	})
-
-	return count
-}
 
 func getActivePlaylistCount() (count int) {
 	count = 0
