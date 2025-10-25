@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"threadfin/src/internal/buffer"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/crypt"
@@ -200,7 +201,7 @@ func loadSettings() (settings structs.SettingsStruct, err error) {
 	}
 
 	// Initialze virutal filesystem for the Buffer
-	initBufferVFS()
+	buffer.InitVFS()
 
 	settings.Version = config.System.DBVersion
 

@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"threadfin/src/internal/authentication"
+	"threadfin/src/internal/buffer"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/client"
 	"threadfin/src/internal/config"
@@ -499,7 +500,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("settings", config.System.WEB.Menu))
 				response.Reload = config.Settings.AuthenticationWEB && !authenticationUpdate
 
-				initBufferVFS()
+				buffer.InitVFS()
 			}
 
 		case "saveFilesM3U":

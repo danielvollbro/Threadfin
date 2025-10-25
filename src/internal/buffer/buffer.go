@@ -1,4 +1,4 @@
-package src
+package buffer
 
 /*
   Render tuner-limit image as video [ffmpeg]
@@ -11,6 +11,6 @@ import (
 	"github.com/avfs/avfs/vfs/memfs"
 )
 
-func initBufferVFS() {
+func InitVFS() {
 	config.BufferVFS = memfs.New()
 }
