@@ -533,7 +533,7 @@ func saveXEpgMapping(request structs.RequestStruct) (err error) {
 		return
 	}
 
-	err = saveMapToJSONFile(config.System.File.XEPG, request.EpgMapping)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, request.EpgMapping)
 	if err != nil {
 		return err
 	}

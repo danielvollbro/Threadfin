@@ -222,7 +222,7 @@ checkVersion:
 
 				settingsMap["version"] = "2.0.0"
 
-				err = saveMapToJSONFile(config.System.File.Settings, settingsMap)
+				err = storage.SaveMapToJSONFile(config.System.File.Settings, settingsMap)
 				if err != nil {
 					return
 				}
@@ -250,7 +250,7 @@ checkVersion:
 
 				settingsMap["version"] = "2.1.0"
 
-				err = saveMapToJSONFile(config.System.File.Settings, settingsMap)
+				err = storage.SaveMapToJSONFile(config.System.File.Settings, settingsMap)
 				if err != nil {
 					return
 				}
@@ -325,7 +325,7 @@ func setValueForUUID() (err error) {
 
 	}
 
-	err = saveMapToJSONFile(config.System.File.XEPG, xepg)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, xepg)
 
 	return
 }

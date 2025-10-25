@@ -66,7 +66,7 @@ func buildXEPG(background bool) {
 
 	// Clear streaming URL cache
 	config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
-	err := saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	err := storage.SaveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
@@ -401,7 +401,7 @@ func createXEPGDatabase() (err error) {
 
 	// Clear streaming URL cache
 	config.Data.Cache.StreamingURLS = make(map[string]structs.StreamInfo)
-	err = saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	err = storage.SaveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return err
@@ -471,7 +471,7 @@ func createXEPGDatabase() (err error) {
 	}
 
 	// Save updated XEPG database
-	err = saveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return err
@@ -823,7 +823,7 @@ func createXEPGDatabase() (err error) {
 
 	cli.ShowInfo("XEPG:" + "Save DB file")
 
-	err = saveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
@@ -1019,7 +1019,7 @@ func mapping() (err error) {
 
 	}
 
-	err = saveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
@@ -1849,7 +1849,7 @@ func createM3UFile() {
 		cli.ShowError(err, 000)
 	}
 
-	err = saveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
+	err = storage.SaveMapToJSONFile(config.System.File.URLS, config.Data.Cache.StreamingURLS)
 	if err != nil {
 		cli.ShowError(err, 000)
 	}
@@ -1910,7 +1910,7 @@ func cleanupXEPG() {
 
 	}
 
-	err := saveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
+	err := storage.SaveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
 	if err != nil {
 		cli.ShowError(err, 000)
 		return
@@ -1979,7 +1979,7 @@ func removeDuplicateChannels() {
 	if duplicatesFound > 0 {
 		cli.ShowInfo(fmt.Sprintf("XEPG:Removed %d duplicate channels", duplicatesFound))
 		// Save the cleaned database
-		err := saveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
+		err := storage.SaveMapToJSONFile(config.System.File.XEPG, config.Data.XEPG.Channels)
 		if err != nil {
 			cli.ShowError(err, 000)
 		}

@@ -506,7 +506,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		case "saveFilesM3U":
 			// Reset cache for urls.json
 			var filename = storage.GetPlatformFile(config.System.Folder.Config + "urls.json")
-			err = saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
+			err = storage.SaveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
 			if err != nil {
 				cli.ShowError(err, 000)
 				return
@@ -522,7 +522,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 		case "updateFileM3U":
 			// Reset cache for urls.json
 			var filename = storage.GetPlatformFile(config.System.Folder.Config + "urls.json")
-			err = saveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
+			err = storage.SaveMapToJSONFile(filename, make(map[string]structs.StreamInfo))
 			if err != nil {
 				cli.ShowError(err, 000)
 				return
@@ -1208,7 +1208,7 @@ func enablePPV(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = saveMapToJSONFile(config.System.File.XEPG, xepg)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, xepg)
 	if err != nil {
 		var response structs.APIResponseStruct
 
@@ -1249,7 +1249,7 @@ func disablePPV(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = saveMapToJSONFile(config.System.File.XEPG, xepg)
+	err = storage.SaveMapToJSONFile(config.System.File.XEPG, xepg)
 	if err != nil {
 		var response structs.APIResponseStruct
 

@@ -148,28 +148,6 @@ func jsonToInterface(content string) (tmpMap interface{}, err error) {
 
 }
 
-func saveMapToJSONFile(file string, tmpMap interface{}) error {
-
-	var filename = storage.GetPlatformFile(file)
-	jsonString, err := json.MarshalIndent(tmpMap, "", "  ")
-
-	if err != nil {
-		return err
-	}
-
-	_, err = os.Create(filename)
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(filename, []byte(jsonString), 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func parseTemplate(content string, tmpMap map[string]interface{}) (result string) {
 
 	t := template.Must(template.New("template").Parse(content))
