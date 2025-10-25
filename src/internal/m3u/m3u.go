@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/hdhr"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/m3u-parser"
+	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
@@ -230,4 +234,25 @@ func CreateFile() {
 	if err != nil {
 		cli.ShowError(err, 000)
 	}
+}
+
+// Playlisten parsen
+func ParsePlaylist(filename, fileType string) (channels []interface{}, err error) {
+
+	content, err := storage.ReadByteFromFile(filename)
+	var id = strings.TrimSuffix(storage.GetFilenameFromPath(filename), path.Ext(storage.GetFilenameFromPath(filename)))
+	var playlistName = provider.GetProviderParameter(id, fileType, "name")
+
+	if err == nil {
+
+		switch fileType {
+		case "m3u":
+			channels, err = m3u.MakeInterfaceFromM3U(content)
+		case "hdhr":
+			channels, err = hdhr.MakeInteraceFromHDHR(content, playlistName, id)
+		}
+
+	}
+
+	return
 }

@@ -6,38 +6,12 @@ import (
 	"log"
 	"math"
 	"os/exec"
-	"path"
 	"regexp"
 	"strings"
 
 	"threadfin/src/internal/config"
-	"threadfin/src/internal/hdhr"
-	m3u "threadfin/src/internal/m3u-parser"
-	"threadfin/src/internal/provider"
-	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 )
-
-// Playlisten parsen
-func parsePlaylist(filename, fileType string) (channels []interface{}, err error) {
-
-	content, err := storage.ReadByteFromFile(filename)
-	var id = strings.TrimSuffix(storage.GetFilenameFromPath(filename), path.Ext(storage.GetFilenameFromPath(filename)))
-	var playlistName = provider.GetProviderParameter(id, fileType, "name")
-
-	if err == nil {
-
-		switch fileType {
-		case "m3u":
-			channels, err = m3u.MakeInterfaceFromM3U(content)
-		case "hdhr":
-			channels, err = hdhr.MakeInteraceFromHDHR(content, playlistName, id)
-		}
-
-	}
-
-	return
-}
 
 // Streams filtern
 func filterThisStream(s interface{}) (status bool, liveEvent bool) {

@@ -856,9 +856,9 @@ func buildDatabaseDVR() (err error) {
 			switch fileType {
 
 			case "m3u":
-				channels, err = parsePlaylist(i, fileType)
+				channels, err = m3u.ParsePlaylist(i, fileType)
 			case "hdhr":
-				channels, err = parsePlaylist(i, fileType)
+				channels, err = m3u.ParsePlaylist(i, fileType)
 
 			}
 
