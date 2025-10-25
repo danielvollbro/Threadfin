@@ -20,6 +20,7 @@ import (
 	m3u "threadfin/src/internal/m3u-parser"
 	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/utilities"
 )
@@ -363,7 +364,7 @@ func buildM3U(groups []string) (m3u string, err error) {
 			logo = imgc.Image.GetURL(channel.TvgLogo, config.Settings.HttpThreadfinDomain, config.Settings.Port, config.Settings.ForceHttps, config.Settings.HttpsPort, config.Settings.HttpsThreadfinDomain)
 		}
 		var parameter = fmt.Sprintf(`#EXTINF:0 channelID="%s" tvg-chno="%s" tvg-name="%s" tvg-id="%s" tvg-logo="%s" group-title="%s",%s`+"\n", channel.XEPG, channel.XChannelID, channel.XName, channel.XChannelID, logo, group, channel.XName)
-		var stream, err = createStreamingURL("M3U", channel.FileM3UID, channel.XChannelID, channel.XName, channel.URL, channel.BackupChannel1, channel.BackupChannel2, channel.BackupChannel3)
+		var stream, err = stream.CreateURL("M3U", channel.FileM3UID, channel.XChannelID, channel.XName, channel.URL, channel.BackupChannel1, channel.BackupChannel2, channel.BackupChannel3)
 		if err == nil {
 			key := group + "|" + stream
 			if _, ok := seenURLInGroup[key]; ok {

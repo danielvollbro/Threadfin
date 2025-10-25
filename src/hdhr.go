@@ -9,6 +9,7 @@ import (
 	"threadfin/src/internal/config"
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/utilities"
 )
@@ -124,27 +125,27 @@ func getLineup() (jsonContent []byte, err error) {
 				return
 			}
 
-			var stream structs.LineupStream
-			stream.GuideName = m3uChannel.Name
+			var currentStream structs.LineupStream
+			currentStream.GuideName = m3uChannel.Name
 			switch len(m3uChannel.UUIDValue) {
 
 			case 0:
-				stream.GuideNumber = fmt.Sprintf("%d", i+1000)
-				guideNumber, err := getGuideNumberPMS(stream.GuideName)
+				currentStream.GuideNumber = fmt.Sprintf("%d", i+1000)
+				guideNumber, err := getGuideNumberPMS(currentStream.GuideName)
 				if err != nil {
 					cli.ShowError(err, 0)
 				}
 
-				stream.GuideNumber = guideNumber
+				currentStream.GuideNumber = guideNumber
 
 			default:
-				stream.GuideNumber = m3uChannel.UUIDValue
+				currentStream.GuideNumber = m3uChannel.UUIDValue
 
 			}
 
-			stream.URL, err = createStreamingURL("DVR", m3uChannel.FileM3UID, stream.GuideNumber, m3uChannel.Name, m3uChannel.URL, nil, nil, nil)
+			currentStream.URL, err = stream.CreateURL("DVR", m3uChannel.FileM3UID, currentStream.GuideNumber, m3uChannel.Name, m3uChannel.URL, nil, nil, nil)
 			if err == nil {
-				lineup = append(lineup, stream)
+				lineup = append(lineup, currentStream)
 			} else {
 				cli.ShowError(err, 1202)
 			}
@@ -161,12 +162,12 @@ func getLineup() (jsonContent []byte, err error) {
 			}
 
 			if xepgChannel.XActive && !xepgChannel.XHideChannel {
-				var stream structs.LineupStream
-				stream.GuideName = xepgChannel.XName
-				stream.GuideNumber = xepgChannel.XChannelID
-				stream.URL, err = createStreamingURL("DVR", xepgChannel.FileM3UID, xepgChannel.XChannelID, xepgChannel.XName, xepgChannel.URL, xepgChannel.BackupChannel1, xepgChannel.BackupChannel2, xepgChannel.BackupChannel3)
+				var currentStream structs.LineupStream
+				currentStream.GuideName = xepgChannel.XName
+				currentStream.GuideNumber = xepgChannel.XChannelID
+				currentStream.URL, err = stream.CreateURL("DVR", xepgChannel.FileM3UID, xepgChannel.XChannelID, xepgChannel.XName, xepgChannel.URL, xepgChannel.BackupChannel1, xepgChannel.BackupChannel2, xepgChannel.BackupChannel3)
 				if err == nil {
-					lineup = append(lineup, stream)
+					lineup = append(lineup, currentStream)
 				} else {
 					cli.ShowError(err, 1202)
 				}
