@@ -20,6 +20,7 @@ import (
 
 	"bufio"
 	"threadfin/src/internal/cli"
+	"threadfin/src/internal/compression"
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/imgcache"
 	jsonserializer "threadfin/src/internal/json-serializer"
@@ -1199,7 +1200,7 @@ func createXMLTVFile() (err error) {
 	}
 
 	cli.ShowInfo("XEPG:" + fmt.Sprintf("Compress XMLTV file (%s)", config.System.Compressed.GZxml))
-	if err = compressGZIPFile(config.System.File.XML, config.System.Compressed.GZxml); err != nil {
+	if err = compression.CompressGZIPFile(config.System.File.XML, config.System.Compressed.GZxml); err != nil {
 		return err
 	}
 
