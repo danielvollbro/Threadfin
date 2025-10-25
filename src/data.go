@@ -348,7 +348,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 
 		if _, ok := data.(map[string]interface{})["delete"]; ok {
 
-			deleteLocalProviderFiles(dataID, fileType)
+			provider.DeleteLocalProviderFiles(dataID, fileType)
 			reloadData = true
 
 		}
@@ -403,36 +403,6 @@ func updateFile(request structs.RequestStruct, fileType string) (err error) {
 	}
 
 	return
-}
-
-// Providerdaten löschen (WebUI)
-func deleteLocalProviderFiles(dataID, fileType string) {
-
-	var removeData = make(map[string]interface{})
-	var fileExtension string
-
-	switch fileType {
-
-	case "m3u":
-		removeData = config.Settings.Files.M3U
-		fileExtension = ".m3u"
-
-	case "hdhr":
-		removeData = config.Settings.Files.HDHR
-		fileExtension = ".json"
-
-	case "xmltv":
-		removeData = config.Settings.Files.XMLTV
-		fileExtension = ".xml"
-	}
-
-	if _, ok := removeData[dataID]; ok {
-		delete(removeData, dataID)
-		err := os.RemoveAll(config.System.Folder.Data + dataID + fileExtension)
-		if err != nil {
-			cli.ShowError(err, 0)
-		}
-	}
 }
 
 // Filtereinstellungen speichern (WebUI)
