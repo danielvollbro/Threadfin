@@ -14,8 +14,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
-	"unicode"
 
 	"bufio"
 	"threadfin/src/internal/channels"
@@ -644,7 +642,7 @@ func createXEPGDatabase() (err error) {
 
 			// Update channel name - for Live Events, allow name updates even without UUID
 			if channelHasUUID {
-				programData, _ := getProgramData(xepgChannel)
+				programData, _ := programs.GetData(xepgChannel)
 				if xepgChannel.XUpdateChannelName || strings.Contains(xepgChannel.TvgID, "threadfin-") || (m3uChannel.LiveEvent == "true" && len(programData.Program) <= 3) {
 					xepgChannel.XName = m3uChannel.Name
 					xepgChannel.TvgName = m3uChannel.TvgName // Also update TvgName for Live Events
@@ -657,7 +655,7 @@ func createXEPGDatabase() (err error) {
 
 			// For Live Event channels, ensure they use Live Event EPG if they have insufficient program data
 			if m3uChannel.LiveEvent == "true" && xepgChannel.Live {
-				programData, _ := getProgramData(xepgChannel)
+				programData, _ := programs.GetData(xepgChannel)
 				if len(programData.Program) <= 3 {
 					cli.ShowInfo(fmt.Sprintf("XEPG: Updating Live Event channel to use Live EPG: %s", xepgChannel.XName))
 					xepgChannel.XmltvFile = "Threadfin Dummy"
@@ -777,7 +775,7 @@ func createXEPGDatabase() (err error) {
 
 			}
 
-			programData, _ := getProgramData(newChannel)
+			programData, _ := programs.GetData(newChannel)
 
 			if newChannel.Live && len(programData.Program) <= 3 {
 				newChannel.XmltvFile = "Threadfin Dummy"
@@ -1162,7 +1160,7 @@ func createXMLTVFile() (err error) {
 	for _, e := range entries {
 		xepgChannel := e.ch
 		if xepgChannel.XActive && !xepgChannel.XHideChannel {
-			*tmpProgram, err = getProgramData(xepgChannel)
+			*tmpProgram, err = programs.GetData(xepgChannel)
 			if err == nil {
 				for _, p := range tmpProgram.Program {
 					bytes, _ := xml.MarshalIndent(p, "  ", "    ")
@@ -1190,206 +1188,6 @@ func createXMLTVFile() (err error) {
 	}
 
 	return
-}
-
-// Create program data (createXMLTVFile)
-func getProgramData(xepgChannel structs.XEPGChannelStruct) (xepgXML structs.XMLTV, err error) {
-	var xmltvFile = config.System.Folder.Data + xepgChannel.XmltvFile
-	var channelID = xepgChannel.XMapping
-
-	var xmltvStruct structs.XMLTV
-
-	if strings.Contains(xmltvFile, "Threadfin Dummy") {
-		xmltvStruct = programs.CreateDummy(xepgChannel)
-	} else {
-		if xepgChannel.XmltvFile != "" {
-			err = xmltv.GetLocal(xmltvFile, &xmltvStruct)
-			if err != nil {
-				return
-			}
-		}
-	}
-
-	for _, xmltvProgram := range xmltvStruct.Program {
-		if xmltvProgram.Channel == channelID {
-			var program = &structs.Program{}
-
-			// Channel ID
-			program.Channel = xepgChannel.XChannelID
-			program.Start = xmltvProgram.Start
-			program.Stop = xmltvProgram.Stop
-
-			// Title
-			if len(xmltvProgram.Title) > 0 {
-				if !config.Settings.EnableNonAscii {
-					xmltvProgram.Title[0].Value = strings.TrimSpace(strings.Map(func(r rune) rune {
-						if r > unicode.MaxASCII {
-							return -1
-						}
-						return r
-					}, xmltvProgram.Title[0].Value))
-				}
-				program.Title = xmltvProgram.Title
-			}
-
-			filters := []structs.FilterStruct{}
-			for _, filter := range config.Settings.Filter {
-				filter_json, _ := json.Marshal(filter)
-				f := structs.FilterStruct{}
-				err = json.Unmarshal(filter_json, &f)
-				if err != nil {
-					log.Println("XEPG:getProgramData:Error unmarshalling filter:", err)
-					return
-				}
-				filters = append(filters, f)
-			}
-
-			// Category (Kategorie)
-			getCategory(program, xmltvProgram, xepgChannel, filters)
-
-			// Sub-Title
-			program.SubTitle = xmltvProgram.SubTitle
-
-			// Description
-			program.Desc = xmltvProgram.Desc
-
-			// Credits : (Credits)
-			program.Credits = xmltvProgram.Credits
-
-			// Rating (Bewertung)
-			program.Rating = xmltvProgram.Rating
-
-			// StarRating (Bewertung / Kritiken)
-			program.StarRating = xmltvProgram.StarRating
-
-			// Country (Länder)
-			program.Country = xmltvProgram.Country
-
-			// Program icon (Poster / Cover)
-			getPoster(program, xmltvProgram, xepgChannel, config.Settings.ForceHttps)
-
-			// Language (Sprache)
-			program.Language = xmltvProgram.Language
-
-			// Episodes numbers (Episodennummern)
-			getEpisodeNum(program, xmltvProgram, xepgChannel)
-
-			// Video (Videoparameter)
-			getVideo(program, xmltvProgram, xepgChannel)
-
-			// Date (Datum)
-			program.Date = xmltvProgram.Date
-
-			// Previously shown (Wiederholung)
-			program.PreviouslyShown = xmltvProgram.PreviouslyShown
-
-			// New (Neu)
-			program.New = xmltvProgram.New
-
-			// Live
-			program.Live = xmltvProgram.Live
-
-			// Premiere
-			program.Premiere = xmltvProgram.Premiere
-
-			xepgXML.Program = append(xepgXML.Program, program)
-
-		}
-
-	}
-
-	return
-}
-
-// Kategorien erweitern (createXMLTVFile)
-func getCategory(program *structs.Program, xmltvProgram *structs.Program, xepgChannel structs.XEPGChannelStruct, filters []structs.FilterStruct) {
-
-	for _, i := range xmltvProgram.Category {
-
-		category := &structs.Category{}
-		category.Value = i.Value
-		category.Lang = i.Lang
-		program.Category = append(program.Category, category)
-
-	}
-
-	if len(xepgChannel.XCategory) > 0 {
-
-		category := &structs.Category{}
-		category.Value = strings.ToLower(xepgChannel.XCategory)
-		category.Lang = "en"
-		program.Category = append(program.Category, category)
-
-	}
-}
-
-// Programm Poster Cover aus der XMLTV Datei laden
-func getPoster(program *structs.Program, xmltvProgram *structs.Program, xepgChannel structs.XEPGChannelStruct, forceHttps bool) {
-
-	var imgc = config.Data.Cache.Images
-
-	for _, poster := range xmltvProgram.Poster {
-		poster.Src = imgc.Image.GetURL(poster.Src, config.Settings.HttpThreadfinDomain, config.Settings.Port, config.Settings.ForceHttps, config.Settings.HttpsPort, config.Settings.HttpsThreadfinDomain)
-		program.Poster = append(program.Poster, poster)
-	}
-
-	if config.Settings.XepgReplaceMissingImages {
-
-		if len(xmltvProgram.Poster) == 0 {
-			var poster structs.Poster
-			poster.Src = imgc.Image.GetURL(xepgChannel.TvgLogo, config.Settings.HttpThreadfinDomain, config.Settings.Port, config.Settings.ForceHttps, config.Settings.HttpsPort, config.Settings.HttpsThreadfinDomain)
-			program.Poster = append(program.Poster, poster)
-		}
-
-	}
-
-}
-
-// Episodensystem übernehmen, falls keins vorhanden ist und eine Kategorie im Mapping eingestellt wurden, wird eine Episode erstellt
-func getEpisodeNum(program *structs.Program, xmltvProgram *structs.Program, xepgChannel structs.XEPGChannelStruct) {
-
-	program.EpisodeNum = xmltvProgram.EpisodeNum
-
-	if len(xepgChannel.XCategory) > 0 && xepgChannel.XCategory != "Movie" {
-
-		if len(xmltvProgram.EpisodeNum) == 0 {
-
-			var timeLayout = "20060102150405"
-
-			t, err := time.Parse(timeLayout, strings.Split(xmltvProgram.Start, " ")[0])
-			if err == nil {
-				program.EpisodeNum = append(program.EpisodeNum, &structs.EpisodeNum{Value: t.Format("2006-01-02 15:04:05"), System: "original-air-date"})
-			} else {
-				cli.ShowError(err, 0)
-			}
-
-		}
-
-	}
-}
-
-// Videoparameter erstellen (createXMLTVFile)
-func getVideo(program *structs.Program, xmltvProgram *structs.Program, xepgChannel structs.XEPGChannelStruct) {
-
-	var video structs.Video
-	video.Present = xmltvProgram.Video.Present
-	video.Colour = xmltvProgram.Video.Colour
-	video.Aspect = xmltvProgram.Video.Aspect
-	video.Quality = xmltvProgram.Video.Quality
-
-	if len(xmltvProgram.Video.Quality) == 0 {
-
-		if strings.Contains(strings.ToUpper(xepgChannel.XName), " HD") || strings.Contains(strings.ToUpper(xepgChannel.XName), " FHD") {
-			video.Quality = "HDTV"
-		}
-
-		if strings.Contains(strings.ToUpper(xepgChannel.XName), " UHD") || strings.Contains(strings.ToUpper(xepgChannel.XName), " 4K") {
-			video.Quality = "UHDTV"
-		}
-
-	}
-
-	program.Video = video
 }
 
 func isInInactiveList(channelURL string) bool {
