@@ -75,7 +75,7 @@ func Init() (err error) {
 	system.ShowDevInfo()
 
 	// System Ordner erstellen
-	err = createSystemFolders()
+	err = system.CreateSystemFolders()
 	if err != nil {
 		cli.ShowError(err, 1070)
 		return

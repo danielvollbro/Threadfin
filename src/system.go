@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"threadfin/src/internal/buffer"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
@@ -17,26 +16,6 @@ import (
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/utilities"
 )
-
-// Alle Systemordner erstellen
-func createSystemFolders() (err error) {
-
-	e := reflect.ValueOf(&config.System.Folder).Elem()
-
-	for i := 0; i < e.NumField(); i++ {
-
-		var folder = e.Field(i).Interface().(string)
-
-		err = storage.CheckFolder(folder)
-
-		if err != nil {
-			return
-		}
-
-	}
-
-	return
-}
 
 // Alle Systemdateien erstellen
 func createSystemFiles() (err error) {
