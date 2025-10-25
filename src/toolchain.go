@@ -99,28 +99,6 @@ func fsIsNotExistErr(err error) bool {
 	return false
 }
 
-// Prüft ob die Datei im Dateisystem existiert
-func checkFile(filename string) (err error) {
-
-	var file = storage.GetPlatformFile(filename)
-
-	if _, err = os.Stat(file); os.IsNotExist(err) {
-		return err
-	}
-
-	fi, err := os.Stat(file)
-	if err != nil {
-		return err
-	}
-
-	switch mode := fi.Mode(); {
-	case mode.IsDir():
-		err = fmt.Errorf("%s: %s", file, cli.GetErrMsg(1072))
-	}
-
-	return
-}
-
 // GetUserHomeDirectory : Benutzer Homer Verzeichnis
 func GetUserHomeDirectory() (userHomeDirectory string) {
 
@@ -280,7 +258,7 @@ func readStringFromFile(file string) (str string, err error) {
 	var content []byte
 	var filename = storage.GetPlatformFile(file)
 
-	err = checkFile(filename)
+	err = storage.CheckFile(filename)
 	if err != nil {
 		return
 	}

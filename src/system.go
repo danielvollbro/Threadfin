@@ -42,7 +42,7 @@ func createSystemFiles() (err error) {
 
 		var filename = storage.GetPlatformFile(config.System.Folder.Config + file)
 
-		err = checkFile(filename)
+		err = storage.CheckFile(filename)
 		if err != nil {
 			// File does not exist, will be created now
 			err = saveMapToJSONFile(filename, make(map[string]interface{}))

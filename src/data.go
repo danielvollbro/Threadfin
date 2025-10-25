@@ -19,6 +19,7 @@ import (
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/provider"
 	systemSettings "threadfin/src/internal/settings"
+	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
 	"threadfin/src/internal/utilities"
 )
@@ -110,7 +111,7 @@ func updateServerSettings(request structs.RequestStruct) (settings structs.Setti
 				var path = value.(string)
 				if len(path) > 0 {
 
-					err = checkFile(path)
+					err = storage.CheckFile(path)
 					if err != nil {
 						return
 					}

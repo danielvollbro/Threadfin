@@ -2,9 +2,11 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"threadfin/src/internal/cli"
 )
 
 func WriteByteToFile(file string, data []byte) (err error) {
@@ -44,6 +46,27 @@ func LoadJSONFileToMap(file string) (tmpMap map[string]any, err error) {
 	}
 
 	err = f.Close()
+
+	return
+}
+
+// Checks whether the file exists in the file system
+func CheckFile(filename string) (err error) {
+	var file = GetPlatformFile(filename)
+
+	if _, err = os.Stat(file); os.IsNotExist(err) {
+		return err
+	}
+
+	fi, err := os.Stat(file)
+	if err != nil {
+		return err
+	}
+
+	switch mode := fi.Mode(); {
+	case mode.IsDir():
+		err = fmt.Errorf("%s: %s", file, cli.GetErrMsg(1072))
+	}
 
 	return
 }

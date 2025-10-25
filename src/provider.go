@@ -227,7 +227,7 @@ func getProviderData(fileType, fileID string) (err error) {
 				// Laden einer lokalen Datei
 				cli.ShowInfo("Open:" + fileSource)
 
-				err = checkFile(fileSource)
+				err = storage.CheckFile(fileSource)
 				if err == nil {
 					body, err = readByteFromFile(fileSource)
 					serverFileName = getFilenameFromPath(fileSource)
@@ -256,7 +256,7 @@ func getProviderData(fileType, fileID string) (err error) {
 				// Prüfen ob ältere Datei vorhanden ist
 				var file = config.System.Folder.Data + dataID + fileExtension
 
-				err = checkFile(file)
+				err = storage.CheckFile(file)
 				if err == nil {
 
 					if len(fileID) == 0 {
