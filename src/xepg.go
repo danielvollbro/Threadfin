@@ -498,7 +498,7 @@ func createXEPGDatabase() (err error) {
 
 		for {
 
-			if indexOfFloat64(startingNumber, allChannelNumbers) == -1 {
+			if utilities.IndexOfFloat64(startingNumber, allChannelNumbers) == -1 {
 				xChannelID = fmt.Sprintf("%g", startingNumber)
 				allChannelNumbers = append(allChannelNumbers, startingNumber)
 				return
