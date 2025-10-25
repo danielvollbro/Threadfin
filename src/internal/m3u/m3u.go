@@ -256,3 +256,42 @@ func ParsePlaylist(filename, fileType string) (channels []interface{}, err error
 
 	return
 }
+
+// Bedingungen für den Filter
+func CheckConditions(streamValues, conditions, coType string) (status bool) {
+
+	switch coType {
+
+	case "exclude":
+		status = true
+
+	case "include":
+		status = false
+
+	}
+
+	conditions = strings.ReplaceAll(conditions, ", ", ",")
+	conditions = strings.ReplaceAll(conditions, " ,", ",")
+
+	var keys = strings.Split(conditions, ",")
+
+	for _, key := range keys {
+
+		if strings.Contains(streamValues, key) {
+
+			switch coType {
+
+			case "exclude":
+				return false
+
+			case "include":
+				return true
+
+			}
+
+		}
+
+	}
+
+	return
+}

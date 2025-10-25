@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/m3u"
 	"threadfin/src/internal/structs"
 )
 
@@ -99,14 +100,14 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 		if match {
 
 			if len(exclude) > 0 {
-				var status = checkConditions(search, exclude, "exclude")
+				var status = m3u.CheckConditions(search, exclude, "exclude")
 				if !status {
 					return false, liveEvent
 				}
 			}
 
 			if len(include) > 0 {
-				var status = checkConditions(search, include, "include")
+				var status = m3u.CheckConditions(search, include, "include")
 				if !status {
 					return false, liveEvent
 				}
@@ -119,45 +120,6 @@ func filterThisStream(s interface{}) (status bool, liveEvent bool) {
 	}
 
 	return false, liveEvent
-}
-
-// Bedingungen für den Filter
-func checkConditions(streamValues, conditions, coType string) (status bool) {
-
-	switch coType {
-
-	case "exclude":
-		status = true
-
-	case "include":
-		status = false
-
-	}
-
-	conditions = strings.ReplaceAll(conditions, ", ", ",")
-	conditions = strings.ReplaceAll(conditions, " ,", ",")
-
-	var keys = strings.Split(conditions, ",")
-
-	for _, key := range keys {
-
-		if strings.Contains(streamValues, key) {
-
-			switch coType {
-
-			case "exclude":
-				return false
-
-			case "include":
-				return true
-
-			}
-
-		}
-
-	}
-
-	return
 }
 
 func probeChannel(request structs.RequestStruct) (string, string, string, error) {
