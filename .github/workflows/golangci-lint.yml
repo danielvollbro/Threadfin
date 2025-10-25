@@ -26,4 +26,5 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
+          working-directory: src
           version: v2.1
