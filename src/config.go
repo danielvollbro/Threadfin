@@ -9,6 +9,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/plex"
 	"threadfin/src/internal/storage"
+	"threadfin/src/internal/system"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -65,7 +66,7 @@ func Init() (err error) {
 	config.System.Folder.Temp = tempFolder
 
 	// Dev Info
-	showDevInfo()
+	system.ShowDevInfo()
 
 	// System Ordner erstellen
 	err = createSystemFolders()

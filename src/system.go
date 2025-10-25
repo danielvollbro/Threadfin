@@ -15,19 +15,6 @@ import (
 	"time"
 )
 
-// Entwicklerinfos anzeigen
-func showDevInfo() {
-	if config.System.Dev {
-		fmt.Print("\033[31m")
-		fmt.Println("* * * * * D E V   M O D E * * * * *")
-		fmt.Println("Version: ", config.System.Version)
-		fmt.Println("Build:   ", config.System.Build)
-		fmt.Println("* * * * * * * * * * * * * * * * * *")
-		fmt.Print("\033[0m")
-		fmt.Println()
-	}
-}
-
 // Alle Systemordner erstellen
 func createSystemFolders() (err error) {
 
