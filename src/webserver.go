@@ -579,7 +579,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 			err = saveXEpgMapping(request)
 
 		case "saveUserData":
-			err = saveUserData(request)
+			err = users.SaveUserData(request)
 			if err == nil {
 				response.OpenMenu = strconv.Itoa(utilities.IndexOfString("users", config.System.WEB.Menu))
 			}
