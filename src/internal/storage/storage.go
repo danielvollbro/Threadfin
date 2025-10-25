@@ -70,3 +70,8 @@ func CheckFile(filename string) (err error) {
 
 	return
 }
+
+// Generate folder path for the running OS
+func GetPlatformPath(path string) string {
+	return filepath.Dir(path) + string(os.PathSeparator)
+}

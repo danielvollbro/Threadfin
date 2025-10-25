@@ -238,7 +238,7 @@ func ThreadfinRestoreFromCLI(archive string) (err error) {
 	println()
 	cli.ShowInfo(fmt.Sprintf("Version:%s Build: %s", config.System.Version, config.System.Build))
 	cli.ShowInfo(fmt.Sprintf("Backup File:%s", archive))
-	cli.ShowInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
+	cli.ShowInfo(fmt.Sprintf("System Folder:%s", storage.GetPlatformPath(config.System.Folder.Config)))
 	println()
 
 	fmt.Print("All data will be replaced with those from the backup. Should the files be restored? [yes|no]:")

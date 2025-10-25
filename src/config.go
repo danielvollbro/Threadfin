@@ -49,7 +49,7 @@ func Init() (err error) {
 
 	// Ordnerpfade festlegen
 	var tempFolder = os.TempDir() + string(os.PathSeparator) + config.System.AppName + string(os.PathSeparator)
-	tempFolder = getPlatformPath(strings.ReplaceAll(tempFolder, "//", "/"))
+	tempFolder = storage.GetPlatformPath(strings.ReplaceAll(tempFolder, "//", "/"))
 
 	if len(config.System.Folder.Config) == 0 {
 		config.System.Folder.Config = GetUserHomeDirectory() + string(os.PathSeparator) + "." + config.System.AppName + string(os.PathSeparator)
@@ -57,7 +57,7 @@ func Init() (err error) {
 		config.System.Folder.Config = strings.TrimRight(config.System.Folder.Config, string(os.PathSeparator)) + string(os.PathSeparator)
 	}
 
-	config.System.Folder.Config = getPlatformPath(config.System.Folder.Config)
+	config.System.Folder.Config = storage.GetPlatformPath(config.System.Folder.Config)
 
 	config.System.Folder.Backup = config.System.Folder.Config + "backup" + string(os.PathSeparator)
 	config.System.Folder.Data = config.System.Folder.Config + "data" + string(os.PathSeparator)
@@ -116,7 +116,7 @@ func Init() (err error) {
 	cli.ShowInfo(fmt.Sprintf("Database Version:%s", config.System.DBVersion))
 	cli.ShowInfo(fmt.Sprintf("System IP Addresses:IPv4: %d | IPv6: %d", len(config.System.IPAddressesV4), len(config.System.IPAddressesV6)))
 	cli.ShowInfo("Hostname:" + config.System.Hostname)
-	cli.ShowInfo(fmt.Sprintf("System Folder:%s", getPlatformPath(config.System.Folder.Config)))
+	cli.ShowInfo(fmt.Sprintf("System Folder:%s", storage.GetPlatformPath(config.System.Folder.Config)))
 
 	// Systemdateien erstellen (Falls nicht vorhanden)
 	err = createSystemFiles()
@@ -141,14 +141,14 @@ func Init() (err error) {
 
 	// Separaten tmp Ordner für jede Instanz
 	//System.Folder.Temp = System.Folder.Temp + Settings.UUID + string(os.PathSeparator)
-	cli.ShowInfo(fmt.Sprintf("Temporary Folder:%s", getPlatformPath(config.System.Folder.Temp)))
+	cli.ShowInfo(fmt.Sprintf("Temporary Folder:%s", storage.GetPlatformPath(config.System.Folder.Temp)))
 
 	err = checkFolder(config.System.Folder.Temp)
 	if err != nil {
 		return
 	}
 
-	err = removeChildItems(getPlatformPath(config.System.Folder.Temp))
+	err = removeChildItems(storage.GetPlatformPath(config.System.Folder.Temp))
 	if err != nil {
 		return
 	}

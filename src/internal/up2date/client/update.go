@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"threadfin/src/internal/storage"
 
 	"github.com/kardianos/osext"
 )
@@ -57,7 +58,7 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 		// Change binary filename to .filename
 		binary, _ := osext.Executable()
 		var filename = getFilenameFromPath(binary)
-		var path = getPlatformPath(binary)
+		var path = storage.GetPlatformPath(binary)
 		var oldBinary = path + "_old_" + filename
 		var newBinary = binary
 
@@ -246,13 +247,6 @@ func getFilenameFromPath(path string) string {
 	file := filepath.Base(path)
 
 	return file
-}
-
-func getPlatformPath(path string) string {
-
-	var newPath = filepath.Dir(path) + string(os.PathSeparator)
-
-	return newPath
 }
 
 func copyFile(src, dst string) (err error) {

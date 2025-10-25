@@ -35,7 +35,7 @@ func checkFolder(path string) (err error) {
 	if os.IsNotExist(err) {
 		// Ordner existiert nicht, wird jetzt erstellt
 
-		err = os.MkdirAll(getPlatformPath(path), 0755)
+		err = os.MkdirAll(storage.GetPlatformPath(path), 0755)
 		if err == nil {
 
 			debug = fmt.Sprintf("Create Folder:%s", path)
@@ -70,7 +70,7 @@ func checkVFSFolder(path string, vfs avfs.VFS) (err error) {
 			}
 		}
 
-		err = vfs.MkdirAll(getPlatformPath(path), 0755)
+		err = vfs.MkdirAll(storage.GetPlatformPath(path), 0755)
 		if err == nil {
 
 			debug = fmt.Sprintf("Create virtual filesystem Folder:%s", path)
@@ -133,11 +133,6 @@ func checkFilePermission(dir string) (err error) {
 	}
 
 	return
-}
-
-// Ordnerpfad für das laufende OS generieren
-func getPlatformPath(path string) string {
-	return filepath.Dir(path) + string(os.PathSeparator)
 }
 
 // Dateinamen aus dem Dateipfad ausgeben
