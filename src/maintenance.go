@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"threadfin/src/internal/cli"
 	"threadfin/src/internal/config"
+	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"time"
 )
@@ -41,18 +42,18 @@ func maintenance() {
 					}
 
 					// Playlist und XMLTV Dateien aktualisieren
-					err = getProviderData("m3u", "")
+					err = provider.GetData("m3u", "")
 					if err != nil {
 						cli.ShowError(err, 000)
 					}
 
-					err = getProviderData("hdhr", "")
+					err = provider.GetData("hdhr", "")
 					if err != nil {
 						cli.ShowError(err, 000)
 					}
 
 					if config.Settings.EpgSource == "XEPG" {
-						err = getProviderData("xmltv", "")
+						err = provider.GetData("xmltv", "")
 						if err != nil {
 							cli.ShowError(err, 000)
 						}

@@ -10,6 +10,7 @@ import (
 	"threadfin/src/internal/host"
 	htmlbuilder "threadfin/src/internal/html-builder"
 	"threadfin/src/internal/plex"
+	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/system"
 	"threadfin/src/internal/utilities"
@@ -228,20 +229,20 @@ func StartSystem(updateProviderFiles bool) (err error) {
 			cli.ShowError(err, 1090)
 		}
 
-		err = getProviderData("m3u", "")
+		err = provider.GetData("m3u", "")
 		if err != nil {
 			cli.ShowError(err, 0)
 			return
 		}
 
-		err = getProviderData("hdhr", "")
+		err = provider.GetData("hdhr", "")
 		if err != nil {
 			cli.ShowError(err, 0)
 			return
 		}
 
 		if config.Settings.EpgSource == "XEPG" {
-			err = getProviderData("xmltv", "")
+			err = provider.GetData("xmltv", "")
 			if err != nil {
 				cli.ShowError(err, 0)
 				return

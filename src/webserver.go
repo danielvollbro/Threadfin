@@ -23,6 +23,7 @@ import (
 	jsonserializer "threadfin/src/internal/json-serializer"
 	"threadfin/src/internal/media"
 	"threadfin/src/internal/playlist"
+	"threadfin/src/internal/provider"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/stream"
 	"threadfin/src/internal/structs"
@@ -1030,7 +1031,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		response.URLXepg = config.System.ServerProtocol.XML + "://" + config.System.Domain + "/xmltv/threadfin.xml"
 
 	case "update.m3u":
-		err = getProviderData("m3u", "")
+		err = provider.GetData("m3u", "")
 		if err != nil {
 			break
 		}
@@ -1044,7 +1045,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 	case "update.hdhr":
 
-		err = getProviderData("hdhr", "")
+		err = provider.GetData("hdhr", "")
 		if err != nil {
 			break
 		}
@@ -1057,7 +1058,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		buildXEPG(false)
 
 	case "update.xmltv":
-		err = getProviderData("xmltv", "")
+		err = provider.GetData("xmltv", "")
 		if err != nil {
 			break
 		}

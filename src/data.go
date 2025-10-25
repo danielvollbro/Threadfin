@@ -337,7 +337,7 @@ func saveFiles(request structs.RequestStruct, fileType string) (err error) {
 		if _, ok := data.(map[string]interface{})["new"]; ok {
 
 			reloadData = true
-			err = getProviderData(fileType, dataID)
+			err = provider.GetData(fileType, dataID)
 			delete(data.(map[string]interface{}), "new")
 
 			if err != nil {
@@ -396,7 +396,7 @@ func updateFile(request structs.RequestStruct, fileType string) (err error) {
 
 	for dataID := range updateData {
 
-		err = getProviderData(fileType, dataID)
+		err = provider.GetData(fileType, dataID)
 		if err == nil {
 			// For playlist updates, just update EPG data and Live Event channel names
 			updateXEPG(false)
@@ -716,7 +716,7 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 				config.Settings.Files.M3U = filesMap
 				nextStep = 3
 
-				err = getProviderData(key, dataID)
+				err = provider.GetData(key, dataID)
 
 				if err != nil {
 					cli.ShowError(err, 000)
@@ -739,7 +739,7 @@ func saveWizard(request structs.RequestStruct) (nextStep int, err error) {
 				config.Settings.Files.XMLTV = filesMap
 				nextStep = 10
 
-				err = getProviderData(key, dataID)
+				err = provider.GetData(key, dataID)
 
 				if err != nil {
 
@@ -962,7 +962,7 @@ func buildDatabaseDVR() (err error) {
 
 			compatibility["streams"] = len(channels)
 
-			setProviderCompatibility(id, fileType, compatibility)
+			provider.SetCompatibility(id, fileType, compatibility)
 
 		}
 
@@ -1032,41 +1032,4 @@ func getLocalProviderFiles(fileType string) (localFiles []string) {
 	}
 
 	return
-}
-
-// Provider Statistiken Kompatibilität aktualisieren
-func setProviderCompatibility(id, fileType string, compatibility map[string]int) {
-
-	var dataMap = make(map[string]interface{})
-
-	switch fileType {
-	case "m3u":
-		dataMap = config.Settings.Files.M3U
-
-	case "hdhr":
-		dataMap = config.Settings.Files.HDHR
-
-	case "xmltv":
-		dataMap = config.Settings.Files.XMLTV
-	}
-
-	if data, ok := dataMap[id].(map[string]interface{}); ok {
-
-		data["compatibility"] = compatibility
-
-		switch fileType {
-		case "m3u":
-			config.Settings.Files.M3U = dataMap
-		case "hdhr":
-			config.Settings.Files.HDHR = dataMap
-		case "xmltv":
-			config.Settings.Files.XMLTV = dataMap
-		}
-
-		err := systemSettings.SaveSettings(config.Settings)
-		if err != nil {
-			cli.ShowError(err, 0)
-		}
-	}
-
 }

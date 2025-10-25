@@ -31,25 +31,6 @@ import (
 	_ "time/tzdata"
 )
 
-// Provider XMLTV Datei überprüfen
-func checkXMLCompatibility(id string, body []byte) (err error) {
-
-	var xmltv structs.XMLTV
-	var compatibility = make(map[string]int)
-
-	err = xml.Unmarshal(body, &xmltv)
-	if err != nil {
-		return
-	}
-
-	compatibility["xmltv.channels"] = len(xmltv.Channel)
-	compatibility["xmltv.programs"] = len(xmltv.Program)
-
-	setProviderCompatibility(id, "xmltv", compatibility)
-
-	return
-}
-
 // XEPG Daten erstellen
 func buildXEPG(background bool) {
 	config.XepgMutex.Lock()

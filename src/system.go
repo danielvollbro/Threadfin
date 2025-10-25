@@ -11,6 +11,7 @@ import (
 	"threadfin/src/internal/config"
 	"threadfin/src/internal/crypt"
 	jsonserializer "threadfin/src/internal/json-serializer"
+	"threadfin/src/internal/provider"
 	systemSettings "threadfin/src/internal/settings"
 	"threadfin/src/internal/storage"
 	"threadfin/src/internal/structs"
@@ -79,20 +80,20 @@ func createSystemFiles() (err error) {
 
 func updateUrlsJson() {
 
-	err := getProviderData("m3u", "")
+	err := provider.GetData("m3u", "")
 	if err != nil {
 		cli.ShowError(err, 0)
 		return
 	}
 
-	err = getProviderData("hdhr", "")
+	err = provider.GetData("hdhr", "")
 	if err != nil {
 		cli.ShowError(err, 0)
 		return
 	}
 
 	if config.Settings.EpgSource == "XEPG" {
-		err = getProviderData("xmltv", "")
+		err = provider.GetData("xmltv", "")
 		if err != nil {
 			cli.ShowError(err, 0)
 			return
