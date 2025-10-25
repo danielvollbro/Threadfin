@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"threadfin/src/internal/storage"
+	"threadfin/internal/storage"
 )
 
 var htmlFolder string
@@ -43,7 +43,7 @@ func BuildGoFile() error {
 	var content string
 	content += `package ` + packageName + "\n\n"
 	content += `import (` + "\n\n"
-	content += `  "threadfin/src/web"` + "\n\n"
+	content += `  "threadfin/web"` + "\n\n"
 	content += `)` + "\n\n"
 	content += `var ` + mapName + ` = make(map[string]interface{})` + "\n\n"
 	content += "func web.LoadHTMLMap() {" + "\n\n"

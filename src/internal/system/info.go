@@ -3,10 +3,10 @@ package system
 import (
 	"fmt"
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/dvr"
-	"threadfin/src/internal/xepg"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/dvr"
+	"threadfin/internal/xepg"
 )
 
 // ShowSystemInfo : Systeminformationen anzeigen

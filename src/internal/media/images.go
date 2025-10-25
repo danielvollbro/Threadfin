@@ -4,8 +4,8 @@ import (
 	b64 "encoding/base64"
 	"fmt"
 	"strings"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/storage"
+	"threadfin/internal/config"
+	"threadfin/internal/storage"
 )
 
 func UploadLogo(input, filename string) (logoURL string, err error) {

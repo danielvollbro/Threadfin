@@ -2,14 +2,14 @@ package webui
 
 import (
 	"os"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/dvr"
-	"threadfin/src/internal/provider"
-	"threadfin/src/internal/settings"
-	"threadfin/src/internal/structs"
-	"threadfin/src/internal/utilities"
-	"threadfin/src/internal/xepg"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/dvr"
+	"threadfin/internal/provider"
+	"threadfin/internal/settings"
+	"threadfin/internal/structs"
+	"threadfin/internal/utilities"
+	"threadfin/internal/xepg"
 )
 
 // Providerdaten speichern (WebUI)

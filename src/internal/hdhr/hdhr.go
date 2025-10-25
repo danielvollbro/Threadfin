@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	jsonserializer "threadfin/src/internal/json-serializer"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/stream"
-	"threadfin/src/internal/structs"
-	"threadfin/src/internal/utilities"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	jsonserializer "threadfin/internal/json-serializer"
+	"threadfin/internal/storage"
+	"threadfin/internal/stream"
+	"threadfin/internal/structs"
+	"threadfin/internal/utilities"
 )
 
 func MakeInteraceFromHDHR(content []byte, playlistName, id string) (channels []interface{}, err error) {

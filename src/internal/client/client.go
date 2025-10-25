@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/structs"
 )
 
 func Connection(stream structs.ThisStream) (status bool) {

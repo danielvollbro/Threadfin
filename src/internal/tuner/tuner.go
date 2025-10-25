@@ -2,9 +2,9 @@ package tuner
 
 import (
 	"strconv"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/provider"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/provider"
 )
 
 func Get(id, playlistType string) (tuner int) {

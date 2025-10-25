@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/crypt"
-	jsonserializer "threadfin/src/internal/json-serializer"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/config"
+	"threadfin/internal/crypt"
+	jsonserializer "threadfin/internal/json-serializer"
+	"threadfin/internal/storage"
+	"threadfin/internal/structs"
 )
 
 func GetStreamInfo(urlID string) (streamInfo structs.StreamInfo, err error) {

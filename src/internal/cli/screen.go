@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/config"
+	"threadfin/internal/structs"
 	"time"
 )
 

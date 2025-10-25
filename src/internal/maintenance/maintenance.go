@@ -3,14 +3,14 @@ package maintenance
 import (
 	"fmt"
 	"math/rand"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/dvr"
-	"threadfin/src/internal/provider"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/system"
-	"threadfin/src/internal/update"
-	"threadfin/src/internal/xepg"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/dvr"
+	"threadfin/internal/provider"
+	"threadfin/internal/storage"
+	"threadfin/internal/system"
+	"threadfin/internal/update"
+	"threadfin/internal/xepg"
 	"time"
 )
 

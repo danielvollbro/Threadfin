@@ -9,14 +9,14 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"threadfin/src/internal/channels"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	jsonserializer "threadfin/src/internal/json-serializer"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/structs"
-	"threadfin/src/internal/utilities"
-	"threadfin/src/internal/xmltv"
+	"threadfin/internal/channels"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	jsonserializer "threadfin/internal/json-serializer"
+	"threadfin/internal/storage"
+	"threadfin/internal/structs"
+	"threadfin/internal/utilities"
+	"threadfin/internal/xmltv"
 )
 
 // XEPG Datenbank erstellen / aktualisieren

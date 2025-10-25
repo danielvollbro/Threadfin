@@ -2,8 +2,8 @@ package xmltv
 
 import (
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/cli"
+	"threadfin/internal/structs"
 	"time"
 )
 

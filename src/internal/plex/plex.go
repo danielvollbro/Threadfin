@@ -2,7 +2,7 @@ package plex
 
 import (
 	"fmt"
-	"threadfin/src/internal/config"
+	"threadfin/internal/config"
 )
 
 // Eindeutige Geräte ID für Plex generieren

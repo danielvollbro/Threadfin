@@ -6,7 +6,7 @@ package buffer
 */
 
 import (
-	"threadfin/src/internal/config"
+	"threadfin/internal/config"
 
 	"github.com/avfs/avfs/vfs/memfs"
 )

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"threadfin/src/internal/utilities"
+	"threadfin/internal/utilities"
 )
 
 // makeInterfaceFromM3UOriginal : Original implementation for smaller files

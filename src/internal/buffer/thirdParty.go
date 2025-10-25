@@ -9,11 +9,11 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/client"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/cli"
+	"threadfin/internal/client"
+	"threadfin/internal/config"
+	"threadfin/internal/storage"
+	"threadfin/internal/structs"
 	"time"
 )
 

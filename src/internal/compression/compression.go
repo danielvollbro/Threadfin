@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
 )
 
 func ZipFiles(sourceFiles []string, target string) error {

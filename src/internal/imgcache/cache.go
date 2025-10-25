@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"threadfin/src/internal/utilities"
+	"threadfin/internal/utilities"
 )
 
 // Cache : Cache strcut

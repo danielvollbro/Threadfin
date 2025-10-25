@@ -2,8 +2,8 @@ package users
 
 import (
 	"log"
-	"threadfin/src/internal/authentication"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/authentication"
+	"threadfin/internal/structs"
 )
 
 // Neuen Benutzer anlegen (WebUI)

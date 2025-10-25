@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"threadfin/src/internal/buffer"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	jsonserializer "threadfin/src/internal/json-serializer"
-	"threadfin/src/internal/plex"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/structs"
-	"threadfin/src/internal/utilities"
+	"threadfin/internal/buffer"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	jsonserializer "threadfin/internal/json-serializer"
+	"threadfin/internal/plex"
+	"threadfin/internal/storage"
+	"threadfin/internal/structs"
+	"threadfin/internal/utilities"
 )
 
 // Einstellungen speichern (Threadfin)

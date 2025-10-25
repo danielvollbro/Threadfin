@@ -3,7 +3,7 @@ package imgcache
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"threadfin/src/internal/utilities"
+	"threadfin/internal/utilities"
 )
 
 func strToMD5(str string) string {

@@ -8,11 +8,11 @@ import (
 	"log"
 	"net/http"
 	"reflect"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/structs"
-	up2date "threadfin/src/internal/up2date/client"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/storage"
+	"threadfin/internal/structs"
+	up2date "threadfin/internal/up2date/client"
 
 	"github.com/hashicorp/go-version"
 )

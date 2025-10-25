@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/storage"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/storage"
 	"time"
 )
 

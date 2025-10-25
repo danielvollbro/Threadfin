@@ -3,9 +3,9 @@ package dvr
 import (
 	"encoding/json"
 	"fmt"
-	"threadfin/src/internal/config"
-	jsonserializer "threadfin/src/internal/json-serializer"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/config"
+	jsonserializer "threadfin/internal/json-serializer"
+	"threadfin/internal/structs"
 )
 
 // Filterregeln erstellen

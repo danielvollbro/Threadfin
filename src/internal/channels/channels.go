@@ -5,11 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	jsonserializer "threadfin/src/internal/json-serializer"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	jsonserializer "threadfin/internal/json-serializer"
+	"threadfin/internal/storage"
+	"threadfin/internal/structs"
 )
 
 // Remove duplicate channels from XEPG database using consistent hash logic

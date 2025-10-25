@@ -1,6 +1,6 @@
 package playlist
 
-import "threadfin/src/internal/config"
+import "threadfin/internal/config"
 
 func GetActiveCount() (count int) {
 	count = 0

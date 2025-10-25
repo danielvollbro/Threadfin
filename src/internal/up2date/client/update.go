@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
-	"threadfin/src/internal/compression"
-	"threadfin/src/internal/storage"
+	"threadfin/internal/compression"
+	"threadfin/internal/storage"
 
 	"github.com/kardianos/osext"
 )

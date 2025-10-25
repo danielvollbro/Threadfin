@@ -2,13 +2,13 @@ package webui
 
 import (
 	"errors"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/dvr"
-	jsonserializer "threadfin/src/internal/json-serializer"
-	systemSettings "threadfin/src/internal/settings"
-	"threadfin/src/internal/structs"
-	"threadfin/src/internal/xepg"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/dvr"
+	jsonserializer "threadfin/internal/json-serializer"
+	systemSettings "threadfin/internal/settings"
+	"threadfin/internal/structs"
+	"threadfin/internal/xepg"
 )
 
 // Filtereinstellungen speichern (WebUI)

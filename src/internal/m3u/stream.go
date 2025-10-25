@@ -3,7 +3,7 @@ package m3u
 import (
 	"regexp"
 	"strings"
-	"threadfin/src/internal/config"
+	"threadfin/internal/config"
 )
 
 // Streams filtern

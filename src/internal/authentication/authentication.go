@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"threadfin/src/internal/config"
+	"threadfin/internal/config"
 
 	"crypto/hmac"
 	"crypto/rand"

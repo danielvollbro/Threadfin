@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
 	"time"
 
 	"github.com/koron/go-ssdp"

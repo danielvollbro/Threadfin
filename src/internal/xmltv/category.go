@@ -2,7 +2,7 @@ package xmltv
 
 import (
 	"strings"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/structs"
 )
 
 // Kategorien erweitern (createXMLTVFile)

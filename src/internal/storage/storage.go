@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"threadfin/src/internal/cli"
+	"threadfin/internal/cli"
 
 	"github.com/avfs/avfs"
 )

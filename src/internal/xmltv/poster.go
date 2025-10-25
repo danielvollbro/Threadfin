@@ -1,8 +1,8 @@
 package xmltv
 
 import (
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/config"
+	"threadfin/internal/structs"
 )
 
 // Programm Poster Cover aus der XMLTV Datei laden

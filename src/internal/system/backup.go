@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/compression"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/storage"
+	"threadfin/internal/cli"
+	"threadfin/internal/compression"
+	"threadfin/internal/config"
+	"threadfin/internal/storage"
 	"time"
 )
 

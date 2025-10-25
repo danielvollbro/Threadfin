@@ -7,8 +7,8 @@ import (
 	"math"
 	"os/exec"
 	"strings"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/config"
+	"threadfin/internal/structs"
 )
 
 func ProbeChannel(request structs.RequestStruct) (string, string, string, error) {

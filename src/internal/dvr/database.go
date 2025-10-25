@@ -7,11 +7,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/m3u"
-	"threadfin/src/internal/provider"
-	"threadfin/src/internal/storage"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/m3u"
+	"threadfin/internal/provider"
+	"threadfin/internal/storage"
 )
 
 // Datenbank für das DVR System erstellen

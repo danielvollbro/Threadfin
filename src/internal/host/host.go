@@ -4,7 +4,7 @@ import (
 	"net"
 	"os"
 	"strings"
-	"threadfin/src/internal/config"
+	"threadfin/internal/config"
 )
 
 func ResolveIP() error {

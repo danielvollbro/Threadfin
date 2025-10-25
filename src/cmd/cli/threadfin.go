@@ -12,13 +12,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"threadfin/src/cmd/server"
-	"threadfin/src/internal/cli"
-	"threadfin/src/internal/config"
-	"threadfin/src/internal/maintenance"
-	"threadfin/src/internal/storage"
-	"threadfin/src/internal/system"
-	"threadfin/src/internal/update"
+	"threadfin/cmd/server"
+	"threadfin/internal/cli"
+	"threadfin/internal/config"
+	"threadfin/internal/maintenance"
+	"threadfin/internal/storage"
+	"threadfin/internal/system"
+	"threadfin/internal/update"
 )
 
 // GitHubStruct : GitHub Account. Über diesen Account werden die Updates veröffentlicht
