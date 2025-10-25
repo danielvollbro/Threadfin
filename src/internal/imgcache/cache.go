@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"threadfin/internal/utilities"
 )
 
 // Cache : Cache strcut
@@ -84,8 +85,8 @@ func New(path, cacheURL string, caching bool) (c *Cache, err error) {
 			return cacheURL
 		}
 
-		if indexOfString(filename, c.Cache) == -1 {
-			if indexOfString(src, c.Queue) == -1 {
+		if utilities.IndexOfString(filename, c.Cache) == -1 {
+			if utilities.IndexOfString(src, c.Queue) == -1 {
 				c.Queue = append(c.Queue, src)
 			}
 

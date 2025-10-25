@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"threadfin/internal/utilities"
 )
 
 // makeInterfaceFromM3UOriginal : Original implementation for smaller files
@@ -94,7 +95,7 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 		// Assign a unique ID to the stream
 		for key, value := range stream {
 			if strings.Contains(strings.ToLower(key), "tvg-name") {
-				if indexOfString(value, uuids) != -1 {
+				if utilities.IndexOfString(value, uuids) != -1 {
 					break
 				}
 
@@ -132,15 +133,4 @@ func makeInterfaceFromM3UOriginal(byteStream []byte) (allChannels []interface{},
 	}
 
 	return
-}
-
-func indexOfString(element string, data []string) int {
-
-	for k, v := range data {
-		if element == v {
-			return k
-		}
-	}
-
-	return -1
 }

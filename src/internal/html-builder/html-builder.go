@@ -1,0 +1,151 @@
+package htmlbuilder
+
+import (
+	"bufio"
+	"encoding/base64"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
+	"threadfin/internal/storage"
+)
+
+var htmlFolder string
+var goFile string
+var mapName string
+var packageName string
+
+var blankMap = make(map[string]interface{})
+
+// HTMLInit : Dateipfade festlegen
+// mapName = Name der zu erstellenden map
+// htmlFolder: Ordner der HTML Dateien
+// packageName: Name des package
+func HTMLInit(name, pkg, folder, file string) {
+
+	htmlFolder = folder
+	goFile = file
+	mapName = name
+	packageName = pkg
+
+}
+
+// BuildGoFile : Erstellt das GO Dokument
+func BuildGoFile() error {
+
+	var err = checkHTMLFile(htmlFolder)
+
+	if err != nil {
+		return err
+	}
+
+	var content string
+	content += `package ` + packageName + "\n\n"
+	content += `import (` + "\n\n"
+	content += `  "threadfin/web"` + "\n\n"
+	content += `)` + "\n\n"
+	content += `var ` + mapName + ` = make(map[string]interface{})` + "\n\n"
+	content += "func web.LoadHTMLMap() {" + "\n\n"
+
+	content += createMapFromFiles(htmlFolder) + "\n"
+
+	content += "}" + "\n\n"
+	err = writeStringToFile(goFile, content)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createMapFromFiles(folder string) string {
+
+	var path = getLocalPath(folder)
+
+	err := filepath.Walk(path, readFilesToMap)
+	if err != nil {
+		checkErr(err)
+	}
+
+	var content string
+
+	for key := range blankMap {
+		var newKey = key
+		content += `  ` + mapName + `["` + newKey + `"` + `] = "` + blankMap[key].(string) + `"` + "\n"
+	}
+
+	return content
+}
+
+func readFilesToMap(path string, info os.FileInfo, err error) error {
+	if !info.IsDir() {
+		var base64Str = fileToBase64(getLocalPath(path))
+		blankMap[path] = base64Str
+	}
+
+	return nil
+}
+
+func fileToBase64(file string) string {
+
+	imgFile, _ := os.Open(file)
+	var err error
+	defer func() {
+		err = imgFile.Close()
+	}()
+	checkErr(err)
+
+	// create a new buffer base on file size
+	fInfo, _ := imgFile.Stat()
+	var size = fInfo.Size()
+	buf := make([]byte, int64(size))
+
+	// read file content into buffer
+	fReader := bufio.NewReader(imgFile)
+	_, err = fReader.Read(buf)
+	checkErr(err)
+
+	imgBase64Str := base64.StdEncoding.EncodeToString(buf)
+
+	return imgBase64Str
+}
+
+func getLocalPath(filename string) string {
+
+	path, file := filepath.Split(filename)
+	var newPath = filepath.Dir(path)
+
+	var newFileName = newPath + "/" + file
+
+	return newFileName
+}
+
+func writeStringToFile(filename, content string) error {
+
+	err := os.WriteFile(storage.GetPlatformFile(filename), []byte(content), 0644)
+	if err != nil {
+		checkErr(err)
+		return err
+	}
+
+	return nil
+}
+
+func checkHTMLFile(filename string) error {
+
+	if _, err := os.Stat(getLocalPath(filename)); os.IsNotExist(err) {
+		fmt.Println(filename)
+		checkErr(err)
+		return err
+	}
+
+	return nil
+}
+
+func checkErr(err error) {
+	if err != nil {
+		_, file, line, _ := runtime.Caller(1)
+		log.Println("ERROR: [", err, "] in ", file, line)
+	}
+}

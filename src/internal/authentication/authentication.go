@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+	"threadfin/internal/config"
 
 	"crypto/hmac"
 	"crypto/rand"
@@ -602,4 +604,164 @@ func SetCookieToken(w http.ResponseWriter, token string) http.ResponseWriter {
 	cookie := http.Cookie{Name: "Token", Value: token, Expires: expiration}
 	http.SetCookie(w, &cookie)
 	return w
+}
+
+func ActivatedSystemAuthentication(config string) (err error) {
+	err = Init(config, 60)
+	if err != nil {
+		return
+	}
+
+	var defaults = make(map[string]interface{})
+	defaults["authentication.web"] = false
+	defaults["authentication.pms"] = false
+	defaults["authentication.xml"] = false
+	defaults["authentication.api"] = false
+	err = SetDefaultUserData(defaults)
+
+	return
+}
+
+func CreateFirstUserForAuthentication(username, password string) (token string, err error) {
+
+	var authenticationErr = func(err error) {
+		if err != nil {
+			return
+		}
+	}
+
+	err = CreateDefaultUser(username, password)
+	authenticationErr(err)
+
+	token, err = UserAuthentication(username, password)
+	authenticationErr(err)
+
+	token, err = CheckTheValidityOfTheToken(token)
+	authenticationErr(err)
+
+	var userData = make(map[string]interface{})
+	userData["username"] = username
+	userData["authentication.web"] = true
+	userData["authentication.pms"] = true
+	userData["authentication.m3u"] = true
+	userData["authentication.xml"] = true
+	userData["authentication.api"] = false
+	userData["defaultUser"] = true
+
+	userID, err := GetUserID(token)
+	authenticationErr(err)
+
+	err = WriteUserData(userID, userData)
+	authenticationErr(err)
+
+	return
+}
+
+func TokenAuthentication(token string) (newToken string, err error) {
+
+	if config.System.ConfigurationWizard {
+		return
+	}
+
+	newToken, err = CheckTheValidityOfTheToken(token)
+
+	return
+}
+
+func BasicAuth(r *http.Request, level string) (username string, err error) {
+
+	err = errors.New("user authentication failed")
+
+	auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+
+	if len(auth) != 2 || auth[0] != "Basic" {
+		return
+	}
+
+	payload, _ := base64.StdEncoding.DecodeString(auth[1])
+	pair := strings.SplitN(string(payload), ":", 2)
+
+	username = pair[0]
+	var password = pair[1]
+
+	token, err := UserAuthentication(username, password)
+
+	if err != nil {
+		return
+	}
+
+	err = CheckAuthorizationLevel(token, level)
+
+	return
+}
+
+func CheckAuthorizationLevel(token, level string) (err error) {
+
+	var authenticationErr = func(err error) {
+		if err != nil {
+			return
+		}
+	}
+
+	userID, err := GetUserID(token)
+	authenticationErr(err)
+
+	userData, err := ReadUserData(userID)
+	authenticationErr(err)
+
+	if len(userData) > 0 {
+
+		if v, ok := userData[level].(bool); ok {
+
+			if !v {
+				err = errors.New("no authorization")
+			}
+
+		} else {
+			userData[level] = false
+			err = WriteUserData(userID, userData)
+			authenticationErr(err)
+			err = errors.New("no authorization")
+		}
+
+	} else {
+		err = WriteUserData(userID, userData)
+		authenticationErr(err)
+		err = errors.New("no authorization")
+	}
+
+	return
+}
+
+func UrlAuth(r *http.Request, requestType string) (err error) {
+	var level, token string
+
+	var username = r.URL.Query().Get("username")
+	var password = r.URL.Query().Get("password")
+
+	switch requestType {
+
+	case "m3u":
+		level = "authentication.m3u"
+		if config.Settings.AuthenticationM3U {
+			token, err = UserAuthentication(username, password)
+			if err != nil {
+				return
+			}
+			err = CheckAuthorizationLevel(token, level)
+		}
+
+	case "xml":
+		level = "authentication.xml"
+		if config.Settings.AuthenticationXML {
+			token, err = UserAuthentication(username, password)
+			if err != nil {
+				return
+			}
+			err = CheckAuthorizationLevel(token, level)
+		}
+
+	}
+
+	return
 }

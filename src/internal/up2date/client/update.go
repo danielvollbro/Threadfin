@@ -1,17 +1,17 @@
 package up2date
 
 import (
-	"archive/zip"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
+	"threadfin/internal/compression"
+	"threadfin/internal/storage"
 
 	"github.com/kardianos/osext"
 )
@@ -56,8 +56,8 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 
 		// Change binary filename to .filename
 		binary, _ := osext.Executable()
-		var filename = getFilenameFromPath(binary)
-		var path = getPlatformPath(binary)
+		var filename = storage.GetFilenameFromPath(binary)
+		var path = storage.GetPlatformPath(binary)
 		var oldBinary = path + "_old_" + filename
 		var newBinary = binary
 
@@ -97,7 +97,7 @@ func DoUpdate(fileType, filenameBIN string) (err error) {
 
 			log.Println("["+strings.ToUpper(fileType)+"]", "Update file:", filenameBIN)
 			log.Println("["+strings.ToUpper(fileType)+"]", "Unzip ZIP file...")
-			err = extractZIP(binary, tmpFolder)
+			err = compression.ExtractZIP(binary, tmpFolder)
 
 			binary = newBinary
 
@@ -241,20 +241,6 @@ func restorOldBinary(oldBinary, newBinary string) {
 	}
 }
 
-func getFilenameFromPath(path string) string {
-
-	file := filepath.Base(path)
-
-	return file
-}
-
-func getPlatformPath(path string) string {
-
-	var newPath = filepath.Dir(path) + string(os.PathSeparator)
-
-	return newPath
-}
-
 func copyFile(src, dst string) (err error) {
 	in, err := os.Open(src)
 	if err != nil {
@@ -285,58 +271,4 @@ func copyFile(src, dst string) (err error) {
 		return err
 	}
 	return out.Close()
-}
-
-func extractZIP(archive, target string) (err error) {
-
-	reader, err := zip.OpenReader(archive)
-	if err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(target, 0755); err != nil {
-		return err
-	}
-
-	for _, file := range reader.File {
-		path := filepath.Join(target, file.Name)
-		if file.FileInfo().IsDir() {
-			err = os.MkdirAll(path, file.Mode())
-			if err != nil {
-				return err
-			}
-
-			continue
-		}
-
-		fileReader, err := file.Open()
-		if err != nil {
-			return err
-		}
-
-		defer func() {
-			err = fileReader.Close()
-		}()
-		if err != nil {
-			return err
-		}
-
-		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
-		if err != nil {
-			return err
-		}
-		defer func() {
-			err = targetFile.Close()
-		}()
-		if err != nil {
-			return err
-		}
-
-		if _, err := io.Copy(targetFile, fileReader); err != nil {
-			return err
-		}
-
-	}
-
-	return
 }

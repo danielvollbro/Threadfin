@@ -2,7 +2,7 @@ package config
 
 import (
 	"sync"
-	"threadfin/src/internal/structs"
+	"threadfin/internal/structs"
 
 	"github.com/avfs/avfs"
 )
